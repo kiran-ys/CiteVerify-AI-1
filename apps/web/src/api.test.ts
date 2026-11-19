@@ -388,6 +388,7 @@ const verificationSuccess: VerifyClaimsResponse = {
         claimId: "claim-001",
         verdict: "Supported",
         decidedBy: "model",
+        unableCause: null,
         reason: null,
         evidence: [
           {
@@ -424,6 +425,7 @@ const verificationSuccess: VerifyClaimsResponse = {
     version: "1.0.0",
     verifiedAt: "2026-11-19T12:00:00.000Z",
     truncated: false,
+    ownFindingsExcluded: 0,
     reviewStatus: "requires_human_review",
   },
 };

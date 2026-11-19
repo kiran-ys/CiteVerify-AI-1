@@ -200,7 +200,6 @@ const VERDICTS = [
   "Supported",
   "Partially supported",
   "Contradicted",
-  "Insufficient evidence",
   "Unable to verify",
 ];
 
@@ -219,7 +218,6 @@ function isVerificationResponse(value: unknown): value is VerifyClaimsResponse {
         Array.isArray(result.evidence) &&
         // A substantive verdict must come with evidence it relies on.
         (result.verdict === "Unable to verify" ||
-          result.verdict === "Insufficient evidence" ||
           result.evidence.some(
             (item) =>
               isRecord(item) &&

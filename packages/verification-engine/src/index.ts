@@ -55,8 +55,11 @@ export {
 
 export const VERIFICATION_METHOD = "evidence-grounded-llm" as const;
 export const VERIFICATION_VERSION = "1.0.0";
-export const MAX_PASSAGES_PER_CLAIM = 6;
-export const DEFAULT_VERIFICATION_BUDGET_MS = 150_000;
+/** Evidence passages per claim, across all its cited sources. Output and prompt length drive latency. */
+export const MAX_PASSAGES_PER_CLAIM = 10;
+/** Passages per cited source, so one long source cannot crowd out the others. */
+export const MAX_PASSAGES_PER_SOURCE = 4;
+export const DEFAULT_VERIFICATION_BUDGET_MS = 120_000;
 
 export type VerificationInput = {
   claims: ExtractedClaim[];
@@ -79,6 +82,7 @@ export type VerificationResult = VerifyClaimsResponse["verification"];
 
 function unable(
   claimId: string,
+  cause: NonNullable<ClaimVerification["unableCause"]>,
   reason: string,
   evidence: VerificationEvidence[] = [],
 ): ClaimVerification {
@@ -86,6 +90,7 @@ function unable(
     claimId,
     verdict: "Unable to verify",
     decidedBy: "rule",
+    unableCause: cause,
     reason,
     evidence,
     evidenceScope: scopeOf(evidence),
@@ -150,17 +155,38 @@ function noEvidenceReason(
 }
 
 /** Passages for one claim across its matched sources, best overlap first. */
+/**
+ * The most informative passages from one source: the best term overlaps plus
+ * the abstract's last sentence (usually its conclusion), in reading order.
+ */
+function pickPassages(
+  passages: RetrievedSource["passages"],
+): RetrievedSource["passages"] {
+  if (passages.length <= MAX_PASSAGES_PER_SOURCE) return passages;
+  const abstract = passages.filter((passage) => passage.origin === "abstract");
+  const conclusion = abstract.at(-1);
+  const ranked = [...passages]
+    .filter((passage) => passage !== conclusion)
+    .sort((a, b) => b.relevance.score - a.relevance.score)
+    .slice(0, MAX_PASSAGES_PER_SOURCE - (conclusion ? 1 : 0));
+  const keep = new Set([...ranked, ...(conclusion ? [conclusion] : [])]);
+  return passages.filter((passage) => keep.has(passage));
+}
+
 function evidenceFor(
   claimId: string,
   referenceIds: string[],
   sources: Map<string, RetrievedSource>,
 ): VerificationEvidence[] {
   const collected: Omit<VerificationEvidence, "evidenceId">[] = [];
+  // Grouped by cited source, in citation order; within a source, retrieval
+  // order is kept (ranked full-text passages, then the abstract in order).
   for (const referenceId of referenceIds) {
     const source = sources.get(referenceId);
     if (!source) continue;
-    for (const passage of source.passages) {
-      if (passage.claimId !== claimId) continue;
+    for (const passage of pickPassages(
+      source.passages.filter((item) => item.claimId === claimId),
+    )) {
       collected.push({
         ...passage,
         referenceId,
@@ -171,7 +197,6 @@ function evidenceFor(
     }
   }
   return collected
-    .sort((a, b) => b.relevance.score - a.relevance.score)
     .slice(0, MAX_PASSAGES_PER_CLAIM)
     .map((passage, index) => ({ ...passage, evidenceId: `E${index + 1}` }));
 }
@@ -201,10 +226,17 @@ export async function verifyClaims(
   const results: ClaimVerification[] = [];
   let truncated = false;
   // Claims are checked one at a time: a local model serves one request well.
+  let ownFindingsExcluded = 0;
   for (const claim of input.claims) {
     const claimCitations = input.citations.filter(
       (citation) => citation.claimId === claim.id,
     );
+    // The paper's own findings are not checked against external sources;
+    // internal consistency covers them.
+    if (claimCitations.length === 0 && claim.type !== "cited_claim") {
+      ownFindingsExcluded++;
+      continue;
+    }
     const referenceIds = [
       ...new Set(
         claimCitations.flatMap((citation) =>
@@ -220,6 +252,7 @@ export async function verifyClaims(
       results.push(
         unable(
           claim.id,
+          "no_evidence",
           noEvidenceReason(
             claim,
             claimCitations,
@@ -235,6 +268,7 @@ export async function verifyClaims(
       results.push(
         unable(
           claim.id,
+          "model_unavailable",
           `Evidence was retrieved, but no local model was available to compare it with the claim. ${options.unavailableReason ?? ""}`.trim(),
           evidence,
         ),
@@ -246,6 +280,7 @@ export async function verifyClaims(
       results.push(
         unable(
           claim.id,
+          "time_budget",
           "The verification time budget ran out before this claim was checked.",
           evidence,
         ),
@@ -269,6 +304,7 @@ export async function verifyClaims(
       results.push(
         unable(
           claim.id,
+          answer.kind === "timeout" ? "model_timeout" : "model_error",
           `The local model could not be used: ${answer.reason}.`,
           evidence,
         ),
@@ -283,6 +319,7 @@ export async function verifyClaims(
       results.push(
         unable(
           claim.id,
+          "invalid_output",
           `The model's answer was rejected because ${validated.problem}.`,
           evidence,
         ),
@@ -290,22 +327,45 @@ export async function verifyClaims(
       continue;
     }
 
-    const { verdict, cited, explanation } = validated.judgement;
+    const { verdict, cited, explanation, parts, modelVerdict } = validated.judgement;
+    // Part-by-part assessment, shown so a reviewer can see why the verdict follows.
+    const partsNote = parts
+      ? `Claim parts: ${parts
+          .map((item) => `${item.part} ${item.status.replace("_", " ")}${item.evidence ? ` (${item.evidence})` : ""}`)
+          .join("; ")}.${
+          modelVerdict && modelVerdict !== verdict
+            ? ` The model's own overall label was "${modelVerdict}"; the verdict follows its part-by-part assessment.`
+            : ""
+        }`
+      : null;
     const used = evidence.map((item) => ({
       ...item,
       relation: cited.get(item.evidenceId) ?? item.relation,
     }));
     const scope = scopeOf(used);
+    const scopeNote =
+      scope === "abstract_only"
+        ? "Judged from abstracts only; the full texts were not accessible."
+        : scope === "mixed"
+          ? "Judged partly from abstracts; some full texts were not accessible."
+          : null;
+    // "Insufficient evidence" is reported as Unable to verify, with the reason.
+    const insufficient = verdict === "Insufficient evidence";
     results.push({
       claimId: claim.id,
-      verdict,
+      verdict: insufficient ? "Unable to verify" : verdict,
       decidedBy: "model",
+      unableCause: insufficient ? "insufficient_evidence" : null,
       reason:
-        scope === "abstract_only"
-          ? "Judged from abstracts only; the full texts were not accessible."
-          : scope === "mixed"
-            ? "Judged partly from abstracts; some full texts were not accessible."
+        [
+          insufficient
+            ? "The model found no part of the claim directly supported by the retrieved passages, so they are not sufficient to establish or refute it."
             : null,
+          partsNote,
+          scopeNote,
+        ]
+          .filter(Boolean)
+          .join(" ") || null,
       evidence: used,
       evidenceScope: scope,
       explanation,
@@ -321,6 +381,7 @@ export async function verifyClaims(
     version: VERIFICATION_VERSION,
     verifiedAt: now().toISOString(),
     truncated,
+    ownFindingsExcluded,
     reviewStatus: "requires_human_review",
   };
 }

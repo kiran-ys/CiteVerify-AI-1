@@ -5,13 +5,14 @@
  * reference text.
  */
 import type { ReferenceEntry, ResolvedWork } from "@citeverify/shared";
+import { TAG } from "./text.ts";
 
 export function normalize(text: string): string {
   return text
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
-    .replace(/<[^>]+>/g, " ")
+    .replace(TAG, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }

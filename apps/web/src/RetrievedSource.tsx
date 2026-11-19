@@ -15,7 +15,11 @@ const accessLabel: Record<SourceAccess, string> = {
   unavailable: "Unavailable",
 };
 
-const resolverName = { crossref: "Crossref", openalex: "OpenAlex" } as const;
+const resolverName = {
+  pubmed: "PubMed",
+  crossref: "Crossref",
+  openalex: "OpenAlex",
+} as const;
 
 function authorsLine(authors: string[]): string {
   if (authors.length === 0) return "Authors not listed";
@@ -68,9 +72,11 @@ export function RetrievedSourceView({
           <p>{authorsLine(work.authors)}</p>
           <p className="retrieved-provenance">
             Identified{" "}
-            {resolution.matchedBy === "doi"
-              ? "from the reference's DOI"
-              : "by bibliographic search"}
+            {resolution.matchedBy === "pmid"
+              ? "from the reference's PubMed ID"
+              : resolution.matchedBy === "doi"
+                ? "from the reference's DOI"
+                : "by bibliographic search"}
             {resolution.resolver
               ? ` via ${resolverName[resolution.resolver]}`
               : ""}
@@ -112,7 +118,8 @@ export function RetrievedSourceView({
       {passages.length > 0 && (
         <div className="retrieved-passages">
           <p className="retrieved-passages-title">
-            Passages sharing key terms with this claim
+            Retrieved text considered for this claim (abstract sentences in
+            order; full-text sentences ranked by shared terms)
           </p>
           {passages.map((passage) => (
             <figure

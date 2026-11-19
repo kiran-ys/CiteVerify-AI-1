@@ -639,9 +639,9 @@ describe("verification endpoints", async () => {
     // The passage shown is the stored source sentence, and it was what the model saw.
     expect(prompts[0]).toContain(supporting?.text ?? "missing");
 
-    const own = body.verification.results.find((r) => r.decidedBy === "rule");
-    expect(own?.verdict).toBe("Unable to verify");
-    expect(own?.reason).toContain("reports the paper's own result");
+    // The paper's own finding is left to internal consistency, not verified externally.
+    expect(body.verification.ownFindingsExcluded).toBe(1);
+    expect(body.verification.results).toHaveLength(1);
     expect(body.verification).toMatchObject({
       reviewStatus: "requires_human_review",
       modelAvailable: true,

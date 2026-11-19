@@ -1,0 +1,434 @@
+{
+  "version": 1,
+  "description": "Small evaluation set for citation retrieval and evidence-grounded verdicts on real papers.",
+  "labelStatus": "ai_assisted_pending_human_review",
+  "labelNotes": "Expected verdicts were written by an AI assistant (Claude) on 2026-11-19 after reading the abstracts of the cited sources as retrieved from PubMed. They have not yet been confirmed by a human reviewer. 'borderline' marks items where a reasonable reviewer could choose an adjacent verdict. Labels are judged against the cited abstracts, which is also all the pipeline can access for these sources.",
+  "verdictScale": [
+    "Supported",
+    "Partially supported",
+    "Contradicted",
+    "Unable to verify"
+  ],
+  "knownGaps": [
+    "No item in this set is expected to be Contradicted, so contradiction detection is not measured.",
+    "Only one item is expected to be Unable to verify."
+  ],
+  "papers": [
+    {
+      "id": "PMC7065031",
+      "title": "The effect of different doses of aerobic exercise training on endothelial function in postmenopausal women with elevated blood pressure: results from the DREW study",
+      "pdf": "tmp/realpaper/PMC7065031.pdf",
+      "obtainedFrom": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7065031/ (NIH author manuscript; kept out of git)",
+      "references": [
+        {
+          "number": 1,
+          "pmid": "10502220",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 2,
+          "pmid": "12767663",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 3,
+          "pmid": "18479768",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 4,
+          "pmid": "12439106",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 5,
+          "pmid": "8843881",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 6,
+          "pmid": "16466869",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 7,
+          "pmid": "15662216",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 8,
+          "pmid": "7574222",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 9,
+          "pmid": "10511293",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 10,
+          "pmid": "15489096",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 11,
+          "pmid": "18325438",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 12,
+          "pmid": "11527646",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 13,
+          "pmid": "15375191",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 14,
+          "pmid": "10671187",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 15,
+          "pmid": "15199353",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 16,
+          "pmid": "17330056",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 17,
+          "pmid": "16138561",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 18,
+          "pmid": "14767260",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 19,
+          "pmid": "11788217",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 20,
+          "pmid": "8667571",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 22,
+          "pmid": "19161880",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 23,
+          "pmid": "19228872",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 24,
+          "pmid": "11204590",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 25,
+          "pmid": "17530638",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 26,
+          "pmid": "19641459",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 27,
+          "pmid": "17394009",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 28,
+          "pmid": "19633208",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 29,
+          "doi": "10.1042/cs20100174",
+          "basis": "No PubMed ID printed; Crossref record checked by hand against the reference's title, first author (Pierce GL), and year"
+        },
+        {
+          "number": 30,
+          "pmid": "11288811",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 31,
+          "pmid": "18755749",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 32,
+          "pmid": "19028795",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 33,
+          "pmid": "20351340",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 34,
+          "pmid": "14769683",
+          "basis": "PubMed ID printed in the paper's reference list"
+        },
+        {
+          "number": 35,
+          "pmid": "17452608",
+          "basis": "PubMed ID printed in the paper's reference list"
+        }
+      ],
+      "claims": [
+        {
+          "id": "PMC7065031/claim-004",
+          "claimStartsWith": "Menopause is associated with atherogenic changes, including a worsening of cardiovascular ",
+          "page": 2,
+          "references": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "Reference 4 shows lower VO2max and worse LDL/glucose in post- versus perimenopausal women (compared with peri-, not pre-menopausal women). References 1 and 3 are about FMD as a diagnostic or prognostic test and do not address menopause; reference 2 likewise concerns FMD prognosis."
+        },
+        {
+          "id": "PMC7065031/claim-005",
+          "claimStartsWith": "Similarly, vascular endothelial function measured via flow-mediated dilation (FMD) is impa",
+          "page": 2,
+          "references": [
+            5,
+            6
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 6 reports lower FMD in postmenopausal than premenopausal women; reference 5 reports endothelium-dependent vasodilation impaired after menopause (measured by plethysmography, not FMD)."
+        },
+        {
+          "id": "PMC7065031/claim-006",
+          "claimStartsWith": "This initially may be due to a decrease in endogenous oestrogen levels,7 and likely furthe",
+          "page": 2,
+          "references": [
+            7,
+            8
+          ],
+          "expected": "Partially supported",
+          "certainty": "clear",
+          "rationale": "Reference 8 supports increased adiposity and reduced leisure-time physical activity at menopause. Reference 7's abstract concerns acute exercise effects and says nothing about oestrogen as a cause."
+        },
+        {
+          "id": "PMC7065031/claim-007",
+          "claimStartsWith": "Because endothelial dysfunction may represent one of the early subclinical events in ather",
+          "page": 2,
+          "references": [
+            9,
+            10,
+            11
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "References 10 and 11 support FMD predicting hypertension and cardiovascular events in postmenopausal women. Reference 9's abstract (leukocyte adhesion molecules) does not state that endothelial dysfunction is an early event in atherogenesis."
+        },
+        {
+          "id": "PMC7065031/claim-008",
+          "claimStartsWith": "Aerobic exercise training as an intervention has been shown to improve endothelial functio",
+          "page": 2,
+          "references": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "References 13-17 report improved endothelial function with training in groups with CVD risk (review, metabolic syndrome, post-MI) and hypertension."
+        },
+        {
+          "id": "PMC7065031/claim-009",
+          "claimStartsWith": "Aerobic exercise is believed to improve endothelial function by increasing antegrade vascu",
+          "page": 2,
+          "references": [
+            13
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 13 describes shear-stress stimulation of NO bioactivity and up-regulated eNOS with exercise training."
+        },
+        {
+          "id": "PMC7065031/claim-021",
+          "claimStartsWith": "The results of the present study suggest that moderate intensity aerobic exercise training",
+          "page": 6,
+          "references": [
+            11
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "Reference 11 shows lower FMD predicts cardiovascular events in postmenopausal women, but not that improving FMD reduces risk; the cardioprotection inference is the authors'."
+        },
+        {
+          "id": "PMC7065031/claim-022",
+          "claimStartsWith": "There are three published studies to our knowledge which have found no improvement in endo",
+          "page": 6,
+          "references": [
+            27,
+            28,
+            29
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "Reference 29 found no FMD change in post-menopausal women after aerobic training, and reference 27 no FMD change after training. Reference 28's abstract reports that training improved NO dilator function (FMD-to-GTN ratio) in older sedentary women, which cuts against the claim."
+        },
+        {
+          "id": "PMC7065031/claim-023",
+          "claimStartsWith": "Casey et al27 found no significant change in FMD after 18 weeks of treadmill training in h",
+          "page": 6,
+          "references": [
+            27
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 27 (PubMed record) randomised women to 18 weeks of resistance or aerobic training (aerobic n=10); brachial FMD did not change significantly in either group."
+        },
+        {
+          "id": "PMC7065031/claim-024",
+          "claimStartsWith": "Recently, Pierce et al29 found no improvement in FMD in postmenopausal women with no CVD, ",
+          "page": 7,
+          "references": [
+            29
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 29: brachial FMD increased >50% in middle-aged/older men but did not change in post-menopausal women without CVD."
+        },
+        {
+          "id": "PMC7065031/claim-025",
+          "claimStartsWith": "Our results are in line with previous studies, because differences in improvements in endo",
+          "page": 7,
+          "references": [
+            30,
+            27,
+            28,
+            29
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "Reference 30 links hypertension with endothelial dysfunction and reference 29's women had baseline FMD 5.1%, as stated. Reference 28's abstract gives 4.3% for older sedentary women, not 5.3%; Casey's 9.9% is not in reference 27's abstract."
+        },
+        {
+          "id": "PMC7065031/claim-026",
+          "claimStartsWith": "In addition, subject populations with elevated blood pressure have shown improvement in FM",
+          "page": 7,
+          "references": [
+            14,
+            16,
+            17
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "References 16 and 17 report improved FMD with training in hypertensive patients; reference 14 in metabolic syndrome."
+        },
+        {
+          "id": "PMC7065031/claim-028",
+          "claimStartsWith": "Tinken et al31 observed evidence of vascular remodelling during cycle ergometer exercise t",
+          "page": 7,
+          "references": [
+            31
+          ],
+          "expected": "Supported",
+          "certainty": "borderline",
+          "rationale": "Reference 31: brachial FMD rose at weeks 2 and 4 and returned toward baseline by week 8 while dilator capacity rose (remodelling). Week 6 is not stated for the brachial artery in the abstract."
+        },
+        {
+          "id": "PMC7065031/claim-030",
+          "claimStartsWith": "Approximately, 70% of exercisers in the present study presented with endothelial dysfuncti",
+          "page": 7,
+          "references": [
+            30,
+            5
+          ],
+          "expected": "Supported",
+          "certainty": "borderline",
+          "rationale": "The cited associations hold: reference 30 (hypertension and endothelial dysfunction) and reference 5 (menopause and endothelial dysfunction). The 70% figure is the paper's own result."
+        },
+        {
+          "id": "PMC7065031/claim-032",
+          "claimStartsWith": "This may explain why there is generally a consistent improvement in endothelial function i",
+          "page": 7,
+          "references": [
+            13
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 13: improvement is consistent in subjects with CVD and risk factors and less frequently found in healthy subjects."
+        },
+        {
+          "id": "PMC7065031/claim-033",
+          "claimStartsWith": "In addition, FMD normalisation via shear AUC may violate several statistical assumptions33",
+          "page": 8,
+          "references": [
+            33,
+            32
+          ],
+          "expected": "Partially supported",
+          "certainty": "borderline",
+          "rationale": "Reference 32 recommends not normalising FMD for shear (relationship is age dependent). Reference 33's abstract is a methods tutorial and does not state the statistical-assumption point."
+        },
+        {
+          "id": "PMC7065031/claim-034",
+          "claimStartsWith": "Lastly, previous studies have observed significant relationships between FMD uncorrected f",
+          "page": 8,
+          "references": [
+            11,
+            34,
+            35
+          ],
+          "expected": "Supported",
+          "certainty": "clear",
+          "rationale": "Reference 11 (FMD predicts cardiovascular events) and reference 34 (FMD related to CVD risk factors in the community) support the relationship; reference 35's abstract was not reviewed."
+        }
+      ]
+    },
+    {
+      "id": "ioannidis-2005",
+      "title": "Why most published research findings are false (PLoS Med 2005;2(8):e124)",
+      "pdf": "tmp/realpaper/ioannidis-2005-plosmed.pdf",
+      "obtainedFrom": "https://doi.org/10.1371/journal.pmed.0020124 (CC BY; kept out of git)",
+      "references": [
+        {
+          "number": 24,
+          "doi": "10.1001/jama.1994.03520020055015",
+          "basis": "No PubMed ID printed; Crossref record checked by hand against the reference's title, authors (Altman DG, Goodman SN), and year (1994)"
+        }
+      ],
+      "claims": [
+        {
+          "id": "ioannidis-2005/claim-013",
+          "claimStartsWith": "Similarly, fields that use commonly agreed, stereotyped analytical methods (e.g., Kaplan-Meier",
+          "page": 3,
+          "references": [
+            24
+          ],
+          "expected": "Unable to verify",
+          "certainty": "clear",
+          "rationale": "Reference 24's abstract studies how quickly new statistical methods spread into medical journals. It says nothing about whether fields using standard methods produce a larger proportion of true findings, so the cited abstract cannot establish or refute the claim."
+        }
+      ]
+    }
+  ]
+}

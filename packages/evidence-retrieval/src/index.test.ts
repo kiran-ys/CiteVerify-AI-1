@@ -13,6 +13,7 @@ import {
   type RetrievalOptions,
   retrieveEvidence,
 } from "./index.ts";
+import { normalize } from "./identity.ts";
 import { stripMarkup } from "./text.ts";
 
 // Fixtures are trimmed copies of real responses from Crossref, OpenAlex, and Europe PMC.
@@ -222,7 +223,10 @@ describe("full-text evidence (Ioannidis 2005, open access)", async () => {
       expect(sourceText).toContain(passage.text);
       expect(passage.claimId).toBe("claim-001");
       expect(passage.relevance.method).toBe("term-overlap");
-      expect(passage.relevance.sharedTerms.length).toBeGreaterThanOrEqual(2);
+      // Full-text sentences must overlap the claim; abstract sentences are all kept.
+      if (passage.origin === "full_text") {
+        expect(passage.relevance.sharedTerms.length).toBeGreaterThanOrEqual(2);
+      }
       expect(passage.location.paragraph).toBeGreaterThan(0);
       expect(passage.location.sentence).toBeGreaterThan(0);
     }
@@ -235,10 +239,10 @@ describe("full-text evidence (Ioannidis 2005, open access)", async () => {
     );
   });
 
-  test("only calls the three free scholarly services", () => {
+  test("only calls the free scholarly services (Crossref, OpenAlex, Europe PMC, NCBI)", () => {
     for (const url of calls) {
       expect(url).toMatch(
-        /^https:\/\/(api\.crossref\.org|api\.openalex\.org|www\.ebi\.ac\.uk)\//,
+        /^https:\/\/(api\.crossref\.org|api\.openalex\.org|www\.ebi\.ac\.uk|eutils\.ncbi\.nlm\.nih\.gov)\//,
       );
     }
   });
@@ -331,7 +335,7 @@ describe("metadata-only result via OpenAlex (Vaswani et al. 2017)", async () => 
   test("reports metadata only when Europe PMC has no record", () => {
     expect(source?.access).toBe("metadata_only");
     expect(source?.accessReason).toBe(
-      "The work was not found in Europe PMC, and Crossref supplied no abstract.",
+      "The work was not found in Europe PMC, and neither PubMed nor Crossref supplied an abstract.",
     );
     expect(source?.passages).toEqual([]);
   });
@@ -793,7 +797,7 @@ describe("unreachable Europe PMC", () => {
     expect(result.sources[0]).toMatchObject({
       access: "metadata_only",
       accessReason:
-        "Europe PMC could not be reached, so open-access full text could not be checked, and Crossref supplied no abstract.",
+        "Europe PMC could not be reached, so open-access full text could not be checked, and neither PubMed nor Crossref supplied an abstract.",
       errors: [{ service: "europepmc", kind: "http", message: "HTTP 503" }],
     });
   });
@@ -847,7 +851,7 @@ describe("PubMed Central fallback", () => {
       },
       options(fetch),
     );
-    expect(calls.some((url) => url.includes("ncbi"))).toBe(false);
+    expect(calls.some((url) => url.includes("efetch.fcgi?db=pmc"))).toBe(false);
   });
 });
 
@@ -1110,5 +1114,258 @@ describe("licences", () => {
         ],
       })?.license,
     ).toBe("https://creativecommons.org/licenses/by/4.0/");
+  });
+});
+
+describe("whole abstracts as evidence", () => {
+  test("keeps every abstract sentence in order, even those sharing few words with the claim", async () => {
+    const { selectPassages, MAX_ABSTRACT_SENTENCES } = await import(
+      "./index.ts"
+    );
+    const passages = selectPassages(
+      "claim-001",
+      "Exercise training improves endothelial function.",
+      [
+        {
+          origin: "abstract",
+          sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/1/",
+          paragraphs: [
+            {
+              section: "Methods",
+              paragraph: 1,
+              text: "Women were randomised to two groups. Training lasted 24 weeks.",
+              markupRemoved: false,
+            },
+            {
+              section: "Results",
+              paragraph: 2,
+              text: "Brachial FMD did not significantly change.",
+              markupRemoved: false,
+            },
+          ],
+        },
+      ],
+    );
+    expect(
+      passages.map((p) => [p.location.section, p.location.sentence, p.text]),
+    ).toEqual([
+      ["Methods", 1, "Women were randomised to two groups."],
+      ["Methods", 2, "Training lasted 24 weeks."],
+      ["Results", 1, "Brachial FMD did not significantly change."],
+    ]);
+    expect(MAX_ABSTRACT_SENTENCES).toBe(12);
+  });
+});
+
+describe("PubMed abstract fallback", () => {
+  const esearch = (ids: string[]) => () =>
+    Response.json({
+      esearchresult: { count: String(ids.length), idlist: ids },
+    });
+  const efetch = (doi: string) => () =>
+    new Response(
+      `<PubmedArticleSet><PubmedArticle><MedlineCitation><Article><Abstract><AbstractText Label="RESULTS">FMD did not change.</AbstractText></Abstract></Article></MedlineCitation><PubmedData><ArticleIdList><ArticleId IdType="doi">${doi}</ArticleId></ArticleIdList></PubmedData></PubmedArticle></PubmedArticleSet>`,
+    );
+
+  test("supplies the exact abstract when Europe PMC is unreachable", async () => {
+    const { fetch } = mockFetch([
+      ioannidisRoutes[0] as Route,
+      [/europepmc/, () => new Response("busy", { status: 503 })],
+      [
+        /esearch\.fcgi\?db=pubmed&term=10\.1371\/journal\.pmed\.0020124\[doi\]/,
+        esearch(["16060722"]),
+      ],
+      [
+        /efetch\.fcgi\?db=pubmed&id=16060722/,
+        efetch("10.1371/journal.pmed.0020124"),
+      ],
+    ]);
+    const result = await retrieveEvidence(
+      {
+        references: [ioannidisRef],
+        claims: [claim("claim-001", "x [1].")],
+        citations: [citation("c", "claim-001", "ref-001")],
+      },
+      options(fetch, { maxRetries: 0 }),
+    );
+    expect(result.sources[0]).toMatchObject({
+      access: "abstract_only",
+      accessReason:
+        "Europe PMC could not be reached, so open-access full text could not be checked; the abstract comes from PubMed.",
+      work: { pmid: "16060722" },
+    });
+    expect(result.sources[0]?.passages[0]).toMatchObject({
+      text: "FMD did not change.",
+      sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/16060722/",
+      location: { section: "Results" },
+    });
+  });
+
+  test("ignores a PubMed record whose DOI differs from the one requested", async () => {
+    const { fetch } = mockFetch([
+      ioannidisRoutes[0] as Route,
+      [/europepmc/, () => new Response("busy", { status: 503 })],
+      [/esearch\.fcgi/, esearch(["99999999"])],
+      [/efetch\.fcgi/, efetch("10.1000/some.other.paper")],
+    ]);
+    const result = await retrieveEvidence(
+      {
+        references: [ioannidisRef],
+        claims: [claim("claim-001", "x [1].")],
+        citations: [citation("c", "claim-001", "ref-001")],
+      },
+      options(fetch, { maxRetries: 0 }),
+    );
+    expect(result.sources[0]?.access).toBe("metadata_only");
+    expect(result.sources[0]?.passages).toEqual([]);
+  });
+
+  test("ignores an ambiguous PubMed search with several records", async () => {
+    const { fetch, calls } = mockFetch([
+      ioannidisRoutes[0] as Route,
+      [/europepmc/, () => new Response("busy", { status: 503 })],
+      [/esearch\.fcgi/, esearch(["1", "2"])],
+    ]);
+    const result = await retrieveEvidence(
+      {
+        references: [ioannidisRef],
+        claims: [claim("claim-001", "x [1].")],
+        citations: [citation("c", "claim-001", "ref-001")],
+      },
+      options(fetch, { maxRetries: 0 }),
+    );
+    expect(result.sources[0]?.access).toBe("metadata_only");
+    expect(calls.some((url) => url.includes("efetch.fcgi?db=pubmed"))).toBe(
+      false,
+    );
+  });
+});
+
+describe("resolution from a PubMed ID printed in the reference", async () => {
+  const pubmedCasey = await fixture("pubmed-17394009.xml");
+  // Reference text exactly as extracted from PMC7065031's reference list.
+  const casey = reference(
+    "ref-027",
+    "27. Casey DP, Pierce GL, Howe KS, et al. Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women. Eur J Appl Physiol 2007;100:403–8. [PubMed: 17394009]",
+    {
+      authors: ["Casey DP", "Pierce GL", "Howe KS"],
+      year: "2007",
+      title:
+        "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women",
+    },
+  );
+
+  test("reads the PubMed ID from the reference text", async () => {
+    const { pmidFromReference } = await import("./index.ts");
+    expect(pmidFromReference(casey.text)).toBe("17394009");
+    expect(pmidFromReference("Smith J. A study. PMID: 1234567")).toBe(
+      "1234567",
+    );
+    expect(pmidFromReference("Smith J. A study. 2020;12:1-9.")).toBeNull();
+  });
+
+  test("resolves the exact PubMed record and uses its abstract", async () => {
+    const { fetch, calls } = mockFetch([
+      [/efetch\.fcgi\?db=pubmed&id=17394009/, ok(pubmedCasey)],
+      [/europepmc/, ok(emptyEuropePmc)],
+    ]);
+    const result = await retrieveEvidence(
+      {
+        references: [casey],
+        claims: [claim("claim-023", "No change in FMD after training [27].")],
+        citations: [citation("c", "claim-023", "ref-027")],
+      },
+      options(fetch),
+    );
+    const source = result.sources[0];
+    expect(source?.resolution).toMatchObject({
+      status: "resolved",
+      matchedBy: "pmid",
+      resolver: "pubmed",
+    });
+    expect(source?.work).toMatchObject({
+      pmid: "17394009",
+      doi: "10.1007/s00421-007-0447-2",
+      year: "2007",
+    });
+    expect(source?.access).toBe("abstract_only");
+    expect(source?.passages[0]?.sourceUrl).toBe(
+      "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+    );
+    // No search was needed.
+    expect(
+      calls.some((url) => url.includes("api.crossref.org/works?query")),
+    ).toBe(false);
+  });
+
+  test("does not trust a PubMed ID whose record is a different work", async () => {
+    const wrong = {
+      ...casey,
+      text: casey.text.replace("17394009", "12767663"),
+    };
+    const { fetch } = mockFetch([
+      [
+        /efetch\.fcgi\?db=pubmed&id=12767663/,
+        ok(
+          pubmedCasey
+            .replaceAll("17394009", "12767663")
+            .replace(
+              /<ArticleTitle>[^<]+/,
+              "<ArticleTitle>Predictive value of endothelial dysfunction in peripheral vascular disease",
+            ),
+        ),
+      ],
+      [/api\.crossref\.org/, ok(emptyCrossrefSearch)],
+      [/api\.openalex\.org/, ok(emptyOpenAlexSearch)],
+    ]);
+    const result = await retrieveEvidence(
+      {
+        references: [wrong],
+        claims: [claim("claim-023", "x [27].")],
+        citations: [citation("c", "claim-023", "ref-027")],
+      },
+      options(fetch),
+    );
+    expect(result.sources[0]?.resolution.status).toBe("unresolved");
+    expect(result.sources[0]?.resolution.reason).toContain(
+      "The PubMed ID 12767663 in the reference belongs to a different work",
+    );
+  });
+});
+
+describe("statistics with < and > survive markup removal", () => {
+  // The real Pierce et al. abstract (Europe PMC) that exposed the bug.
+  const source =
+    "<p>(P<0.01), without altering body composition. Brachial artery FMD increased >50% in the MA/O men.</p>";
+
+  test("only real tags are removed", () => {
+    expect(stripMarkup(source).text).toBe(
+      "(P<0.01), without altering body composition. Brachial artery FMD increased >50% in the MA/O men.",
+    );
+    expect(stripMarkup("<i>n</i> = 15 (P < 0.05 and r > 0.3)").text).toBe(
+      "n = 15 (P < 0.05 and r > 0.3)",
+    );
+    expect(stripMarkup('<jats:p>a<sup>2</sup> <br/>b <a href="x">c</a></jats:p>').text).toBe(
+      "a2 b c",
+    );
+  });
+
+  test("abstract passages keep the exact statistics", () => {
+    const text = abstractParagraphs(source)
+      .map((paragraph) => paragraph.text)
+      .join(" ");
+    expect(text).toContain("(P<0.01), without altering");
+    expect(text).toContain("increased >50% in the MA/O men");
+  });
+
+  test("text without tags is not reported as having markup removed", () => {
+    expect(stripMarkup("P<0.01 and >50%").markupRemoved).toBe(false);
+    expect(stripMarkup("<p>x</p>").markupRemoved).toBe(true);
+  });
+
+  test("title matching ignores tags but keeps comparisons as text", () => {
+    expect(normalize("Effects of <i>exercise</i> when P<0.01 >50%")).toBe(
+      "effects of exercise when p 0 01 50",
+    );
   });
 });

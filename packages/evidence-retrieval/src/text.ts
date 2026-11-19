@@ -33,19 +33,26 @@ export function decodeEntities(text: string): string {
   );
 }
 
+/**
+ * A markup tag: "<" directly followed by a tag name (or "/" and a name),
+ * with no "<" or ">" inside. Statistics such as "P<0.01 ... >50%" or
+ * "P < 0.05" are not tags and must survive as exact source text.
+ */
+export const TAG = /<\/?[A-Za-z][\w:.-]*(?:\s[^<>]*)?\/?>/g;
+
 /** Removes tags without inserting text; block boundaries become spaces. */
 export function stripMarkup(xml: string): {
   text: string;
   markupRemoved: boolean;
 } {
-  const markupRemoved = /<[a-z]/i.test(xml);
+  const markupRemoved = new RegExp(TAG.source).test(xml);
   const text = decodeEntities(
     xml
       .replace(
         /<(?:\/p|\/list-item|\/title|\/h\d|br\s*\/?|break\s*\/?)>/gi,
         " ",
       )
-      .replace(/<[^>]+>/g, ""),
+      .replace(TAG, ""),
   )
     .replace(/\s+/g, " ")
     .trim();

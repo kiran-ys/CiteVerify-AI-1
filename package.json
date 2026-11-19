@@ -15,7 +15,8 @@
     "format": "biome format --write .",
     "db:generate": "turbo run db:generate --filter=@citeverify/database",
     "db:push": "bun run --cwd packages/database db:push",
-    "db:studio": "bun run --cwd packages/database db:studio"
+    "db:studio": "bun run --cwd packages/database db:studio",
+    "eval:verification": "bun run --cwd apps/api scripts/evaluate-verification.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",

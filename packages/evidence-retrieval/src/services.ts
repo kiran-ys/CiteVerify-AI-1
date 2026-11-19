@@ -5,6 +5,7 @@
 import type { ResolvedWork, ServiceError } from "@citeverify/shared";
 import type { HttpClient } from "./http.ts";
 import { normalizeDoi } from "./identity.ts";
+import { type SourceParagraph, stripMarkup } from "./text.ts";
 
 export type ServiceRecord = {
   work: ResolvedWork;
@@ -15,6 +16,8 @@ export type ServiceRecord = {
   /** Volume and first page as the service records them, for telling reprints apart. */
   volume: string | null;
   firstPage: string | null;
+  /** Exact abstract paragraphs, when the record came with them (PubMed). */
+  abstractParagraphs?: SourceParagraph[];
 };
 
 export type Lookup<T> =
@@ -336,4 +339,200 @@ export async function pmcFullText(
   return /<article\b/.test(result.body) && /<body\b/.test(result.body)
     ? { ok: true, value: result.body }
     : { ok: false, notFound: true };
+}
+
+// ---------------------------------------------------------------- PubMed (NCBI)
+
+export type PubmedAbstract = { pmid: string; paragraphs: SourceParagraph[] };
+
+/**
+ * The PubMed abstract for a DOI, via NCBI E-utilities. Used when Europe PMC
+ * is unreachable or has no abstract. The record is used only when PubMed
+ * returns exactly one PMID for the DOI and that record lists the same DOI.
+ */
+export async function pubmedAbstract(
+  http: HttpClient,
+  doi: string,
+): Promise<Lookup<PubmedAbstract>> {
+  const search = http.withContact(
+    new URL("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"),
+    "pubmed",
+  );
+  search.searchParams.set("db", "pubmed");
+  search.searchParams.set("term", `${doi}[doi]`);
+  search.searchParams.set("retmode", "json");
+  search.searchParams.set("tool", "citeverify");
+  const found = await http.getJson(search.toString(), "pubmed");
+  if (!found.ok) {
+    return found.status === 404
+      ? { ok: false, notFound: true }
+      : { ok: false, notFound: false, error: found.error };
+  }
+  const result = isJson(found.data) ? found.data.esearchresult : undefined;
+  const ids =
+    isJson(result) && Array.isArray(result.idlist) ? result.idlist : null;
+  if (!ids) return invalid("pubmed", "PubMed search response had no id list");
+  if (ids.length !== 1 || typeof ids[0] !== "string")
+    return { ok: false, notFound: true };
+  const pmid = ids[0];
+
+  const fetchUrl = http.withContact(
+    new URL("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"),
+    "pubmed",
+  );
+  fetchUrl.searchParams.set("db", "pubmed");
+  fetchUrl.searchParams.set("id", pmid);
+  fetchUrl.searchParams.set("retmode", "xml");
+  fetchUrl.searchParams.set("tool", "citeverify");
+  const record = await http.get(
+    fetchUrl.toString(),
+    "pubmed",
+    "application/xml",
+  );
+  if (!record.ok) return { ok: false, notFound: false, error: record.error };
+
+  const dois = [
+    ...record.body.matchAll(
+      /<(?:ArticleId IdType="doi"|ELocationID EIdType="doi"[^>]*)>([^<]+)</g,
+    ),
+  ].map((match) => normalizeDoi(match[1] ?? ""));
+  if (!dois.includes(normalizeDoi(doi))) return { ok: false, notFound: true };
+
+  const paragraphs: SourceParagraph[] = [];
+  for (const match of record.body.matchAll(
+    /<AbstractText([^>]*)>([\s\S]*?)<\/AbstractText>/g,
+  )) {
+    const label = /Label="([^"]+)"/.exec(match[1] ?? "")?.[1] ?? null;
+    const { text, markupRemoved } = stripMarkup(match[2] ?? "");
+    if (text) {
+      paragraphs.push({
+        section: label ? label.charAt(0) + label.slice(1).toLowerCase() : null,
+        paragraph: paragraphs.length + 1,
+        text,
+        markupRemoved,
+      });
+    }
+  }
+  return paragraphs.length > 0
+    ? { ok: true, value: { pmid, paragraphs } }
+    : { ok: false, notFound: true };
+}
+
+/** The PubMed ID a reference prints, e.g. "[PubMed: 12767663]" or "PMID: 12767663". */
+export function pmidFromReference(text: string): string | null {
+  return (
+    /\[PubMed:\s*(\d{5,9})\]|\bPMID:?\s*(\d{5,9})\b/i
+      .exec(text)
+      ?.slice(1)
+      .find(Boolean) ?? null
+  );
+}
+
+function xmlText(xml: string): string {
+  return stripMarkup(xml).text;
+}
+
+/** Parses one PubMed efetch record into a ServiceRecord with its exact abstract. */
+export function parsePubmedRecord(
+  xml: string,
+  pmid: string,
+): ServiceRecord | null {
+  const title = /<ArticleTitle[^>]*>([\s\S]*?)<\/ArticleTitle>/.exec(xml)?.[1];
+  if (!title) return null;
+  const authors = [...xml.matchAll(/<Author\b[^>]*>([\s\S]*?)<\/Author>/g)]
+    .map((match) => {
+      const block = match[1] ?? "";
+      const last = /<LastName>([^<]+)<\/LastName>/.exec(block)?.[1];
+      const fore = /<ForeName>([^<]+)<\/ForeName>/.exec(block)?.[1];
+      const collective = /<CollectiveName>([\s\S]*?)<\/CollectiveName>/.exec(
+        block,
+      )?.[1];
+      return last
+        ? [fore, last].filter(Boolean).join(" ")
+        : collective
+          ? xmlText(collective)
+          : null;
+    })
+    .filter((name): name is string => Boolean(name));
+  const pubDate = /<PubDate>([\s\S]*?)<\/PubDate>/.exec(xml)?.[1] ?? "";
+  const year =
+    /<Year>(\d{4})<\/Year>/.exec(pubDate)?.[1] ??
+    /(\d{4})/.exec(pubDate)?.[1] ??
+    null;
+  const doiMatch =
+    /<ArticleId IdType="doi">([^<]+)<\/ArticleId>|<ELocationID EIdType="doi"[^>]*>([^<]+)<\/ELocationID>/.exec(
+      xml,
+    );
+  const doi = doiMatch ? normalizeDoi(doiMatch[1] ?? doiMatch[2] ?? "") : null;
+  const pages = /<MedlinePgn>([^<]+)<\/MedlinePgn>/.exec(xml)?.[1] ?? null;
+  const paragraphs: SourceParagraph[] = [];
+  for (const match of xml.matchAll(
+    /<AbstractText([^>]*)>([\s\S]*?)<\/AbstractText>/g,
+  )) {
+    const label = /Label="([^"]+)"/.exec(match[1] ?? "")?.[1] ?? null;
+    const { text, markupRemoved } = stripMarkup(match[2] ?? "");
+    if (text) {
+      paragraphs.push({
+        section: label ? label.charAt(0) + label.slice(1).toLowerCase() : null,
+        paragraph: paragraphs.length + 1,
+        text,
+        markupRemoved,
+      });
+    }
+  }
+  return {
+    work: {
+      title: xmlText(title),
+      authors,
+      year,
+      doi,
+      journal: (() => {
+        const journal = /<Journal>[\s\S]*?<Title>([^<]+)<\/Title>/.exec(
+          xml,
+        )?.[1];
+        return journal ? xmlText(journal) : null;
+      })(),
+      pmid,
+      pmcid:
+        /<ArticleId IdType="pmc">([^<]+)<\/ArticleId>/.exec(xml)?.[1] ?? null,
+      openAlexId: null,
+    },
+    abstract: null,
+    license: null,
+    landingPage: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
+    volume: /<Volume>([^<]+)<\/Volume>/.exec(xml)?.[1] ?? null,
+    firstPage: pages ? (pages.split(/[-\u2013]/)[0]?.trim() ?? null) : null,
+    abstractParagraphs: paragraphs,
+  };
+}
+
+/** One PubMed record by PMID, with its exact abstract. */
+export async function pubmedRecord(
+  http: HttpClient,
+  pmid: string,
+): Promise<Lookup<ServiceRecord>> {
+  const url = http.withContact(
+    new URL("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"),
+    "pubmed",
+  );
+  url.searchParams.set("db", "pubmed");
+  url.searchParams.set("id", pmid);
+  url.searchParams.set("retmode", "xml");
+  url.searchParams.set("tool", "citeverify");
+  const result = await http.get(url.toString(), "pubmed", "application/xml");
+  if (!result.ok) {
+    return result.status === 404 || result.status === 400
+      ? { ok: false, notFound: true }
+      : { ok: false, notFound: false, error: result.error };
+  }
+  if (
+    !result.body.includes(`<PMID Version="1">${pmid}</PMID>`) &&
+    !result.body.includes(`>${pmid}</PMID>`)
+  ) {
+    return { ok: false, notFound: true };
+  }
+  const record = parsePubmedRecord(result.body, pmid);
+  return record
+    ? { ok: true, value: record }
+    : invalid("pubmed", "PubMed record had no title");
 }

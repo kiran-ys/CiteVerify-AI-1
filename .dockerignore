@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.turbo
+.git
+.env
+.env.*
+!.env.example
+tmp
+eval/results
+**/*.db
+**/*.db-journal
+packages/database/src/generated

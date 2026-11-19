@@ -203,7 +203,8 @@ export type ScholarlyService =
   | "crossref"
   | "openalex"
   | "europepmc"
-  | "ncbi-pmc";
+  | "ncbi-pmc"
+  | "pubmed";
 
 /**
  * How much of a cited source could be legally accessed.
@@ -276,8 +277,9 @@ export type RetrievedSource = {
   resolution: {
     status: SourceResolutionStatus;
     reason: string | null;
-    matchedBy: "doi" | "bibliographic-search" | null;
-    resolver: "crossref" | "openalex" | null;
+    /** "pmid": the reference itself printed a PubMed ID, and that record matched it. */
+    matchedBy: "pmid" | "doi" | "bibliographic-search" | null;
+    resolver: "pubmed" | "crossref" | "openalex" | null;
     candidates: SourceCandidate[];
   };
   work: ResolvedWork | null;
@@ -307,11 +309,14 @@ export type ExtractEvidenceResponse = ExtractCitationsResponse & {
   };
 };
 
+/**
+ * Public verdicts. There is no "Unsupported": missing or insufficient
+ * evidence is always "Unable to verify" with the reason.
+ */
 export type VerificationVerdict =
   | "Supported"
   | "Partially supported"
   | "Contradicted"
-  | "Insufficient evidence"
   | "Unable to verify";
 
 /**
@@ -346,6 +351,19 @@ export type ClaimVerification = {
   verdict: VerificationVerdict;
   /** "rule": decided without the model (no usable evidence, model unavailable, invalid output). */
   decidedBy: "rule" | "model";
+  /**
+   * Why the verdict is "Unable to verify"; null otherwise. Lets timeouts and
+   * failures be counted apart from genuine judgements.
+   */
+  unableCause:
+    | "no_evidence"
+    | "model_unavailable"
+    | "model_timeout"
+    | "model_error"
+    | "time_budget"
+    | "invalid_output"
+    | "insufficient_evidence"
+    | null;
   /** Why the claim is "Unable to verify", or a caveat; null when there is none. */
   reason: string | null;
   /** Every passage considered, in the order shown to the model. */
@@ -374,6 +392,8 @@ export type VerifyClaimsResponse = ExtractEvidenceResponse & {
     verifiedAt: string;
     /** True when some claims were not sent to the model because of the time budget. */
     truncated: boolean;
+    /** Claims reporting the paper's own findings without citations; they are not verified externally. */
+    ownFindingsExcluded: number;
     /** Verdicts are model judgements over retrieved text; a person must review them. */
     reviewStatus: "requires_human_review";
   };

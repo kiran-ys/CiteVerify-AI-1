@@ -1,10 +1,10 @@
 # CiteVerify AI Deployment Checklist
 
-No deployment configuration currently exists. Do not deploy until the applicable boxes are evidenced.
+A proposed Docker Compose configuration exists in `deploy/` (see `docs/DEPLOYMENT_PLAN.md`); it has not been built or deployed. Do not deploy until the applicable boxes are evidenced and the owner approves.
 
 ## Application readiness
 
-- [ ] Lint, typecheck, tests, and production build pass in CI.
+- [ ] Lint, typecheck, tests, and production build pass in CI. (They pass locally: 219 tests, 2026-11-19; no CI yet.)
 - [ ] Demo and live modes cannot be confused.
 - [ ] Health and readiness endpoints reflect real dependencies.
 - [ ] API and worker shut down cleanly and recover from restarts.
@@ -22,7 +22,7 @@ No deployment configuration currently exists. Do not deploy until the applicable
 ## Security and privacy
 
 - [ ] Secrets exist only in platform secret storage.
-- [ ] Production CORS allows only intended frontend origins.
+- [ ] Production CORS allows only intended frontend origins. (Planned design serves page and API from one origin, so no CORS is opened.)
 - [ ] HTTPS is mandatory.
 - [ ] Authentication and authorization protect documents and reports.
 - [ ] PDF inputs are treated as untrusted and resource limits are enforced.
@@ -40,7 +40,7 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] Cost limits and usage alerts are configured before paid services are enabled.
 - [ ] Outbound HTTPS is allowed to `api.crossref.org`, `api.openalex.org`, `www.ebi.ac.uk` (Europe PMC), and `eutils.ncbi.nlm.nih.gov` (PubMed Central) for source retrieval.
 - [ ] `CITEVERIFY_CONTACT_EMAIL` is set to an operator mailbox (not a user's) so Crossref and NCBI requests use their polite pools, or deliberately left empty.
-- [ ] The API host and any proxy allow requests of at least 70 seconds for `POST /api/documents/evidence` (Bun `idleTimeout` is set to 120 s).
+- [ ] The API host and any proxy allow requests of at least 90 seconds for `POST /api/documents/evidence` (Bun `idleTimeout` is set to 120 s).
 - [ ] A shared cache or rate-limit budget is in place before multiple API instances query the scholarly services.
 - [ ] Claim verification has a reviewed model host: Ollama reachable at `OLLAMA_HOST` from the API only (never exposed publicly), the chosen `OLLAMA_MODEL` pulled, and enough memory for it. Without it, verification returns `Unable to verify` for every claim.
 - [ ] The API host and any proxy allow requests of at least 240 seconds for `POST /api/documents/verification` (Bun `idleTimeout` is 240 s).

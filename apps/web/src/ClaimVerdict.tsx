@@ -18,7 +18,6 @@ const verdictClass: Record<VerificationVerdict, string> = {
   Supported: "verdict-supported",
   "Partially supported": "verdict-partial",
   Contradicted: "verdict-contradicted",
-  "Insufficient evidence": "verdict-insufficient",
   "Unable to verify": "verdict-unable",
 };
 
@@ -147,7 +146,7 @@ export function VerificationBar({
     <div className="verification-bar">
       {verification ? (
         <p>
-          Checked {verification.results.length} claims
+          Checked {verification.results.length} claims that cite external papers
           {verification.model
             ? ` with ${verification.model.name}`
             : " without a model"}
@@ -155,7 +154,8 @@ export function VerificationBar({
           {[...counts.entries()]
             .map(([verdict, count]) => `${count} ${verdict}`)
             .join(", ")}
-          .
+          . {verification.ownFindingsExcluded} of the paper's own findings were
+          not checked against external sources; see internal consistency.
           {verification.truncated
             ? " Some claims were not checked within the time budget."
             : ""}
@@ -169,9 +169,16 @@ export function VerificationBar({
         </p>
       )}
       {status && !status.available && (
-        <p className="verification-bar-warning">
-          Local model not ready: {status.reason} Claims with evidence will show
-          "Unable to verify".
+        <p className="verification-bar-error" role="alert">
+          Local model unavailable: {status.reason} Until it is available, every
+          claim will show "Unable to verify" with this reason; no verdict is
+          guessed.
+        </p>
+      )}
+      {verification && !verification.modelAvailable && (
+        <p className="verification-bar-error" role="alert">
+          The last run had no local model, so no claim was judged. Each claim
+          shows the reason.
         </p>
       )}
       <p className="verification-bar-note">

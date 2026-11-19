@@ -388,7 +388,7 @@ app.post("/documents/verification", async (c) => {
 
 export default {
   port: Number(process.env.API_PORT ?? 3001),
-  // Retrieval (up to ~70 s) plus local-model verification (150 s budget) exceed
+  // Retrieval (90 s budget) plus local-model verification (120 s budget) exceed
   // Bun's 10 s default idle timeout; 240 s stays under Bun's 255 s maximum.
   idleTimeout: 240,
   fetch: app.fetch,

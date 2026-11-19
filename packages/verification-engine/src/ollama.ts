@@ -18,11 +18,13 @@ export type OllamaConfig = {
 
 export const DEFAULT_OLLAMA_HOST = "http://127.0.0.1:11434";
 export const DEFAULT_OLLAMA_MODEL = "llama3.2";
+/** Per-claim model call limit. */
+export const DEFAULT_CLAIM_TIMEOUT_MS = 45_000;
 
 export type JudgeRequest = { system: string; user: string; schema: object };
 export type JudgeResult =
   | { ok: true; content: string }
-  | { ok: false; reason: string };
+  | { ok: false; kind: "timeout" | "error"; reason: string };
 /** Anything that can answer a judging prompt; tests supply a fake. */
 export type Judge = (request: JudgeRequest) => Promise<JudgeResult>;
 
@@ -92,7 +94,7 @@ export async function ollamaStatus(
 
 export function ollamaJudge(config: OllamaConfig): Judge {
   const fetchImpl = config.fetch ?? ((input, init) => fetch(input, init));
-  const timeoutMs = config.timeoutMs ?? 120_000;
+  const timeoutMs = config.timeoutMs ?? DEFAULT_CLAIM_TIMEOUT_MS;
   return async ({ system, user, schema }) => {
     try {
       const response = await withTimeout(
@@ -106,7 +108,15 @@ export function ollamaJudge(config: OllamaConfig): Judge {
             stream: false,
             format: schema,
             // Deterministic decoding so the same evidence gives the same verdict.
-            options: { temperature: 0, seed: 7, num_ctx: 8192 },
+            // Short, bounded answers: output length dominates latency.
+            options: {
+              temperature: 0,
+              seed: 7,
+              num_ctx: 8192,
+              num_predict: 300,
+            },
+            // Keep the model loaded between claims and runs.
+            keep_alive: "30m",
             messages: [
               { role: "system", content: system },
               { role: "user", content: user },
@@ -119,6 +129,7 @@ export function ollamaJudge(config: OllamaConfig): Judge {
         const detail = (await response.text()).slice(0, 200);
         return {
           ok: false,
+          kind: "error",
           reason: `Ollama answered HTTP ${response.status}${detail ? `: ${detail}` : ""}`,
         };
       }
@@ -128,11 +139,16 @@ export function ollamaJudge(config: OllamaConfig): Judge {
       const content = body.message?.content;
       return typeof content === "string"
         ? { ok: true, content }
-        : { ok: false, reason: "Ollama returned no message content" };
+        : {
+            ok: false,
+            kind: "error",
+            reason: "Ollama returned no message content",
+          };
     } catch (error) {
       const aborted = error instanceof Error && error.name === "AbortError";
       return {
         ok: false,
+        kind: aborted ? "timeout" : "error",
         reason: aborted
           ? `The local model did not answer within ${Math.round(timeoutMs / 1000)} s`
           : `Ollama could not be reached at ${config.host}`,

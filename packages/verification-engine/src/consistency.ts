@@ -30,7 +30,6 @@ const CONTEXT = 70;
 /** Common significance thresholds; their repetition elsewhere says nothing. */
 const THRESHOLDS = new Set(["0.05", "0.01", "0.001", ".05", ".01", ".001"]);
 
-
 /** Specific values worth looking for elsewhere: decimals, percentages, and sample sizes. */
 export function specificValues(text: string): string[] {
   const values: string[] = [];

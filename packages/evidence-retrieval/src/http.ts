@@ -31,6 +31,9 @@ export type HttpResult =
   | { ok: true; status: number; body: string }
   | { ok: false; error: ServiceError; status: number | null };
 
+/** Europe PMC request limit; it only adds full text, so it may not hold up the rest. */
+export const EUROPE_PMC_TIMEOUT_MS = 10_000;
+
 export const USER_AGENT =
   "CiteVerify/0.1 (research prototype; evidence retrieval)";
 
@@ -69,7 +72,7 @@ export class HttpClient {
     if (!this.options.contactEmail) return url;
     if (service === "crossref")
       url.searchParams.set("mailto", this.options.contactEmail);
-    if (service === "ncbi-pmc")
+    if (service === "ncbi-pmc" || service === "pubmed")
       url.searchParams.set("email", this.options.contactEmail);
     return url;
   }
@@ -90,6 +93,8 @@ export class HttpClient {
       return this.options.contactEmail
         ? Math.min(3, this.options.concurrency)
         : 1;
+    // Europe PMC is often slow rather than strict, so more lookups run at once.
+    if (service === "europepmc") return Math.max(this.options.concurrency, 6);
     return this.options.concurrency;
   }
 
@@ -113,20 +118,27 @@ export class HttpClient {
   }
 
   /** Per-request timeout, never extending past the overall deadline. */
-  private timeoutFor(): number {
-    if (this.options.deadline === undefined) return this.options.timeoutMs;
-    return Math.max(
-      1,
-      Math.min(this.options.timeoutMs, this.options.deadline - Date.now()),
-    );
+  /**
+   * Per-request timeout, never extending past the overall deadline. Europe
+   * PMC only adds open-access full text (abstracts come from PubMed), so a
+   * degraded Europe PMC is given less time.
+   */
+  private timeoutFor(service: ScholarlyService): number {
+    const base =
+      service === "europepmc"
+        ? Math.min(this.options.timeoutMs, EUROPE_PMC_TIMEOUT_MS)
+        : this.options.timeoutMs;
+    if (this.options.deadline === undefined) return base;
+    return Math.max(1, Math.min(base, this.options.deadline - Date.now()));
   }
 
   private async once(
     url: string,
     accept: string,
+    service: ScholarlyService,
   ): Promise<HttpResult & { retryAfterMs?: number }> {
     const controller = new AbortController();
-    const timeoutMs = this.timeoutFor();
+    const timeoutMs = this.timeoutFor(service);
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await this.options.fetch(url, {
@@ -194,7 +206,7 @@ export class HttpClient {
       try {
         // The deadline may have passed while this request waited its turn.
         if (this.deadlinePassed()) break;
-        result = await this.once(url, accept);
+        result = await this.once(url, accept, service);
       } finally {
         this.release(service);
       }

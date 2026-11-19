@@ -16,7 +16,7 @@ import type {
 } from "@citeverify/shared";
 import { HttpClient, type HttpOptions } from "./http.ts";
 import { checkIdentity, normalizeDoi, paginationMatches } from "./identity.ts";
-import { type PassageSource, rankPassages } from "./passages.ts";
+import { type PassageSource, selectPassages } from "./passages.ts";
 import {
   crossrefByDoi,
   crossrefSearch,
@@ -25,18 +25,28 @@ import {
   europePmcLookup,
   openAlexSearch,
   pmcFullText,
+  pmidFromReference,
+  pubmedAbstract,
+  pubmedRecord,
   type ServiceRecord,
 } from "./services.ts";
 import { abstractParagraphs, jatsBodyParagraphs } from "./text.ts";
 
 export { HttpClient, USER_AGENT } from "./http.ts";
+export { parsePubmedRecord, pmidFromReference } from "./services.ts";
 export {
   checkIdentity,
   normalizeDoi,
   paginationMatches,
   titleSimilarity,
 } from "./identity.ts";
-export { keyTerms, rankPassages } from "./passages.ts";
+export {
+  keyTerms,
+  MAX_ABSTRACT_SENTENCES,
+  MAX_FULL_TEXT_PASSAGES,
+  rankPassages,
+  selectPassages,
+} from "./passages.ts";
 export {
   abstractParagraphs,
   jatsBodyParagraphs,
@@ -45,8 +55,8 @@ export {
 
 export const EVIDENCE_METHOD = "metadata-resolution+term-overlap" as const;
 export const EVIDENCE_VERSION = "1.0.0";
-export const DEFAULT_MAX_SOURCES = 25;
-export const DEFAULT_TIME_BUDGET_MS = 60_000;
+export const DEFAULT_MAX_SOURCES = 40;
+export const DEFAULT_TIME_BUDGET_MS = 90_000;
 
 export type EvidenceInput = {
   references: ReferenceEntry[];
@@ -117,6 +127,41 @@ async function resolve(
   errors: ServiceError[],
 ): Promise<{ resolution: Resolution; record: ServiceRecord | null }> {
   const notes: string[] = [];
+
+  // A PubMed ID printed in the reference is the most reliable identifier;
+  // its record must still match the reference's title, year, and authors.
+  const pmid = pmidFromReference(reference.text);
+  if (pmid) {
+    const byPmid = await pubmedRecord(http, pmid);
+    if (byPmid.ok) {
+      const identity = checkIdentity(
+        reference,
+        byPmid.value.work,
+        byPmid.value,
+      );
+      if (identity.ok) {
+        return {
+          record: byPmid.value,
+          resolution: {
+            status: "resolved",
+            reason: null,
+            matchedBy: "pmid",
+            resolver: "pubmed",
+            candidates: [],
+          },
+        };
+      }
+      notes.push(
+        `The PubMed ID ${pmid} in the reference belongs to a different work: ${identity.reason}`,
+      );
+    } else if (byPmid.notFound) {
+      notes.push(
+        `The PubMed ID ${pmid} in the reference was not found in PubMed.`,
+      );
+    } else {
+      errors.push(byPmid.error);
+    }
+  }
   const doi = reference.metadata.doi
     ? normalizeDoi(reference.metadata.doi)
     : null;
@@ -268,6 +313,13 @@ async function retrieveOne(
 
   let epmc: EuropePmcRecord | null = null;
   let epmcFailed = false;
+  // PubMed (fast, exact abstracts) runs alongside Europe PMC, which is needed
+  // for open-access status but is often slow; neither waits on the other.
+  // Skipped when the record already came from PubMed with its abstract.
+  const pubmedLookup =
+    work.doi && !record.abstractParagraphs?.length
+      ? pubmedAbstract(http, work.doi)
+      : null;
   const lookup = await europePmcLookup(http, {
     doi: work.doi,
     pmid: work.pmid,
@@ -325,15 +377,47 @@ async function retrieveOne(
     }
   }
 
-  const abstract = epmc?.abstract ?? record.abstract;
-  if (abstract) {
-    const abstractUrl =
-      epmc?.abstract && epmc.pmid
-        ? `https://europepmc.org/article/MED/${epmc.pmid}`
-        : (source.urls.landingPage ?? source.urls.doi);
-    const paragraphs = abstractParagraphs(abstract);
-    if (paragraphs.length > 0 && abstractUrl) {
-      texts.push({ origin: "abstract", paragraphs, sourceUrl: abstractUrl });
+  // Abstract: the PubMed record itself, Europe PMC, PubMed by DOI (exact
+  // text, DOI-checked), then Crossref.
+  let abstractFrom: "Europe PMC" | "PubMed" | "Crossref" | null = null;
+  if (record.abstractParagraphs?.length && work.pmid) {
+    texts.push({
+      origin: "abstract",
+      paragraphs: record.abstractParagraphs,
+      sourceUrl: `https://pubmed.ncbi.nlm.nih.gov/${work.pmid}/`,
+    });
+    abstractFrom = "PubMed";
+  }
+  if (!abstractFrom && epmc?.abstract) {
+    const paragraphs = abstractParagraphs(epmc.abstract);
+    const url = epmc.pmid
+      ? `https://europepmc.org/article/MED/${epmc.pmid}`
+      : (source.urls.landingPage ?? source.urls.doi);
+    if (paragraphs.length > 0 && url) {
+      texts.push({ origin: "abstract", paragraphs, sourceUrl: url });
+      abstractFrom = "Europe PMC";
+    }
+  }
+  const pubmed = pubmedLookup ? await pubmedLookup : null;
+  if (!abstractFrom && pubmed) {
+    if (pubmed.ok) {
+      work.pmid = work.pmid ?? pubmed.value.pmid;
+      texts.push({
+        origin: "abstract",
+        paragraphs: pubmed.value.paragraphs,
+        sourceUrl: `https://pubmed.ncbi.nlm.nih.gov/${pubmed.value.pmid}/`,
+      });
+      abstractFrom = "PubMed";
+    } else if (!pubmed.notFound) {
+      source.errors.push(pubmed.error);
+    }
+  }
+  if (!abstractFrom && record.abstract) {
+    const paragraphs = abstractParagraphs(record.abstract);
+    const url = source.urls.landingPage ?? source.urls.doi;
+    if (paragraphs.length > 0 && url) {
+      texts.push({ origin: "abstract", paragraphs, sourceUrl: url });
+      abstractFrom = "Crossref";
     }
   }
 
@@ -344,23 +428,25 @@ async function retrieveOne(
     source.accessReason =
       fullTextNote ??
       (noEpmcText
-        ? `${noEpmcText}; the abstract comes from Crossref.`
+        ? `${noEpmcText}; the abstract comes from ${abstractFrom}.`
         : epmc
-          ? "The work is not in the Europe PMC open-access subset; only its abstract is available."
-          : "The work was not found in Europe PMC; the abstract comes from Crossref.");
+          ? abstractFrom === "Europe PMC"
+            ? "The work is not in the Europe PMC open-access subset; only its abstract is available."
+            : `The work is not in the Europe PMC open-access subset; only its abstract is available (from ${abstractFrom}).`
+          : `The work was not found in Europe PMC; the abstract comes from ${abstractFrom}.`);
   } else {
     source.access = "metadata_only";
     source.accessReason =
       fullTextNote ??
       (noEpmcText
-        ? `${noEpmcText}, and Crossref supplied no abstract.`
+        ? `${noEpmcText}, and neither PubMed nor Crossref supplied an abstract.`
         : epmc
-          ? "Europe PMC has no abstract or open-access full text for this work."
-          : "The work was not found in Europe PMC, and Crossref supplied no abstract.");
+          ? "Neither Europe PMC nor PubMed has an abstract or open-access full text for this work."
+          : "The work was not found in Europe PMC, and neither PubMed nor Crossref supplied an abstract.");
   }
 
   source.passages = claims.flatMap((claim) =>
-    rankPassages(claim.id, claim.text, texts),
+    selectPassages(claim.id, claim.text, texts),
   );
   return source;
 }
@@ -425,7 +511,7 @@ export async function retrieveEvidence(
 
   return {
     sources,
-    services: ["crossref", "openalex", "europepmc", "ncbi-pmc"],
+    services: ["crossref", "openalex", "europepmc", "ncbi-pmc", "pubmed"],
     retrievedAt: now().toISOString(),
     method: EVIDENCE_METHOD,
     version: EVIDENCE_VERSION,
