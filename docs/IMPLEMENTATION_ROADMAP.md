@@ -39,9 +39,24 @@ Phase 1 is functionally complete and ready for review. The unchecked fixture mat
 
 ## Phase 3 - Claim extraction
 
-- Identify candidate scientific claims with source offsets and context.
-- Preserve exact manuscript text and uncertainty.
-- Add human correction before downstream verification.
+Sequencing change (2026-11-19): at the project owner's direction, a synchronous, in-memory first slice of claim extraction was built before Phase 2 durable jobs. Phase 2 remains required before persistence or long-running processing.
+
+Goal: show unverified candidate claims from the real uploaded paper, with exact wording and page provenance.
+
+1. [x] Add a deterministic, offline `packages/claim-extractor` (rule-based v1.0.0) that reuses the parser's per-page text.
+2. [x] Detect section headings; exclude front-matter metadata, Methods, References, and administrative sections; keep Introduction sentences only when they are cited or preview this paper's results.
+3. [x] Return claim ID, exact text, page, character offsets, section, neighbouring-sentence context, claim type, method, version, and matched rules.
+4. [x] Add `POST /api/documents/claims`, reusing upload validation and `parsePdf`.
+5. [x] Show "Extracted claims — not yet verified" on the Upload screen, separate from demo verification results.
+6. [x] Test genuine findings, cited claims, non-claims, page mapping (including a generated multi-page PDF), empty documents, and truncation.
+7. [ ] Evaluate precision and recall on a set of representative real papers, including two-column layouts, before relying on the rules.
+8. [ ] Add human correction (accept, reject, edit boundaries) before downstream verification.
+
+Acceptance evidence:
+
+- [x] Claims are slices of the server's own extracted page text; offsets are tested against the returned pages.
+- [x] No verdicts, confidence scores, or demo content appear in claim output.
+- [ ] Measured extraction quality on real papers. Rule-based output is unmeasured until item 7 is done.
 
 ## Phase 4 - Citation extraction and association
 

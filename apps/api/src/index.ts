@@ -1,4 +1,9 @@
 import {
+  CLAIM_EXTRACTION_METHOD,
+  CLAIM_EXTRACTOR_VERSION,
+  extractClaims,
+} from "@citeverify/claim-extractor";
+import {
   PDF_PARSER_NAME,
   PDF_PARSER_VERSION,
   PdfParserError,
@@ -6,20 +11,20 @@ import {
 } from "@citeverify/document-parser";
 import {
   MAX_PDF_BYTES,
+  type ApiErrorCode,
   type ApiErrorResponse,
+  type ExtractClaimsResponse,
   type ExtractDocumentResponse,
   type PdfExtractionErrorCode,
 } from "@citeverify/shared";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const app = new Hono().basePath("/api");
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-function errorResponse(
-  code: PdfExtractionErrorCode,
-  message: string,
-): ApiErrorResponse {
+function errorResponse(code: ApiErrorCode, message: string): ApiErrorResponse {
   return { error: { code, message } };
 }
 
@@ -53,80 +58,115 @@ function safeFileName(name: string): string {
   return sanitized || "document.pdf";
 }
 
-app.post("/documents/extract", async (c) => {
+type UploadOutcome =
+  | { ok: true; result: ExtractDocumentResponse }
+  | { ok: false; response: Response };
+
+/**
+ * Validates the multipart upload and extracts its text. Shared by every
+ * endpoint that accepts a PDF so limits and error codes stay identical.
+ */
+async function extractUploadedPdf(c: Context): Promise<UploadOutcome> {
+  const fail = (
+    code: PdfExtractionErrorCode,
+    message: string,
+    status: ContentfulStatusCode,
+  ): UploadOutcome => ({
+    ok: false,
+    response: c.json(errorResponse(code, message), status),
+  });
+
   const declaredLength = Number(c.req.header("content-length") ?? 0);
   if (
     Number.isFinite(declaredLength) &&
     declaredLength > MAX_PDF_BYTES + 1024 * 1024
   ) {
-    return c.json(
-      errorResponse("FILE_TOO_LARGE", "The PDF exceeds the 25 MB limit."),
-      413,
-    );
+    return fail("FILE_TOO_LARGE", "The PDF exceeds the 25 MB limit.", 413);
   }
 
   let formData: FormData;
   try {
     formData = await c.req.formData();
   } catch {
-    return c.json(
-      errorResponse("FILE_REQUIRED", "Provide one PDF in the file field."),
-      400,
-    );
+    return fail("FILE_REQUIRED", "Provide one PDF in the file field.", 400);
   }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return c.json(
-      errorResponse("FILE_REQUIRED", "Provide one PDF in the file field."),
-      400,
-    );
+    return fail("FILE_REQUIRED", "Provide one PDF in the file field.", 400);
   }
   if (file.type !== "application/pdf") {
-    return c.json(
-      errorResponse(
-        "UNSUPPORTED_MEDIA_TYPE",
-        "Only application/pdf uploads are supported.",
-      ),
+    return fail(
+      "UNSUPPORTED_MEDIA_TYPE",
+      "Only application/pdf uploads are supported.",
       415,
     );
   }
   if (file.size > MAX_PDF_BYTES) {
-    return c.json(
-      errorResponse("FILE_TOO_LARGE", "The PDF exceeds the 25 MB limit."),
-      413,
-    );
+    return fail("FILE_TOO_LARGE", "The PDF exceeds the 25 MB limit.", 413);
   }
 
   try {
     const parsed = await parsePdf(new Uint8Array(await file.arrayBuffer()));
-    const response: ExtractDocumentResponse = {
-      document: {
-        name: safeFileName(file.name),
-        mediaType: "application/pdf",
-        sizeBytes: file.size,
-        pageCount: parsed.pageCount,
-      },
-      extraction: {
-        text: parsed.text,
-        pages: parsed.pages,
-        warnings: parsed.warnings,
-        parser: { name: PDF_PARSER_NAME, version: PDF_PARSER_VERSION },
+    return {
+      ok: true,
+      result: {
+        document: {
+          name: safeFileName(file.name),
+          mediaType: "application/pdf",
+          sizeBytes: file.size,
+          pageCount: parsed.pageCount,
+        },
+        extraction: {
+          text: parsed.text,
+          pages: parsed.pages,
+          warnings: parsed.warnings,
+          parser: { name: PDF_PARSER_NAME, version: PDF_PARSER_VERSION },
+        },
       },
     };
-    return c.json(response, 200);
   } catch (error) {
     if (error instanceof PdfParserError) {
-      return c.json(
-        errorResponse(error.code, error.message),
-        statusForParserError(error.code),
-      );
+      return fail(error.code, error.message, statusForParserError(error.code));
     }
+    return fail("EXTRACTION_FAILED", "PDF text extraction failed.", 500);
+  }
+}
+
+app.post("/documents/extract", async (c) => {
+  const outcome = await extractUploadedPdf(c);
+  if (!outcome.ok) return outcome.response;
+  return c.json(outcome.result, 200);
+});
+
+app.post("/documents/claims", async (c) => {
+  const outcome = await extractUploadedPdf(c);
+  if (!outcome.ok) return outcome.response;
+
+  let claims: ReturnType<typeof extractClaims>;
+  try {
+    claims = extractClaims(outcome.result.extraction.pages);
+  } catch {
     return c.json(
-      errorResponse("EXTRACTION_FAILED", "PDF text extraction failed."),
+      errorResponse(
+        "CLAIM_EXTRACTION_FAILED",
+        "Claim extraction failed after the PDF text was extracted.",
+      ),
       500,
     );
   }
+
+  const response: ExtractClaimsResponse = {
+    ...outcome.result,
+    claims: {
+      items: claims.claims,
+      method: CLAIM_EXTRACTION_METHOD,
+      version: CLAIM_EXTRACTOR_VERSION,
+      truncated: claims.truncated,
+      verificationStatus: "not_verified",
+    },
+  };
+  return c.json(response, 200);
 });
 
 export default {

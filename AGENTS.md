@@ -4,16 +4,17 @@
 
 CiteVerify AI helps a reviewer trace scientific claims to citations and source evidence. The project must favor evidence integrity, honest uncertainty, reproducibility, and human review over impressive but unsupported output.
 
-The current milestone is real PDF upload and text extraction. Do not implement claim verification, source retrieval, or AI verdict generation until the PDF pipeline works end to end and has tests.
+The current milestone is deterministic scientific claim extraction from real uploaded PDF text. Extracted claims are unverified candidates. Do not implement claim verification, source retrieval, or AI verdict generation until claim extraction has been reviewed by the project owner.
 
 ## Architecture boundaries
 
 - `apps/web` contains the React interface. It may depend on `packages/ui` and `packages/shared`. It must not access the database or processing engines directly.
-- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out.
-- `apps/worker` runs background processing and may use the database, shared contracts, parser, citation engine, and verification engine.
+- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out. Until worker jobs exist, the synchronous upload routes may call `packages/document-parser` and `packages/claim-extractor` directly within the documented limits.
+- `apps/worker` runs background processing and may use the database, shared contracts, parser, claim extractor, citation engine, and verification engine.
 - `packages/shared` owns cross-workspace types, schemas, constants, and API contracts.
 - `packages/database` owns Prisma configuration, schema, client creation, and database helpers.
 - `packages/document-parser` owns document text extraction and page-level provenance.
+- `packages/claim-extractor` owns deterministic identification of candidate claims in extracted text. It never assigns verdicts or confidence scores.
 - `packages/citation-engine` owns citation extraction and reference resolution.
 - `packages/verification-engine` owns evidence-constrained verdict logic.
 - `packages/ui` owns reusable React UI components without application data access.

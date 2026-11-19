@@ -15,6 +15,7 @@
       "name": "@citeverify/api",
       "version": "0.0.0",
       "dependencies": {
+        "@citeverify/claim-extractor": "workspace:*",
         "@citeverify/database": "workspace:*",
         "@citeverify/document-parser": "workspace:*",
         "@citeverify/shared": "workspace:*",
@@ -62,6 +63,17 @@
     },
     "packages/citation-engine": {
       "name": "@citeverify/citation-engine",
+      "version": "0.0.0",
+      "dependencies": {
+        "@citeverify/shared": "workspace:*",
+      },
+      "devDependencies": {
+        "@citeverify/config": "workspace:*",
+        "@types/bun": "^1.4.4",
+      },
+    },
+    "packages/claim-extractor": {
+      "name": "@citeverify/claim-extractor",
       "version": "0.0.0",
       "dependencies": {
         "@citeverify/shared": "workspace:*",
@@ -158,6 +170,8 @@
     "@citeverify/api": ["@citeverify/api@workspace:apps/api"],
 
     "@citeverify/citation-engine": ["@citeverify/citation-engine@workspace:packages/citation-engine"],
+
+    "@citeverify/claim-extractor": ["@citeverify/claim-extractor@workspace:packages/claim-extractor"],
 
     "@citeverify/config": ["@citeverify/config@workspace:packages/config"],
 

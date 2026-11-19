@@ -1724,3 +1724,173 @@ tbody tr:hover {
     border-bottom: 0;
   }
 }
+.extracted-claims {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid #e6d9b8;
+  border-radius: 10px;
+  background: #fffdf7;
+}
+.extracted-claims > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #fff6e0;
+  border-bottom: 1px solid #ecdfbd;
+}
+.extracted-claims > header small {
+  display: block;
+  color: #86683a;
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+.extracted-claims > header h2 {
+  color: #3f3220;
+  font-size: 0.86rem;
+  margin: 5px 0 0;
+}
+.unverified-pill {
+  flex: none;
+  border: 1px solid #d9b56a;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: #7a5717;
+  background: white;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+.claims-note,
+.claims-empty,
+.claims-truncated {
+  margin: 0;
+  padding: 12px 18px 0;
+  color: #5d5444;
+  font-size: 0.66rem;
+  line-height: 1.55;
+}
+.claims-empty {
+  padding-bottom: 18px;
+}
+.claims-truncated {
+  color: #9b651b;
+  font-weight: 650;
+}
+.claims-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 12px 18px 0;
+}
+.claims-filter legend {
+  float: left;
+  margin-right: 4px;
+  padding: 0;
+  color: #8a806d;
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+.claims-filter button {
+  border: 1px solid #dfd3b6;
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: white;
+  color: #5d5444;
+  font-size: 0.64rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.claims-filter button[aria-pressed="true"] {
+  border-color: #7a5717;
+  background: #7a5717;
+  color: white;
+}
+.claims-list {
+  list-style: none;
+  margin: 0;
+  padding: 12px 18px 18px;
+  display: grid;
+  gap: 10px;
+}
+.claims-list > li {
+  border: 1px solid #ece4d0;
+  border-radius: 8px;
+  background: white;
+  padding: 12px 14px;
+}
+.claim-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: #6f6655;
+  font-size: 0.6rem;
+}
+.claim-meta b {
+  color: #3f3220;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.claim-type {
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-weight: 700;
+}
+.claim-type.reported_finding {
+  background: #e8f1ff;
+  color: #24518f;
+}
+.claim-type.cited_claim {
+  background: #efeaf9;
+  color: #5a3f8c;
+}
+.claims-list blockquote {
+  margin: 9px 0 0;
+  padding-left: 11px;
+  border-left: 3px solid #d9b56a;
+  color: #2f2a22;
+  font-size: 0.74rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.claims-list details {
+  margin-top: 9px;
+  font-size: 0.64rem;
+  color: #5d5444;
+}
+.claims-list summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: #7a5717;
+}
+.claims-list dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 9px 0 0;
+}
+.claims-list dt {
+  color: #8a806d;
+  font-weight: 650;
+}
+.claims-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .extracted-claims > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .claims-list dl {
+    grid-template-columns: 1fr;
+  }
+  .claims-list dd {
+    margin-bottom: 6px;
+  }
+}

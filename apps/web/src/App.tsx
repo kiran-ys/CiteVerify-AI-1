@@ -5,8 +5,9 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ExtractDocumentResponse } from "@citeverify/shared";
-import { extractPdf } from "./api.ts";
+import type { ExtractClaimsResponse } from "@citeverify/shared";
+import { extractPdfClaims } from "./api.ts";
+import { ExtractedClaims } from "./ExtractedClaims.tsx";
 
 type Page = "dashboard" | "upload" | "results" | "reports";
 type Status =
@@ -408,7 +409,7 @@ function Upload() {
   const [file, setFile] = useState<File>();
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "success">("idle");
-  const [result, setResult] = useState<ExtractDocumentResponse>();
+  const [result, setResult] = useState<ExtractClaimsResponse>();
   const [drag, setDrag] = useState(false);
   const accept = (f?: File) => {
     setError("");
@@ -442,7 +443,7 @@ function Upload() {
     setResult(undefined);
     setPhase("extracting");
     try {
-      setResult(await extractPdf(file));
+      setResult(await extractPdfClaims(file));
       setPhase("success");
     } catch (cause) {
       setPhase("idle");
@@ -513,18 +514,19 @@ function Upload() {
         <div className="upload-actions">
           <Button disabled={!file || phase === "extracting"} onClick={upload}>
             {phase === "extracting"
-              ? "Extracting text…"
+              ? "Extracting text and claims…"
               : phase === "success"
                 ? "Extract again"
-                : "Extract PDF text"}
+                : "Extract text and claims"}
           </Button>
         </div>
         <div className="info">
           <Icon name="info" />
           <p>
             <b>Live extraction.</b> The PDF is sent to the local Hono API and
-            parsed in memory. It is not saved. Claim and evidence verification
-            remain demo-only.
+            parsed in memory. It is not saved. Candidate claims are selected by
+            transparent rules and are not verified; verification results
+            elsewhere in the app remain demo-only.
           </p>
         </div>
         {result && (
@@ -572,6 +574,7 @@ function Upload() {
             </div>
           </section>
         )}
+        {result && <ExtractedClaims claims={result.claims} />}
       </section>
       <aside>
         <section className="panel process">
@@ -583,7 +586,8 @@ function Upload() {
             Parse the document and preserve page-level output.
           </Step>
           <Step n="3" icon="file" title="Review the result">
-            Read real extracted text before later claim processing.
+            Read the extracted text and candidate claims. Verification comes
+            later.
           </Step>
         </section>
         <div className="privacy">

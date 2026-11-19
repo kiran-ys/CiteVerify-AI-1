@@ -1,5 +1,6 @@
 import type {
   ApiErrorResponse,
+  ExtractClaimsResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
 
@@ -8,45 +9,56 @@ type FetchLike = (
   init?: RequestInit,
 ) => Promise<Response>;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 function isApiError(value: unknown): value is ApiErrorResponse {
-  if (typeof value !== "object" || value === null || !("error" in value))
-    return false;
-  const error = value.error;
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  );
+  if (!isRecord(value) || !isRecord(value.error)) return false;
+  return typeof value.error.message === "string";
 }
 
 function isExtraction(value: unknown): value is ExtractDocumentResponse {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("document" in value) ||
-    !("extraction" in value)
-  )
-    return false;
-  const extraction = value.extraction;
   return (
-    typeof extraction === "object" &&
-    extraction !== null &&
-    "text" in extraction &&
-    typeof extraction.text === "string"
+    isRecord(value) &&
+    isRecord(value.document) &&
+    isRecord(value.extraction) &&
+    typeof value.extraction.text === "string"
   );
 }
 
-export async function extractPdf(
+function isClaim(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.text === "string" &&
+    typeof value.page === "number" &&
+    isRecord(value.context) &&
+    isRecord(value.extraction) &&
+    Array.isArray(value.extraction.signals)
+  );
+}
+
+function isClaimsResponse(value: unknown): value is ExtractClaimsResponse {
+  if (!isExtraction(value) || !("claims" in value)) return false;
+  const claims = value.claims;
+  return (
+    isRecord(claims) &&
+    claims.verificationStatus === "not_verified" &&
+    Array.isArray(claims.items) &&
+    claims.items.every(isClaim)
+  );
+}
+
+async function postPdf<T>(
+  path: string,
   file: File,
-  fetchImpl: FetchLike = fetch,
-): Promise<ExtractDocumentResponse> {
+  isExpected: (value: unknown) => value is T,
+  fetchImpl: FetchLike,
+): Promise<T> {
   const body = new FormData();
   body.set("file", file);
-  const response = await fetchImpl("/api/documents/extract", {
-    method: "POST",
-    body,
-  });
+  const response = await fetchImpl(path, { method: "POST", body });
   let payload: unknown;
   try {
     payload = await response.json();
@@ -65,8 +77,24 @@ export async function extractPdf(
         : "The server could not extract this PDF.",
     );
   }
-  if (!isExtraction(payload)) {
+  if (!isExpected(payload)) {
     throw new Error("The server returned an invalid extraction response.");
   }
   return payload;
+}
+
+/** Text extraction only. */
+export function extractPdf(
+  file: File,
+  fetchImpl: FetchLike = fetch,
+): Promise<ExtractDocumentResponse> {
+  return postPdf("/api/documents/extract", file, isExtraction, fetchImpl);
+}
+
+/** Text extraction plus unverified candidate claims, from one upload. */
+export function extractPdfClaims(
+  file: File,
+  fetchImpl: FetchLike = fetch,
+): Promise<ExtractClaimsResponse> {
+  return postPdf("/api/documents/claims", file, isClaimsResponse, fetchImpl);
 }
