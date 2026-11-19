@@ -1,0 +1,39 @@
+# SITE_ADDRESS is the public domain (Caddy obtains HTTPS automatically),
+# or ":80" for plain HTTP behind another TLS proxy.
+{$SITE_ADDRESS::80} {
+	encode gzip
+
+	# Demo password in front of the whole site, required: Caddy will not start
+	# without DEMO_PASSWORD_HASH (from: caddy hash-password). /api/health stays
+	# open for health checks.
+	@protected not path /api/health
+	basic_auth @protected {
+		{$DEMO_USER:judge} {$DEMO_PASSWORD_HASH}
+	}
+
+	handle /api/* {
+		# PDFs are capped at 25 MB by the API; reject larger bodies early.
+		request_body {
+			max_size 26MB
+		}
+		# Retrieval plus verification can take up to ~4 minutes.
+		reverse_proxy api:3001 {
+			transport http {
+				read_timeout 300s
+				write_timeout 300s
+			}
+		}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+}

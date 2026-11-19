@@ -50,14 +50,14 @@ An independent public repository, initially named `CiteVerify-AI-Personal`, was 
 ### Verified during the current inspection
 
 - The working directory is `/Users/kiranys/Desktop/CiteVerify-AI-1`.
-- Branch `main` tracks `origin/main` at `1f09692`.
+- Active branch `feature/pdf-upload` was created from `origin/main` at `1f09692`; the Phase 1 changes are not committed or pushed.
 - `origin` is `https://github.com/kiran-ys/CiteVerify-AI-1.git`.
 - The repository has two commits: monorepo initialization and frontend dashboard implementation.
 - The React dashboard and explicit demo warnings are present.
-- The Hono API contains only a health route.
+- The Hono API contains a health route and a synchronous multipart PDF extraction route.
 - The worker and engine packages are placeholders.
 - Prisma is configured for local SQLite but has no domain models.
-- No tests, CI workflows, containers, or deployment manifests are present.
+- Eleven Bun tests cover the parser, extraction API, and web API client. CI workflows, containers, and deployment manifests are not present.
 - A fresh clone completed `bun install`, lint, typecheck, and build during repository migration. Validation is run again after documentation changes and reported separately.
 
 Historical reports are useful context, but they are not substitutes for current tests or current external-service verification.
@@ -80,7 +80,7 @@ Prisma supplies the schema and generated client. Development uses SQLite through
 
 ### Component communication
 
-The browser calls `/api` over HTTP. Vite proxies local `/api/*` requests to port 3001. The API validates requests, persists metadata, and eventually creates jobs. The worker consumes jobs, calls the document parser and later engines, and stores results. Shared TypeScript contracts prevent the frontend and backend from drifting. The frontend must never import database or engine packages.
+The browser calls `/api` over HTTP. Vite proxies local `/api/*` requests to port 3001, with environment overrides available for isolated testing. The implemented extraction route validates and parses PDFs synchronously without persistence. In Phase 2, the API will persist controlled metadata and create jobs; the worker will consume those jobs and store results. Shared TypeScript contracts prevent the frontend and backend from drifting. The frontend must never import database or engine packages.
 
 ---
 
@@ -111,28 +111,28 @@ User -> React -> Hono API -> database/job -> worker
                             status and results -> React
 ```
 
-At the baseline, only the React interface and API health route contain meaningful behavior. Package boundaries are documented in the README and should be enforced as implementation grows.
+The React interface, health route, extraction route, document parser, shared extraction contracts, and API client now contain meaningful behavior. Worker, persistence, and scientific engines remain placeholders. Package boundaries are documented in the README and should be enforced as implementation grows.
 
 ---
 
 ## Chapter 5 - Current implementation status
 
-| Feature | Classification | Current evidence |
-| --- | --- | --- |
-| Monorepo, workspace scripts, configuration | Implemented and verified | Bun workspaces and Turborepo tasks exist. |
-| Responsive navigation and dashboard | Implemented and verified | React UI includes desktop and mobile rules. |
-| Search and status filter | Implemented and verified | Operates on in-memory demo claims. |
-| Evidence drawer and report preview | Demonstration-only | Displays explicitly illustrative content. |
-| PDF selection and client checks | Implemented but not fully tested | Checks extension and a 25 MB UI limit; no automated tests. |
-| Upload progress and analysis | Demonstration-only | Timer simulates progress; no network request occurs. |
-| Hono health endpoint | Implemented and verified | Only API behavior present. |
-| Document upload endpoint | Planned | No route exists. |
-| Background processing | Planned | Worker only logs startup. |
-| PDF text extraction | Planned | Parser package is empty. |
-| Claims, citations, evidence, verification | Planned | Engine packages are empty. |
-| Database domain schema | Planned | No models exist. |
-| Automated tests | Blocked | No test setup or scripts exist. |
-| Production deployment | Planned | No configuration exists. |
+| Feature                                    | Classification           | Current evidence                                       |
+| ------------------------------------------ | ------------------------ | ------------------------------------------------------ |
+| Monorepo, workspace scripts, configuration | Implemented and verified | Bun workspaces and Turborepo tasks exist.              |
+| Responsive navigation and dashboard        | Implemented and verified | React UI includes desktop and mobile rules.            |
+| Search and status filter                   | Implemented and verified | Operates on in-memory demo claims.                     |
+| Evidence drawer and report preview         | Demonstration-only       | Displays explicitly illustrative content.              |
+| PDF selection and client checks            | Implemented and tested   | Enforces PDF selection and the shared 25 MB limit.     |
+| Upload and text display                    | Implemented and verified | Live multipart request displays actual extracted text. |
+| Hono health endpoint                       | Implemented and verified | Returns a stable health response.                      |
+| Document extraction endpoint               | Implemented and tested   | Validates and parses one PDF synchronously.            |
+| Background processing                      | Planned                  | Worker only logs startup.                              |
+| PDF text extraction                        | Implemented and tested   | `unpdf` 2.2.1 returns page-aware text and metadata.    |
+| Claims, citations, evidence, verification  | Planned                  | Engine packages are empty.                             |
+| Database domain schema                     | Planned                  | No models exist.                                       |
+| Automated tests                            | Implemented              | 11 parser, API, and web tests pass.                    |
+| Production deployment                      | Planned                  | No configuration exists.                               |
 
 The UI must not be used as evidence that scientific verification works. Its current purpose is interaction design and a clearly marked preview.
 
@@ -140,13 +140,13 @@ The UI must not be used as evidence that scientific verification works. Its curr
 
 ## Chapter 6 - PDF upload and parsing
 
-The next milestone should implement `POST /api/documents/extract`. The React screen sends one multipart field named `file`. The API validates the declared content type, file extension for user feedback, PDF signature for actual detection, count, and 25 MB maximum. Filenames are display metadata only and never trusted as paths.
+Phase 1 implements `POST /api/documents/extract`. The React screen sends one multipart field named `file`. The API validates the declared content type, PDF signature, single-file request, and 25 MB maximum. Filenames are sanitized display metadata only and are never trusted as paths.
 
-The parser should return normalized full text, page count, page-level text when reliable, warnings, and parser name/version. It must detect malformed, encrypted, and image-only documents. OCR is a separate capability; until implemented, an image-only PDF should return `NO_EXTRACTABLE_TEXT` with a clear explanation.
+The `packages/document-parser` interface returns normalized full text, page count, page-level text, warnings, and parser name/version. `unpdf` 2.2.1 is pinned behind that interface. Malformed, encrypted, empty, and unexpected failures are mapped to stable safe error codes. OCR is not implemented; an image-only PDF returns `NO_EXTRACTABLE_TEXT`.
 
-Choose a TypeScript library only after a Bun compatibility spike. Evaluate maintained status, license, malformed-file behavior, page boundaries, memory use, encrypted PDF handling, and output on multi-column scientific papers. Pin the dependency version and keep the parser behind a small package interface so it can be replaced.
+Extraction is bounded to 500 pages and a 15-second response timeout, with image-resource limits passed to the parser. The route processes bytes in memory and does not persist uploads or extracted text. Representative multi-column papers, encrypted fixtures, exact size boundaries, and adversarial resource-exhaustion cases still require deeper evaluation before production use.
 
-Recommended parser interface:
+Implemented parser interface:
 
 ```ts
 type ParsedPage = { page: number; text: string };
@@ -159,7 +159,7 @@ type ParsedDocument = {
 };
 ```
 
-Tests need a small text PDF with redistribution permission, a malformed file, an image-only PDF, an encrypted fixture where licensing permits, and a multi-column sample. Bound execution time and memory. Always clean temporary files in `finally` blocks.
+Tests generate a small valid text PDF in memory and cover malformed/signature, wrong media type, missing file, and empty-text behavior. Future hardening must add an encrypted fixture, a precise 25 MB boundary case, an image-only document fixture at the API boundary, and a representative multi-column scientific sample.
 
 ---
 
@@ -222,9 +222,9 @@ Every substantive verdict requires cited evidence and a concise explanation link
 
 ## Chapter 12 - Backend API contract
 
-The current API convention uses Hono with base path `/api` and JSON responses. The only route is `GET /api/health`. The first new route should be `/api/documents/extract`, not a duplicate health or upload route.
+The current API convention uses Hono with base path `/api` and JSON responses. `GET /api/health` and `POST /api/documents/extract` are implemented.
 
-The proposed extraction contract is defined in `docs/API_CONTRACT.md`. It uses multipart input and a stable JSON envelope. Error responses include a machine code, safe message, and optional correlation ID. Expected statuses include 400, 413, 415, 422, 500, and 503.
+The extraction contract is defined in `docs/API_CONTRACT.md`. It uses multipart input and a stable JSON envelope. Error responses include a machine code and safe message. Implemented statuses include 400, 413, 415, 422, 500, and 503.
 
 Later job-oriented APIs should use opaque IDs and explicit state transitions: `queued`, `processing`, `completed`, and `failed`. Job retries must be idempotent. Avoid holding an HTTP request open for retrieval or AI verification. Validate all route parameters and body data at the boundary.
 
@@ -269,6 +269,7 @@ Current exact root commands:
 bun install
 bun run lint
 bun run typecheck
+bun run test
 bun run build
 bun run dev
 bun run db:generate
@@ -276,7 +277,9 @@ bun run db:push
 bun run db:studio
 ```
 
-There is no test script yet. Phase 1 should add a Bun test convention and root `test` script. Unit tests should cover size/type/signature validation, URL/path helpers, text normalization, parser warning behavior, and error mapping. Parser tests should use controlled fixtures. API integration tests should send real multipart requests. Frontend tests should cover live/demo separation and key state transitions. An end-to-end test should upload a known fixture and assert that an exact extracted phrase appears.
+The root `test` script runs Bun tests through Turborepo. Eleven tests currently cover parser success and safe failures, API multipart validation and extraction, and web client success/error handling. A manual browser smoke test uploaded a generated one-page fixture and confirmed that the exact phrase `CiteVerify live browser extraction succeeded.` appeared in the live result.
+
+Remaining Phase 1 hardening includes encrypted, exact-size-boundary, multi-column, mobile, and browser error-state coverage. Future end-to-end automation should preserve the same exact-text assertion used by the smoke test.
 
 Security checks should include dependency review, secret scanning, malicious filenames, oversized requests, malformed PDFs, decompression/resource exhaustion, log redaction, CORS, and temporary-file cleanup. Manual QA should include Safari and at least one Chromium browser at desktop and mobile widths.
 
@@ -384,10 +387,10 @@ Check environment variables, runtime compatibility, database connectivity, migra
 
 ### PDF extraction
 
-- [ ] A permitted real PDF uploads and produces actual text.
-- [ ] Page count and provenance are verified where supported.
+- [x] A controlled real PDF uploads and produces actual text.
+- [x] Page count and page-level text are returned where supported.
 - [ ] Invalid, oversized, malformed, encrypted, and image-only cases are tested.
-- [ ] Uploaded content is not logged, committed, or retained without policy.
+- [x] Uploaded content is not logged, committed, or retained without policy.
 
 ### Claims and citations
 
@@ -410,7 +413,7 @@ Check environment variables, runtime compatibility, database connectivity, migra
 
 ### User experience and reports
 
-- [ ] Demo mode and live data cannot be confused.
+- [x] Demo mode and live extraction are visibly separated.
 - [ ] Loading, empty, error, and unavailable states are accessible.
 - [ ] Reports preserve source identity, evidence, model metadata, and human review.
 
@@ -432,5 +435,4 @@ Check environment variables, runtime compatibility, database connectivity, migra
 
 ## Immediate next action
 
-Review this documentation, create `feature/pdf-upload`, perform a short parser compatibility spike, and implement only the first real vertical slice: PDF upload, validation, extraction, and React display. Do not begin claim extraction or verification until that slice is working and tested.
-
+Review and commit the completed `feature/pdf-upload` slice after inspecting the diff. Then begin Phase 2 with document and processing-job models, controlled storage references, worker execution, status polling, and retry-safe state transitions. Do not begin claim extraction or verification until durable processing is designed and tested.

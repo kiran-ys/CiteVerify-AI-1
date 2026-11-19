@@ -4,29 +4,31 @@
 
 - [x] Inspect current repository and separate implemented behavior from placeholders.
 - [x] Add agent instructions, project status, proposed API contract, deployment checklist, and master handbook.
-- [ ] Review documentation with the project owner.
+- [x] Review documentation with the project owner and proceed to implementation.
 
 ## Phase 1 - Real PDF upload and extraction
 
 Goal: upload one text-based scientific PDF and display real extracted text.
 
-1. Add shared upload response and error types.
-2. Select a maintained Bun-compatible TypeScript PDF extraction library after a small compatibility spike.
-3. Implement parser output with document text, page count, per-page text when supported, warnings, and extraction metadata.
-4. Add `POST /api/documents/extract` with multipart validation.
-5. Enforce PDF signature, MIME allowlist, 25 MB maximum, single-file request, request timeout, and safe errors.
-6. Connect the existing React upload screen to the endpoint.
-7. Add loading, error, empty-text, and success views; remove simulated progress from live mode.
-8. Add unit tests for validation and parser behavior plus an API integration test.
-9. Add legally redistributable fixtures: one small text PDF, one malformed file, and one image-only PDF.
-10. Run lint, typecheck, tests, and build; update status documents.
+1. [x] Add shared upload response and error types.
+2. [x] Select and pin a Bun-compatible parser (`unpdf` 2.2.1) after a compatibility spike.
+3. [x] Return document text, page count, per-page text, warnings, and parser metadata.
+4. [x] Add `POST /api/documents/extract` with multipart validation.
+5. [x] Enforce PDF signature, MIME allowlist, 25 MB maximum, single-file request, timeout, page limit, and safe errors.
+6. [x] Connect the React upload screen to the endpoint.
+7. [x] Add loading, error, empty-text, and success views; remove simulated progress from live extraction.
+8. [x] Add parser, API integration, and web API-client tests.
+9. [x] Generate controlled PDF fixtures in memory so document bytes are not committed.
+10. [x] Run lint, typecheck, tests, build, and a browser smoke test; update status documents.
 
 Acceptance evidence:
 
-- A real PDF produces actual extracted text in the browser.
-- Invalid, oversized, malformed, encrypted, and image-only inputs fail safely or return explicit warnings.
-- No uploaded document or text is logged or committed.
-- Demo mode remains visibly separate.
+- [x] A real PDF produces actual extracted text in the browser.
+- [ ] Invalid, oversized, malformed, encrypted, and image-only inputs all have dedicated fixtures. Current automated coverage verifies valid, malformed/signature, wrong media type, missing file, and empty-text behavior; remaining boundary fixtures are deferred.
+- [x] No uploaded document or text is logged, committed, or persisted.
+- [x] Demo mode remains visibly separate.
+
+Phase 1 is functionally complete and ready for review. The unchecked fixture matrix above is hardening work, not permission to claim OCR, encryption support, or production readiness.
 
 ## Phase 2 - Durable processing jobs
 
@@ -37,31 +39,92 @@ Acceptance evidence:
 
 ## Phase 3 - Claim extraction
 
-- Identify candidate scientific claims with source offsets and context.
-- Preserve exact manuscript text and uncertainty.
-- Add human correction before downstream verification.
+Sequencing change (2026-11-19): at the project owner's direction, a synchronous, in-memory first slice of claim extraction was built before Phase 2 durable jobs. Phase 2 remains required before persistence or long-running processing.
+
+Goal: show unverified candidate claims from the real uploaded paper, with exact wording and page provenance.
+
+1. [x] Add a deterministic, offline `packages/claim-extractor` (rule-based v1.0.0) that reuses the parser's per-page text.
+2. [x] Detect section headings; exclude front-matter metadata, Methods, References, and administrative sections; keep Introduction sentences only when they are cited or preview this paper's results.
+3. [x] Return claim ID, exact text, page, character offsets, section, neighbouring-sentence context, claim type, method, version, and matched rules.
+4. [x] Add `POST /api/documents/claims`, reusing upload validation and `parsePdf`.
+5. [x] Show "Extracted claims — not yet verified" on the Upload screen, separate from demo verification results.
+6. [x] Test genuine findings, cited claims, non-claims, page mapping (including a generated multi-page PDF), empty documents, and truncation.
+7. [ ] Evaluate precision and recall on a set of representative real papers, including two-column layouts, before relying on the rules.
+8. [ ] Add human correction (accept, reject, edit boundaries) before downstream verification.
+
+Acceptance evidence:
+
+- [x] Claims are slices of the server's own extracted page text; offsets are tested against the returned pages.
+- [x] No verdicts, confidence scores, or demo content appear in claim output.
+- [ ] Measured extraction quality on real papers. Rule-based output is unmeasured until item 7 is done.
 
 ## Phase 4 - Citation extraction and association
 
-- Parse bibliography entries and in-text citations.
-- Resolve DOI and metadata conservatively.
-- Associate claims with citations and expose ambiguous matches for review.
+Goal: link each extracted claim's in-text citations to entries in the same paper's reference list, with explicit unmatched and ambiguous results.
+
+1. [x] Implement `packages/citation-engine` (rule-based v1.0.0): find the reference list, split numbered and author-year entries (including full-name ML-style lists), and drop running headers.
+2. [x] Read authors, year, title, and DOI from each entry's own text only; leave unclear fields empty.
+3. [x] Detect numeric (`[1]`, `[2, 3]`, `[4-7]`) and author-year (parenthetical and narrative) citations with exact markers and page offsets.
+4. [x] Match cited items by number, or by first-author surname and year; report `unmatched` and `ambiguous` with reasons instead of choosing.
+5. [x] Add `POST /api/documents/citations`, reusing upload validation, `parsePdf`, and `extractClaims`.
+6. [x] Show matched references under each extracted claim, labelled "Citation matched — evidence not yet verified".
+7. [x] Test numbered, ranged, listed, author-year, narrative, missing, ambiguous, repeated, and no-reference-list cases, plus a real generated PDF through the API.
+8. [ ] Validate on representative real papers and record measured match accuracy. The DREW paper (PMC7065031) exposed superscript citations; layout-based superscript detection now matches 57 of 57 cited numbers there (2026-11-19), but accuracy across papers is still unmeasured.
+9. [ ] Resolve DOIs and metadata against external registries conservatively (Phase 5 dependency).
+10. [ ] Let reviewers correct or confirm ambiguous and unmatched citations.
+
+Acceptance evidence:
+
+- [x] Every marker and single-page reference entry maps back to the returned page text by offsets.
+- [x] Responses contain no verdicts, support labels, or confidence scores.
+- [ ] Measured matching accuracy on real papers.
 
 ## Phase 5 - Source retrieval and evidence extraction
 
-- Query legitimate metadata and open-access services.
-- Track access status, license, retrieval time, and canonical source identity.
-- Extract passages with page or section provenance and relevance scores.
+Sequencing note (2026-11-19): built synchronously, in memory, and opt-in from the Upload screen before Phase 2 durable jobs, at the project owner's direction.
+
+1. [x] Add `packages/evidence-retrieval` (v1.0.0) using only free, keyless services: Crossref, OpenAlex, Europe PMC, and PubMed Central (NCBI E-utilities).
+2. [x] Resolve each reference that a claim cites: DOI lookup with an identity check, then bibliographic search; accept a record only when whole title, year (within one), first author, and (when given) first page agree with the reference; report `ambiguous` and `unresolved` with reasons.
+3. [x] Classify access as `full_text` (Europe PMC open-access subset, with PubMed Central fallback), `abstract_only`, `metadata_only`, or `unavailable`, and never describe an unreachable service as "not found".
+4. [x] Select passages by term overlap with the claim, keeping exact sentence text, section, paragraph, sentence, source URL, and shared terms.
+5. [x] Handle timeouts, HTTP 429 with `Retry-After`, server errors, per-service concurrency, an overall time budget, and a per-request source limit.
+6. [x] Add `POST /api/documents/evidence` and an opt-in "Retrieve cited sources" control labelled "Source retrieved — claim not yet verified".
+7. [x] Test with fixtures trimmed from real service responses, real-paper identity cases, and an opt-in live test against a genuine open-access paper.
+8. [ ] Move retrieval to the worker with durable jobs, a shared cache, and progress reporting (Phase 2 dependency).
+9. [ ] Measure resolution precision and recall on a labelled set of real reference lists.
+10. [ ] Replace term overlap with a reviewed passage-relevance method; keep it separate from verification.
+
+Acceptance evidence:
+
+- [x] Every returned title, DOI, URL, and passage comes from a service response or from identifiers those services returned.
+- [x] No verdicts, support labels, or confidence scores are produced.
+- [ ] Measured resolution accuracy on real papers.
 
 ## Phase 6 - Evidence-constrained verification
 
-- Produce Supported, Partially supported, Unsupported, Contradictory, Potentially outdated, or Unable to verify.
-- Require evidence for substantive verdicts.
-- Add evaluation datasets and measure performance separately from model confidence.
+Verdict set changed (2026-11-19) at the project owner's direction to: Supported, Partially supported, Contradicted, Insufficient evidence, Unable to verify. "Potentially outdated" is deferred until retraction and update checks exist.
+
+1. [x] Implement `packages/verification-engine` (v1.0.0) with a local Ollama client over HTTP (no SDK, no hosted model).
+2. [x] Decide "Unable to verify" by rule, with a per-reference reason, when a claim has no usable retrieved passage, when the model is unavailable, or when its answer fails validation.
+3. [x] Send each claim with up to six numbered, fenced passages; require JSON verdicts via a schema at temperature 0 with a fixed seed.
+4. [x] Validate model output: known verdict, only provided passage ids, a "supports" passage for Supported/Partially supported, a "contradicts" passage for Contradicted, no contradicting passage under Supported.
+5. [x] Show verdicts with the stored passage text, location, source and DOI links, and the model explanation labelled as not evidence; keep them apart from the demo dashboard.
+6. [x] Add `GET /api/verification/status` and `POST /api/documents/verification`.
+7. [x] Test every verdict path with a fake model and through the API; run live with `llama3.2` on a genuine paper.
+8. [ ] Build a labelled evaluation set and measure verdict accuracy per category before relying on verdicts.
+9. [ ] Compare larger local models (for example 7-8B) against `llama3.2` on that set.
+10. [ ] Retrieve more than term-overlap passages per claim (better passage selection) and record reviewer corrections.
+11. [ ] Run verification in the worker with durable jobs and progress (Phase 2 dependency).
+
+Acceptance evidence:
+
+- [x] No verdict other than "Unable to verify" or "Insufficient evidence" is accepted without a cited retrieved passage.
+- [x] Displayed evidence text always comes from retrieval, never from the model.
+- [x] No confidence scores are produced.
+- [ ] Measured verdict accuracy on a labelled set.
 
 ## Phase 7 - Reports and deployment
 
 - Generate traceable human-review reports.
 - Migrate production persistence away from a local SQLite file when services are separated.
 - Add CI, managed database, controlled object storage, HTTPS, CORS policy, monitoring, backups, and incident procedures.
-

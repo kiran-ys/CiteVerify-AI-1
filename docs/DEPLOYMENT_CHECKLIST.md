@@ -1,10 +1,10 @@
 # CiteVerify AI Deployment Checklist
 
-No deployment configuration currently exists. Do not deploy until the applicable boxes are evidenced.
+A proposed Docker Compose configuration exists in `deploy/` for a model-capable VM. A separate `render.yaml` and the default Docker target provide a free, stateless public demo without Ollama. Do not enable paid resources without owner approval.
 
 ## Application readiness
 
-- [ ] Lint, typecheck, tests, and production build pass in CI.
+- [ ] Lint, typecheck, tests, and production build pass in CI. (They pass locally: 219 tests, 2026-11-19; no CI yet.)
 - [ ] Demo and live modes cannot be confused.
 - [ ] Health and readiness endpoints reflect real dependencies.
 - [ ] API and worker shut down cleanly and recover from restarts.
@@ -12,8 +12,8 @@ No deployment configuration currently exists. Do not deploy until the applicable
 
 ## Architecture
 
-- [ ] Frontend hosting is selected (Vercel or Railway are candidates, subject to current platform verification).
-- [ ] Bun-compatible API and worker hosting is verified with a minimal staging deployment.
+- [x] Frontend hosting is selected for the free demo: it is served by the same Render web service as the API.
+- [x] The Bun API and static frontend image is verified locally; the worker is not used by the synchronous demo.
 - [ ] API and worker use a persistent managed database in production.
 - [ ] Do not use one local SQLite file across separate cloud services.
 - [ ] Private object storage and lifecycle rules are defined if PDFs are retained.
@@ -22,7 +22,7 @@ No deployment configuration currently exists. Do not deploy until the applicable
 ## Security and privacy
 
 - [ ] Secrets exist only in platform secret storage.
-- [ ] Production CORS allows only intended frontend origins.
+- [ ] Production CORS allows only intended frontend origins. (Planned design serves page and API from one origin, so no CORS is opened.)
 - [ ] HTTPS is mandatory.
 - [ ] Authentication and authorization protect documents and reports.
 - [ ] PDF inputs are treated as untrusted and resource limits are enforced.
@@ -38,6 +38,13 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] Structured logs include request/job correlation IDs.
 - [ ] Alerts have owners and actionable thresholds.
 - [ ] Cost limits and usage alerts are configured before paid services are enabled.
+- [ ] Outbound HTTPS is allowed to `api.crossref.org`, `api.openalex.org`, `www.ebi.ac.uk` (Europe PMC), and `eutils.ncbi.nlm.nih.gov` (PubMed Central) for source retrieval.
+- [ ] `CITEVERIFY_CONTACT_EMAIL` is set to an operator mailbox (not a user's) so Crossref and NCBI requests use their polite pools, or deliberately left empty.
+- [ ] The API host and any proxy allow requests of at least 90 seconds for `POST /api/documents/evidence` (Bun `idleTimeout` is set to 120 s).
+- [ ] A shared cache or rate-limit budget is in place before multiple API instances query the scholarly services.
+- [ ] Claim verification has a reviewed model host: Ollama reachable at `OLLAMA_HOST` from the API only (never exposed publicly), the chosen `OLLAMA_MODEL` pulled, and enough memory for it. Without it, verification returns `Unable to verify` for every claim.
+- [ ] The API host and any proxy allow requests of at least 240 seconds for `POST /api/documents/verification` (Bun `idleTimeout` is 240 s).
+- [ ] Verification accuracy has been measured on a labelled set before verdicts are shown to anyone but internal reviewers.
 
 ## Release evidence
 
@@ -47,4 +54,3 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] Browser smoke tests cover upload, extraction, errors, and mobile layout.
 - [ ] Rollback is tested.
 - [ ] Final public deployment has explicit owner approval.
-

@@ -17,6 +17,7 @@
       "persistent": true
     },
     "lint": {},
+    "test": {},
     "typecheck": {
       "dependsOn": ["^db:generate", "db:generate"]
     }

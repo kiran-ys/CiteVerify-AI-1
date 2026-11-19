@@ -1,0 +1,45 @@
+# One host runs everything: Caddy (public, HTTPS) -> API (private) -> Ollama (private).
+# Ollama is never published to the internet; only the API can reach it.
+#   cp deploy/.env.example deploy/.env   # then edit
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# On an NVIDIA GPU host add: -f deploy/docker-compose.gpu.yml
+services:
+  web:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: web }
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      DEMO_USER: ${DEMO_USER:-judge}
+      DEMO_PASSWORD_HASH: ${DEMO_PASSWORD_HASH:-}
+    volumes: [caddy_data:/data]
+    depends_on: [api]
+
+  api:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: api }
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      CITEVERIFY_CONTACT_EMAIL: ${CITEVERIFY_CONTACT_EMAIL:-}
+    depends_on: [ollama]
+
+  ollama:
+    image: ollama/ollama:0.22.1
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes: [ollama_models:/root/.ollama]
+
+  # One-off: downloads the model into the shared volume, then exits.
+  ollama-pull:
+    image: ollama/ollama:0.22.1
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-llama3.2}"]
+    depends_on: [ollama]
+    restart: "no"
+
+volumes:
+  caddy_data:
+  ollama_models:

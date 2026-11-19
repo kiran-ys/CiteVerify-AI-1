@@ -1,0 +1,241 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W2626778328",
+      "doi": "https://doi.org/10.48550/arxiv.1706.03762",
+      "title": "Attention Is All You Need",
+      "display_name": "Attention Is All You Need",
+      "publication_year": 2017,
+      "ids": {
+        "openalex": "https://openalex.org/W2626778328",
+        "doi": "https://doi.org/10.48550/arxiv.1706.03762"
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "Ashish Vaswani"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Noam Shazeer"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Niki Parmar"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Jakob Uszkoreit"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Llion Jones"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Aidan N. Gomez"
+          }
+        },
+        {
+          "author": {
+            "display_name": "\u0141ukasz Kaiser"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Illia Polosukhin"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "http://arxiv.org/abs/1706.03762",
+        "license": null,
+        "source": {
+          "display_name": "arXiv (Cornell University)"
+        }
+      }
+    },
+    {
+      "id": "https://openalex.org/W3163652268",
+      "doi": "https://doi.org/10.1109/icassp39728.2021.9413901",
+      "title": "Attention Is All You Need In Speech Separation",
+      "display_name": "Attention Is All You Need In Speech Separation",
+      "publication_year": 2021,
+      "ids": {
+        "openalex": "https://openalex.org/W3163652268",
+        "doi": "https://doi.org/10.1109/icassp39728.2021.9413901"
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "Cem Subakan"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Mirco Ravanelli"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Samuele Cornell"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Mirko Bronzi"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Jianyuan Zhong"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "https://doi.org/10.1109/icassp39728.2021.9413901",
+        "license": null,
+        "source": {
+          "display_name": "IEEE International Conference on Acoustics Speech and Signal Processing"
+        }
+      }
+    },
+    {
+      "id": "https://openalex.org/W2997150500",
+      "doi": "https://doi.org/10.1609/aaai.v34i07.6693",
+      "title": "Channel Attention Is All You Need for Video Frame Interpolation",
+      "display_name": "Channel Attention Is All You Need for Video Frame Interpolation",
+      "publication_year": 2020,
+      "ids": {
+        "openalex": "https://openalex.org/W2997150500",
+        "doi": "https://doi.org/10.1609/aaai.v34i07.6693"
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "Myungsub Choi"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Heewon Kim"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Bohyung Han"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Ning Xu"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Kyoung Mu Lee"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "https://doi.org/10.1609/aaai.v34i07.6693",
+        "license": null,
+        "source": {
+          "display_name": "Proceedings of the AAAI Conference on Artificial Intelligence"
+        }
+      }
+    },
+    {
+      "id": "https://openalex.org/W4415754031",
+      "doi": "https://doi.org/10.1201/9781003561460-19",
+      "title": "Attention Is All You Need",
+      "display_name": "Attention Is All You Need",
+      "publication_year": 2025,
+      "ids": {
+        "openalex": "https://openalex.org/W4415754031",
+        "doi": "https://doi.org/10.1201/9781003561460-19"
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "J. M. Bishop"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Gabriel Seiberth"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "https://doi.org/10.1201/9781003561460-19",
+        "license": null,
+        "source": {
+          "display_name": "Routledge eBooks"
+        }
+      }
+    },
+    {
+      "id": "https://openalex.org/W4390678101",
+      "doi": "https://doi.org/10.1093/bib/bbad467",
+      "title": "Attention is all you need: utilizing attention in AI-enabled drug discovery",
+      "display_name": "Attention is all you need: utilizing attention in AI-enabled drug discovery",
+      "publication_year": 2023,
+      "ids": {
+        "openalex": "https://openalex.org/W4390678101",
+        "doi": "https://doi.org/10.1093/bib/bbad467",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/38189543",
+        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/10772984"
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "Yang Zhang"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Caiqi Liu"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Mujiexin Liu"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Tianyuan Liu"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Hao Lin"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Huang Cheng-bing"
+          }
+        },
+        {
+          "author": {
+            "display_name": "Ning Lin"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "https://doi.org/10.1093/bib/bbad467",
+        "license": "cc-by-nc",
+        "source": {
+          "display_name": "Briefings in Bioinformatics"
+        }
+      }
+    }
+  ]
+}

@@ -4,18 +4,20 @@
 
 CiteVerify AI helps a reviewer trace scientific claims to citations and source evidence. The project must favor evidence integrity, honest uncertainty, reproducibility, and human review over impressive but unsupported output.
 
-The current milestone is real PDF upload and text extraction. Do not implement claim verification, source retrieval, or AI verdict generation until the PDF pipeline works end to end and has tests.
+The current milestone is evidence-grounded claim verification with a local model (Ollama) for development and a hosted model (Groq) on the public site, built on the reviewed extraction, citation, and retrieval pipeline. Every substantive verdict must rest on retrieved passages the model cites, validated in code; without usable evidence the result is `Unable to verify` with the reason. Verdicts are model judgements that require human review; do not present them as measured accuracy, and do not add confidence scores until an evaluation exists.
 
 ## Architecture boundaries
 
 - `apps/web` contains the React interface. It may depend on `packages/ui` and `packages/shared`. It must not access the database or processing engines directly.
-- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out.
-- `apps/worker` runs background processing and may use the database, shared contracts, parser, citation engine, and verification engine.
+- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out. Until worker jobs exist, the synchronous upload routes may call `packages/document-parser`, `packages/claim-extractor`, `packages/citation-engine`, `packages/evidence-retrieval`, and `packages/verification-engine` directly within the documented limits.
+- `apps/worker` runs background processing and may use the database, shared contracts, parser, claim extractor, citation engine, and verification engine.
 - `packages/shared` owns cross-workspace types, schemas, constants, and API contracts.
 - `packages/database` owns Prisma configuration, schema, client creation, and database helpers.
 - `packages/document-parser` owns document text extraction and page-level provenance.
-- `packages/citation-engine` owns citation extraction and reference resolution.
-- `packages/verification-engine` owns evidence-constrained verdict logic.
+- `packages/claim-extractor` owns deterministic identification of candidate claims in extracted text. It never assigns verdicts or confidence scores.
+- `packages/citation-engine` owns citation extraction and reference resolution within the uploaded paper. A citation match links a marker to a reference entry; it is never evidence that a source supports a claim.
+- `packages/evidence-retrieval` owns lookups against free scholarly services (Crossref, OpenAlex, Europe PMC, PubMed Central) and passage selection from legally accessible text. It sends only cited-reference details, never uploaded documents, and never decides whether a source supports a claim.
+- `packages/verification-engine` owns evidence-constrained verdict logic and the model clients: local Ollama, and Groq's hosted API (approved by the owner on 2026-11-20 for the public site, which cannot run Ollama). Prompts contain only the claim, its surrounding sentences, and retrieved public passages, never the uploaded PDF. Groq is used only when the server sets `GROQ_API_KEY`; the key stays in server environment variables, never in frontend code or Git. The UI must tell users when prompts go to Groq. Model output is validated before use, and displayed evidence is always stored source text, never model-quoted text.
 - `packages/ui` owns reusable React UI components without application data access.
 - `packages/config` owns shared TypeScript configuration.
 
@@ -83,4 +85,3 @@ A feature is done only when:
 - Update `docs/API_CONTRACT.md` before or with API behavior changes.
 - Update `docs/DEPLOYMENT_CHECKLIST.md` when infrastructure requirements change.
 - Update `docs/CITEVERIFY_MASTER_HANDBOOK.md` only for durable architectural or workflow changes, then regenerate and visually verify its PDF.
-
