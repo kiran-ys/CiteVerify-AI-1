@@ -1,6 +1,6 @@
 # CiteVerify AI Deployment Checklist
 
-A proposed Docker Compose configuration exists in `deploy/` (see `docs/DEPLOYMENT_PLAN.md`); it has not been built or deployed. Do not deploy until the applicable boxes are evidenced and the owner approves.
+A proposed Docker Compose configuration exists in `deploy/` for a model-capable VM. A separate `render.yaml` and the default Docker target provide a free, stateless public demo without Ollama. Do not enable paid resources without owner approval.
 
 ## Application readiness
 
@@ -12,8 +12,8 @@ A proposed Docker Compose configuration exists in `deploy/` (see `docs/DEPLOYMEN
 
 ## Architecture
 
-- [ ] Frontend hosting is selected (Vercel or Railway are candidates, subject to current platform verification).
-- [ ] Bun-compatible API and worker hosting is verified with a minimal staging deployment.
+- [x] Frontend hosting is selected for the free demo: it is served by the same Render web service as the API.
+- [x] The Bun API and static frontend image is verified locally; the worker is not used by the synchronous demo.
 - [ ] API and worker use a persistent managed database in production.
 - [ ] Do not use one local SQLite file across separate cloud services.
 - [ ] Private object storage and lifecycle rules are defined if PDFs are retained.

@@ -33,7 +33,7 @@ Last inspected: 2026-11-19
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                                   |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                                  |
 | Automated tests      | Implemented and passing      | 223 Bun tests pass (verification 51, evidence 47, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
-| Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                         |
+| Deployment           | Free Render image verified   | One Docker image serves the dashboard and API on one HTTPS origin; public deployment is pending. Ollama is not included.                    |
 
 ## Completed milestones
 
@@ -164,6 +164,7 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 
 - `deploy/` holds a proposed single-server Docker Compose setup: Caddy (HTTPS, static web app, `/api` proxy), the bundled Bun API, and a private Ollama container. Plan, costs, and blockers: `docs/DEPLOYMENT_PLAN.md`. The owner approved the GPU-server plan; nothing is deployed. Both images were built and the stack (with a required demo password) passed a local smoke test and an end-to-end verification in Docker.
 - The production API bundle was run standalone (`bun dist/index.js`) and verified PMC7065031 end to end in 3 min 56 s, close to the 240 s request limit.
+- A free Render path now builds the React app into the Bun API image and serves both from one origin. The exact image returned 200 for `/`, healthy JSON for `/api/health`, and an honest unavailable response for local Ollama. This preserves PDF extraction, claims, citations, and evidence retrieval, but cannot run Llama 3.2 within Render's free instance limits.
 
 ## Next milestone
 

@@ -36,6 +36,7 @@ import {
   type VerifyClaimsResponse,
 } from "@citeverify/shared";
 import { type Context, Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const app = new Hono().basePath("/api");
@@ -386,10 +387,18 @@ app.post("/documents/verification", async (c) => {
   return c.json(response, 200);
 });
 
+// The API remains independently testable through `app`. The production
+// server also serves the built React application so a free Render service can
+// provide one HTTPS origin without opening CORS or requiring a second host.
+const serverApp = new Hono();
+serverApp.route("/", app);
+serverApp.use("/*", serveStatic({ root: "./public" }));
+serverApp.get("/*", serveStatic({ path: "./public/index.html" }));
+
 export default {
   port: Number(process.env.API_PORT ?? 3001),
   // Retrieval (90 s budget) plus local-model verification (120 s budget) exceed
   // Bun's 10 s default idle timeout; 240 s stays under Bun's 255 s maximum.
   idleTimeout: 240,
-  fetch: app.fetch,
+  fetch: serverApp.fetch,
 };

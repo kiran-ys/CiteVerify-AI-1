@@ -22,3 +22,12 @@ CMD ["bun", "dist/index.js"]
 FROM caddy:2-alpine AS web
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/apps/web/dist /srv
+
+# Render free deployment: one Bun process serves both the API and the built
+# React app on the platform-provided HTTPS origin. Ollama is intentionally not
+# included because the free instance cannot hold the local model.
+FROM api AS render
+ENV API_PORT=10000
+COPY --from=build /app/apps/web/dist ./public
+EXPOSE 10000
+HEALTHCHECK --interval=30s --timeout=5s CMD ["bun", "-e", "fetch('http://127.0.0.1:10000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]

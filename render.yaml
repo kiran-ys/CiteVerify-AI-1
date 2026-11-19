@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: citeverify-ai
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: API_PORT
+        value: "10000"

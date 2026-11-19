@@ -4,6 +4,14 @@ Status: **approved by the owner (2026-11-19); not yet deployed.** The server mus
 
 ## Recommended architecture
 
+## Immediate free public demo
+
+`render.yaml` deploys one stateless Docker web service. Bun serves both the built React dashboard and `/api`, so Render supplies a single public HTTPS origin and no CORS access is opened. This keeps PDF extraction, deterministic claim extraction, citation matching, and keyless scholarly retrieval available.
+
+The free image intentionally does not bundle Ollama or `llama3.2`: the local model is larger than the free service's memory allowance. The verification endpoint therefore returns `Unable to verify` with the model-unavailable reason instead of inventing a verdict. Free instances also sleep after inactivity, have an ephemeral filesystem, and can be suspended when monthly platform limits are exhausted.
+
+The Docker Compose architecture below remains the model-capable option for a later owner-approved VM.
+
 One rented cloud server runs three containers with Docker Compose (`deploy/`):
 
 ```
