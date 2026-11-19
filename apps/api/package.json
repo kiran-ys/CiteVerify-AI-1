@@ -18,6 +18,7 @@
     "@citeverify/document-parser": "workspace:*",
     "@citeverify/evidence-retrieval": "workspace:*",
     "@citeverify/shared": "workspace:*",
+    "@citeverify/verification-engine": "workspace:*",
     "hono": "^4.13.19"
   },
   "devDependencies": {

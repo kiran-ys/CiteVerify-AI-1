@@ -5,6 +5,8 @@ import type {
   ExtractClaimsResponse,
   ExtractEvidenceResponse,
   ExtractDocumentResponse,
+  VerificationStatusResponse,
+  VerifyClaimsResponse,
 } from "@citeverify/shared";
 import {
   createEmptyPdf,
@@ -14,6 +16,7 @@ import {
 import {
   app,
   configureEvidenceRetrieval,
+  configureVerification,
   statusForParserError,
 } from "./index.ts";
 
@@ -515,6 +518,172 @@ describe("POST /api/documents/evidence", async () => {
   test("reuses upload validation", async () => {
     expect(
       (await app.request(uploadRequest(undefined, EVIDENCE_PATH))).status,
+    ).toBe(400);
+  });
+});
+
+const VERIFICATION_PATH = "/api/documents/verification";
+
+describe("verification endpoints", async () => {
+  const crossref = await readFixture("crossref-ioannidis-2005.json");
+  const europePmc = await readFixture("europepmc-ioannidis-2005.json");
+  const fullText = await readFixture("europepmc-fulltext-PMC1182327.xml");
+
+  const pages = [
+    [
+      "Abstract",
+      "We found that most published research findings are false in fields with small studies [1].",
+      "Our results show that bias reduced the reliability of reported findings in our sample (p < 0.01).",
+    ],
+    [
+      "References",
+      "[1] Ioannidis JPA. Why most published research findings are false. PLoS Med. 2005;2(8):e124. doi:10.1371/journal.pmed.0020124",
+      "[2] Nobody A. An invented reference that no service knows about. J Nowhere. 2001;1:1-2.",
+    ],
+  ];
+
+  function scholarlyServices() {
+    configureEvidenceRetrieval({
+      cache: new Map(),
+      sleep: async () => {},
+      maxRetries: 0,
+      fetch: async (input: string) => {
+        const url = decodeURIComponent(input);
+        if (/api\.crossref\.org\/works\/10\.1371/.test(url))
+          return new Response(crossref);
+        if (/rest\/search\?query=DOI:"10\.1371/.test(url))
+          return new Response(europePmc);
+        if (/PMC1182327\/fullTextXML/.test(url)) return new Response(fullText);
+        return new Response("not mocked", { status: 404 });
+      },
+    });
+  }
+
+  function ollama(answer: ((user: string) => object) | null) {
+    const prompts: string[] = [];
+    configureVerification({
+      host: "http://ollama.test",
+      model: "llama3.2",
+      fetch: async (input: string, init?: RequestInit) => {
+        if (!answer) throw new TypeError("fetch failed");
+        if (input.endsWith("/api/tags"))
+          return Response.json({ models: [{ name: "llama3.2:latest" }] });
+        const body = JSON.parse(String(init?.body));
+        const user = body.messages[1].content as string;
+        prompts.push(user);
+        return Response.json({
+          message: { content: JSON.stringify(answer(user)) },
+        });
+      },
+    });
+    return prompts;
+  }
+
+  async function verify(): Promise<VerifyClaimsResponse> {
+    const response = await app.request(
+      uploadRequest(pdfFile(createMultiPagePdf(pages)), VERIFICATION_PATH),
+    );
+    expect(response.status).toBe(200);
+    return (await response.json()) as VerifyClaimsResponse;
+  }
+
+  test("status reports an unreachable Ollama server", async () => {
+    ollama(null);
+    const body = (await (
+      await app.request("http://localhost/api/verification/status")
+    ).json()) as VerificationStatusResponse;
+    expect(body).toEqual({
+      available: false,
+      host: "http://ollama.test",
+      model: "llama3.2",
+      modelInstalled: false,
+      reason:
+        "No Ollama server answered at http://ollama.test. Start it with: ollama serve",
+    });
+  });
+
+  test("status reports a ready model", async () => {
+    ollama(() => ({}));
+    const body = (await (
+      await app.request("http://localhost/api/verification/status")
+    ).json()) as VerificationStatusResponse;
+    expect(body).toMatchObject({
+      available: true,
+      modelInstalled: true,
+      reason: null,
+    });
+  });
+
+  test("verifies a cited claim from retrieved passages and leaves the paper's own result unverifiable", async () => {
+    scholarlyServices();
+    const prompts = ollama(() => ({
+      verdict: "Supported",
+      evidence: [{ id: "E1", relation: "supports" }],
+      explanation: "The source states this directly.",
+    }));
+    const body = await verify();
+
+    expect(prompts).toHaveLength(1);
+    const cited = body.verification.results.find(
+      (r) => r.verdict === "Supported",
+    );
+    expect(cited).toMatchObject({
+      decidedBy: "model",
+      model: { provider: "ollama", name: "llama3.2" },
+    });
+    const supporting = cited?.evidence.find((e) => e.relation === "supports");
+    expect(supporting?.sourceUrl).toMatch(
+      /^https:\/\/europepmc\.org\/article\//,
+    );
+    expect(supporting?.doi).toBe("10.1371/journal.pmed.0020124");
+    // The passage shown is the stored source sentence, and it was what the model saw.
+    expect(prompts[0]).toContain(supporting?.text ?? "missing");
+
+    const own = body.verification.results.find((r) => r.decidedBy === "rule");
+    expect(own?.verdict).toBe("Unable to verify");
+    expect(own?.reason).toContain("reports the paper's own result");
+    expect(body.verification).toMatchObject({
+      reviewStatus: "requires_human_review",
+      modelAvailable: true,
+    });
+  });
+
+  test("returns Unable to verify with the reason when Ollama is not running", async () => {
+    scholarlyServices();
+    ollama(null);
+    const body = await verify();
+
+    expect(body.verification.modelAvailable).toBe(false);
+    for (const result of body.verification.results) {
+      expect(result.verdict).toBe("Unable to verify");
+    }
+    const withEvidence = body.verification.results.find(
+      (r) => r.evidence.length > 0,
+    );
+    expect(withEvidence?.reason).toContain("Start it with: ollama serve");
+  });
+
+  test("rejects a model answer that cites a passage it was not given", async () => {
+    scholarlyServices();
+    ollama(() => ({
+      verdict: "Supported",
+      evidence: [{ id: "E42", relation: "supports" }],
+      explanation: "x",
+    }));
+    const body = await verify();
+    const judged = body.verification.results.find((r) => r.evidence.length > 0);
+    expect(judged).toMatchObject({
+      verdict: "Unable to verify",
+      decidedBy: "rule",
+    });
+    expect(judged?.reason).toContain(
+      "cited evidence E42, which was not provided",
+    );
+  });
+
+  test("reuses upload validation", async () => {
+    expect(
+      (await app.request(uploadRequest(undefined, VERIFICATION_PATH))).status,
     ).toBe(400);
   });
 });

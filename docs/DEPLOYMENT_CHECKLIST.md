@@ -42,6 +42,9 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] `CITEVERIFY_CONTACT_EMAIL` is set to an operator mailbox (not a user's) so Crossref and NCBI requests use their polite pools, or deliberately left empty.
 - [ ] The API host and any proxy allow requests of at least 70 seconds for `POST /api/documents/evidence` (Bun `idleTimeout` is set to 120 s).
 - [ ] A shared cache or rate-limit budget is in place before multiple API instances query the scholarly services.
+- [ ] Claim verification has a reviewed model host: Ollama reachable at `OLLAMA_HOST` from the API only (never exposed publicly), the chosen `OLLAMA_MODEL` pulled, and enough memory for it. Without it, verification returns `Unable to verify` for every claim.
+- [ ] The API host and any proxy allow requests of at least 240 seconds for `POST /api/documents/verification` (Bun `idleTimeout` is 240 s).
+- [ ] Verification accuracy has been measured on a labelled set before verdicts are shown to anyone but internal reviewers.
 
 ## Release evidence
 

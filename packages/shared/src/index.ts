@@ -15,7 +15,8 @@ export type ApiErrorCode =
   | PdfExtractionErrorCode
   | "CLAIM_EXTRACTION_FAILED"
   | "CITATION_EXTRACTION_FAILED"
-  | "EVIDENCE_RETRIEVAL_FAILED";
+  | "EVIDENCE_RETRIEVAL_FAILED"
+  | "VERIFICATION_FAILED";
 
 export type ApiErrorResponse = {
   error: {
@@ -251,6 +252,78 @@ export type ExtractEvidenceResponse = ExtractCitationsResponse & {
     truncated: boolean;
     /** Retrieval never decides whether a claim is supported. */
     claimStatus: "not_verified";
+  };
+};
+
+export type VerificationVerdict =
+  | "Supported"
+  | "Partially supported"
+  | "Contradicted"
+  | "Insufficient evidence"
+  | "Unable to verify";
+
+/**
+ * How a retrieved passage was used in a verdict.
+ * - supports / contradicts / context: cited by the model with that role.
+ * - not_cited: shown to the model but not relied on.
+ */
+export type EvidenceRelation =
+  | "supports"
+  | "contradicts"
+  | "context"
+  | "not_cited";
+
+/** A retrieved passage as used in verification. Its text is the stored source text, never model output. */
+export type VerificationEvidence = EvidencePassage & {
+  /** Label shown to the model, e.g. "E2". */
+  evidenceId: string;
+  referenceId: string;
+  relation: EvidenceRelation;
+  sourceTitle: string | null;
+  doi: string | null;
+};
+
+export type VerificationModel = {
+  provider: "ollama";
+  name: string;
+  promptVersion: string;
+};
+
+export type ClaimVerification = {
+  claimId: string;
+  verdict: VerificationVerdict;
+  /** "rule": decided without the model (no usable evidence, model unavailable, invalid output). */
+  decidedBy: "rule" | "model";
+  /** Why the claim is "Unable to verify", or a caveat; null when there is none. */
+  reason: string | null;
+  /** Every passage considered, in the order shown to the model. */
+  evidence: VerificationEvidence[];
+  evidenceScope: "full_text" | "abstract_only" | "mixed" | "none";
+  /** The model's short explanation. Generated text, not evidence. */
+  explanation: string | null;
+  model: VerificationModel | null;
+};
+
+export type VerificationStatusResponse = {
+  available: boolean;
+  host: string;
+  model: string;
+  modelInstalled: boolean;
+  reason: string | null;
+};
+
+export type VerifyClaimsResponse = ExtractEvidenceResponse & {
+  verification: {
+    results: ClaimVerification[];
+    model: VerificationModel | null;
+    modelAvailable: boolean;
+    method: "evidence-grounded-llm";
+    version: string;
+    verifiedAt: string;
+    /** True when some claims were not sent to the model because of the time budget. */
+    truncated: boolean;
+    /** Verdicts are model judgements over retrieved text; a person must review them. */
+    reviewStatus: "requires_human_review";
   };
 };
 

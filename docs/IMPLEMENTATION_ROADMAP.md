@@ -102,9 +102,26 @@ Acceptance evidence:
 
 ## Phase 6 - Evidence-constrained verification
 
-- Produce Supported, Partially supported, Unsupported, Contradictory, Potentially outdated, or Unable to verify.
-- Require evidence for substantive verdicts.
-- Add evaluation datasets and measure performance separately from model confidence.
+Verdict set changed (2026-11-19) at the project owner's direction to: Supported, Partially supported, Contradicted, Insufficient evidence, Unable to verify. "Potentially outdated" is deferred until retraction and update checks exist.
+
+1. [x] Implement `packages/verification-engine` (v1.0.0) with a local Ollama client over HTTP (no SDK, no hosted model).
+2. [x] Decide "Unable to verify" by rule, with a per-reference reason, when a claim has no usable retrieved passage, when the model is unavailable, or when its answer fails validation.
+3. [x] Send each claim with up to six numbered, fenced passages; require JSON verdicts via a schema at temperature 0 with a fixed seed.
+4. [x] Validate model output: known verdict, only provided passage ids, a "supports" passage for Supported/Partially supported, a "contradicts" passage for Contradicted, no contradicting passage under Supported.
+5. [x] Show verdicts with the stored passage text, location, source and DOI links, and the model explanation labelled as not evidence; keep them apart from the demo dashboard.
+6. [x] Add `GET /api/verification/status` and `POST /api/documents/verification`.
+7. [x] Test every verdict path with a fake model and through the API; run live with `llama3.2` on a genuine paper.
+8. [ ] Build a labelled evaluation set and measure verdict accuracy per category before relying on verdicts.
+9. [ ] Compare larger local models (for example 7-8B) against `llama3.2` on that set.
+10. [ ] Retrieve more than term-overlap passages per claim (better passage selection) and record reviewer corrections.
+11. [ ] Run verification in the worker with durable jobs and progress (Phase 2 dependency).
+
+Acceptance evidence:
+
+- [x] No verdict other than "Unable to verify" or "Insufficient evidence" is accepted without a cited retrieved passage.
+- [x] Displayed evidence text always comes from retrieval, never from the model.
+- [x] No confidence scores are produced.
+- [ ] Measured verdict accuracy on a labelled set.
 
 ## Phase 7 - Reports and deployment
 

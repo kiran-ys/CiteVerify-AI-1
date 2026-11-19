@@ -4,12 +4,15 @@ import type {
   ExtractClaimsResponse,
   ExtractEvidenceResponse,
   ExtractDocumentResponse,
+  VerifyClaimsResponse,
 } from "@citeverify/shared";
 import {
   extractPdf,
   extractPdfCitations,
   extractPdfClaims,
   extractPdfEvidence,
+  extractPdfVerification,
+  getVerificationStatus,
 } from "./api.ts";
 
 const success: ExtractDocumentResponse = {
@@ -367,5 +370,112 @@ describe("unreachable server", () => {
         mockFetch,
       ),
     ).rejects.toThrow("The extraction service is unavailable (HTTP 502)");
+  });
+});
+
+const verificationSuccess: VerifyClaimsResponse = {
+  ...evidenceSuccess,
+  verification: {
+    results: [
+      {
+        claimId: "claim-001",
+        verdict: "Supported",
+        decidedBy: "model",
+        reason: null,
+        evidence: [
+          {
+            evidenceId: "E1",
+            referenceId: "ref-001",
+            relation: "supports",
+            sourceTitle: "A study",
+            doi: "10.1000/example",
+            claimId: "claim-001",
+            text: "Uptake increased by 12%.",
+            markupRemoved: false,
+            origin: "abstract",
+            location: { section: null, paragraph: 1, sentence: 1 },
+            sourceUrl: "https://europepmc.org/article/MED/1",
+            relevance: {
+              method: "term-overlap",
+              sharedTerms: ["increased", "uptake"],
+              score: 0.5,
+            },
+          },
+        ],
+        evidenceScope: "abstract_only",
+        explanation: "The abstract states the increase.",
+        model: {
+          provider: "ollama",
+          name: "llama3.2",
+          promptVersion: "verify-v1",
+        },
+      },
+    ],
+    model: { provider: "ollama", name: "llama3.2", promptVersion: "verify-v1" },
+    modelAvailable: true,
+    method: "evidence-grounded-llm",
+    version: "1.0.0",
+    verifiedAt: "2026-11-19T12:00:00.000Z",
+    truncated: false,
+    reviewStatus: "requires_human_review",
+  },
+};
+
+describe("extractPdfVerification", () => {
+  const file = () =>
+    new File(["pdf"], "paper.pdf", { type: "application/pdf" });
+
+  test("posts the PDF to the verification endpoint", async () => {
+    let calledWith = "";
+    const result = await extractPdfVerification(file(), (input) => {
+      calledWith = String(input);
+      return Promise.resolve(Response.json(verificationSuccess));
+    });
+    expect(calledWith).toBe("/api/documents/verification");
+    expect(result.verification.results[0]?.verdict).toBe("Supported");
+  });
+
+  test("rejects a substantive verdict that arrives without its evidence", async () => {
+    const bad = structuredClone(verificationSuccess);
+    const first = bad.verification.results[0];
+    if (first) first.evidence = [];
+    expect(
+      extractPdfVerification(file(), () => Promise.resolve(Response.json(bad))),
+    ).rejects.toThrow("invalid extraction response");
+  });
+
+  test("rejects an unknown verdict", async () => {
+    const bad = structuredClone(verificationSuccess) as unknown as {
+      verification: { results: { verdict: string }[] };
+    };
+    const first = bad.verification.results[0];
+    if (first) first.verdict = "Probably true";
+    expect(
+      extractPdfVerification(file(), () => Promise.resolve(Response.json(bad))),
+    ).rejects.toThrow("invalid extraction response");
+  });
+});
+
+describe("getVerificationStatus", () => {
+  test("returns the API's model status", async () => {
+    const status = await getVerificationStatus(() =>
+      Promise.resolve(
+        Response.json({
+          available: true,
+          host: "http://127.0.0.1:11434",
+          model: "llama3.2",
+          modelInstalled: true,
+          reason: null,
+        }),
+      ),
+    );
+    expect(status.available).toBe(true);
+  });
+
+  test("reports unavailable when the API cannot be reached", async () => {
+    const status = await getVerificationStatus(() =>
+      Promise.reject(new TypeError("Failed to fetch")),
+    );
+    expect(status).toMatchObject({ available: false });
   });
 });

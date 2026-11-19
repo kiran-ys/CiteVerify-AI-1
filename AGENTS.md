@@ -4,12 +4,12 @@
 
 CiteVerify AI helps a reviewer trace scientific claims to citations and source evidence. The project must favor evidence integrity, honest uncertainty, reproducibility, and human review over impressive but unsupported output.
 
-The current milestone is retrieval of genuine cited sources and legally accessible evidence text, building on reviewed claim extraction and citation matching. Extracted claims, citation matches, and retrieved passages are unverified. Do not implement claim verification or AI verdict generation until source retrieval has been reviewed by the project owner.
+The current milestone is evidence-grounded claim verification with a local model (Ollama), built on the reviewed extraction, citation, and retrieval pipeline. Every substantive verdict must rest on retrieved passages the model cites, validated in code; without usable evidence the result is `Unable to verify` with the reason. Verdicts are model judgements that require human review; do not present them as measured accuracy, and do not add confidence scores until an evaluation exists.
 
 ## Architecture boundaries
 
 - `apps/web` contains the React interface. It may depend on `packages/ui` and `packages/shared`. It must not access the database or processing engines directly.
-- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out. Until worker jobs exist, the synchronous upload routes may call `packages/document-parser`, `packages/claim-extractor`, `packages/citation-engine`, and `packages/evidence-retrieval` directly within the documented limits.
+- `apps/api` contains the Hono HTTP API. It may depend on `packages/database` and `packages/shared`. Keep request validation, persistence, and job creation here; keep heavy processing out. Until worker jobs exist, the synchronous upload routes may call `packages/document-parser`, `packages/claim-extractor`, `packages/citation-engine`, `packages/evidence-retrieval`, and `packages/verification-engine` directly within the documented limits.
 - `apps/worker` runs background processing and may use the database, shared contracts, parser, claim extractor, citation engine, and verification engine.
 - `packages/shared` owns cross-workspace types, schemas, constants, and API contracts.
 - `packages/database` owns Prisma configuration, schema, client creation, and database helpers.
@@ -17,7 +17,7 @@ The current milestone is retrieval of genuine cited sources and legally accessib
 - `packages/claim-extractor` owns deterministic identification of candidate claims in extracted text. It never assigns verdicts or confidence scores.
 - `packages/citation-engine` owns citation extraction and reference resolution within the uploaded paper. A citation match links a marker to a reference entry; it is never evidence that a source supports a claim.
 - `packages/evidence-retrieval` owns lookups against free scholarly services (Crossref, OpenAlex, Europe PMC, PubMed Central) and passage selection from legally accessible text. It sends only cited-reference details, never uploaded documents, and never decides whether a source supports a claim.
-- `packages/verification-engine` owns evidence-constrained verdict logic.
+- `packages/verification-engine` owns evidence-constrained verdict logic and the local Ollama client. Prompts go only to the operator's local Ollama server, never to a hosted model. Model output is validated before use, and displayed evidence is always stored source text, never model-quoted text.
 - `packages/ui` owns reusable React UI components without application data access.
 - `packages/config` owns shared TypeScript configuration.
 

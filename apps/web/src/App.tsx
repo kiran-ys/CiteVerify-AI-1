@@ -1,6 +1,7 @@
 import {
   type DragEvent,
   type ReactNode,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -8,8 +9,15 @@ import {
 import type {
   ExtractCitationsResponse,
   ExtractEvidenceResponse,
+  VerificationStatusResponse,
+  VerifyClaimsResponse,
 } from "@citeverify/shared";
-import { extractPdfCitations, extractPdfEvidence } from "./api.ts";
+import {
+  extractPdfCitations,
+  extractPdfEvidence,
+  extractPdfVerification,
+  getVerificationStatus,
+} from "./api.ts";
 import { ExtractedClaims } from "./ExtractedClaims.tsx";
 
 type Page = "dashboard" | "upload" | "results" | "reports";
@@ -413,19 +421,29 @@ function Upload() {
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "success">("idle");
   const [result, setResult] = useState<
-    ExtractCitationsResponse | ExtractEvidenceResponse
+    ExtractCitationsResponse | ExtractEvidenceResponse | VerifyClaimsResponse
   >();
   const [drag, setDrag] = useState(false);
   const [retrieving, setRetrieving] = useState(false);
   const [retrieveError, setRetrieveError] = useState("");
   // Each new file or extraction bumps this, so late responses for an older file are ignored.
   const generation = useRef(0);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [modelStatus, setModelStatus] = useState<VerificationStatusResponse>();
   const reset = () => {
     generation.current++;
     setResult(undefined);
     setRetrieving(false);
     setRetrieveError("");
+    setVerifying(false);
+    setVerifyError("");
   };
+  const hasResult = result !== undefined;
+  // Ask the API whether the local model is ready once there is something to verify.
+  useEffect(() => {
+    if (hasResult) getVerificationStatus().then(setModelStatus);
+  }, [hasResult]);
   const accept = (f?: File) => {
     setError("");
     reset();
@@ -487,6 +505,27 @@ function Upload() {
       }
     } finally {
       if (current === generation.current) setRetrieving(false);
+    }
+  };
+  const verifyClaims = async () => {
+    if (!file) return;
+    const current = generation.current;
+    setVerifying(true);
+    setVerifyError("");
+    try {
+      const verified = await extractPdfVerification(file);
+      if (current === generation.current) setResult(verified);
+    } catch (cause) {
+      if (current === generation.current) {
+        setVerifyError(
+          cause instanceof Error ? cause.message : "Claim verification failed.",
+        );
+      }
+    } finally {
+      if (current === generation.current) {
+        setVerifying(false);
+        getVerificationStatus().then(setModelStatus);
+      }
     }
   };
   return (
@@ -621,6 +660,14 @@ function Upload() {
               retrieving,
               error: retrieveError,
               onRetrieve: retrieveSources,
+            }}
+            verification={{
+              status: modelStatus,
+              result:
+                "verification" in result ? result.verification : undefined,
+              verifying,
+              error: verifyError,
+              onVerify: verifyClaims,
             }}
           />
         )}

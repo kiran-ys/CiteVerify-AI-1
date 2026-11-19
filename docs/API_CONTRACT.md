@@ -1,6 +1,6 @@
 # CiteVerify AI API Contract
 
-Status: text extraction implemented on `feature/pdf-upload`; claim extraction on `feature/claim-extraction`; citation extraction and matching on `feature/citation-matching`; source retrieval on `feature/evidence-retrieval` (not yet reviewed or merged).
+Status: text extraction implemented on `feature/pdf-upload`; claim extraction on `feature/claim-extraction`; citation extraction and matching on `feature/citation-matching`; source retrieval on `feature/evidence-retrieval`; claim verification on `feature/rag-verification` (not yet reviewed or merged).
 
 Base path: `/api`
 
@@ -345,6 +345,130 @@ Errors: all `POST /documents/citations` errors apply unchanged. Additionally:
 | Status | Code                        | Meaning                                                                       |
 | ------ | --------------------------- | ----------------------------------------------------------------------------- |
 | 500    | `EVIDENCE_RETRIEVAL_FAILED` | Claims and citations were extracted but source retrieval failed unexpectedly. |
+
+### `GET /verification/status`
+
+Purpose: report whether the local model can be used, before a verification request.
+
+Success `200`:
+
+```json
+{
+  "available": true,
+  "host": "http://127.0.0.1:11434",
+  "model": "llama3.2",
+  "modelInstalled": true,
+  "reason": null
+}
+```
+
+When Ollama is not running: `available: false`, `modelInstalled: false`, `reason: "No Ollama server answered at http://127.0.0.1:11434. Start it with: ollama serve"`. When the model is missing, `reason` gives the `ollama pull` command.
+
+### `POST /documents/verification`
+
+Purpose: accept one PDF, run the full pipeline of `POST /documents/evidence`, then compare each extracted claim with the retrieved passages from the sources it cites using a local model in Ollama. **Verdicts are model judgements over retrieved text and require human review.** No confidence score is returned.
+
+Request: identical to `POST /documents/extract`. The server re-parses the PDF and re-runs retrieval (cached results are reused); it never accepts evidence from the client.
+
+Configuration: `OLLAMA_HOST` (default `http://127.0.0.1:11434`) and `OLLAMA_MODEL` (default `llama3.2`). Prompts are sent only to that Ollama server.
+
+Verdicts (`verdict`):
+
+- `Supported`, `Partially supported`, `Contradicted`, `Insufficient evidence`: chosen by the model (`decidedBy: "model"`) and accepted only after validation.
+- `Unable to verify`: decided in code (`decidedBy: "rule"`) when the claim cites no source, no citation matched, no relevant passage was retrieved for any cited reference, the model is unavailable or times out, the time budget ran out, or the model's answer failed validation. `reason` always says which, per reference where relevant.
+
+Validation of model answers: the verdict must be one of the four model verdicts; every cited id must be one of the passages provided; `Supported` and `Partially supported` must cite at least one `supports` passage; `Contradicted` must cite at least one `contradicts` passage; `Supported` may not cite a `contradicts` passage; one passage may not have two roles. A failed check yields `Unable to verify` and the passages are returned with `relation: "not_cited"`.
+
+Limits: up to 6 passages per claim (highest term overlap first); claims are sent to the model one at a time; each call times out after 120 s; new calls stop after a 150 s budget (`truncated: true`). Expect up to about four minutes in total, including retrieval.
+
+Success `200`: the full `POST /documents/evidence` body plus a `verification` object. Example from the genuine paper Ioannidis (2005) _PLoS Med_ 2(8): e124 with `llama3.2`:
+
+```json
+{
+  "verification": {
+    "results": [
+      {
+        "claimId": "claim-004",
+        "verdict": "Partially supported",
+        "decidedBy": "model",
+        "reason": "Judged from abstracts only; the full texts were not accessible.",
+        "evidence": [
+          {
+            "claimId": "claim-004",
+            "text": "The false positive report probability (FPRP), the probability of no true association between a genetic variant and disease given a statistically significant finding, depends not only on the observed P value but also on both the prior probability that the association between the genetic variant and the disease is real and the statistical power of the test.",
+            "markupRemoved": false,
+            "origin": "abstract",
+            "location": {
+              "section": null,
+              "paragraph": 1,
+              "sentence": 3
+            },
+            "sourceUrl": "https://europepmc.org/article/MED/15026468",
+            "relevance": {
+              "method": "term-overlap",
+              "sharedTerms": [
+                "depend",
+                "power",
+                "prior",
+                "probability",
+                "statistical",
+                "true"
+              ],
+              "score": 0.5
+            },
+            "referenceId": "ref-010",
+            "relation": "supports",
+            "sourceTitle": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+            "doi": "10.1093/jnci/djh075",
+            "evidenceId": "E1"
+          }
+        ],
+        "evidenceScope": "abstract_only",
+        "explanation": "The evidence passage supports the idea that prior probability and statistical power are relevant factors in determining the truth of a research finding. However, it does not directly address the level of statistical significance as one of these factors.",
+        "model": {
+          "provider": "ollama",
+          "name": "llama3.2",
+          "promptVersion": "verify-v1"
+        }
+      },
+      {
+        "claimId": "claim-007",
+        "verdict": "Unable to verify",
+        "decidedBy": "rule",
+        "reason": "This claim reports the paper's own result and cites no source, so there is no cited evidence to check it against.",
+        "evidence": [],
+        "evidenceScope": "none",
+        "explanation": null,
+        "model": null
+      }
+    ],
+    "model": {
+      "provider": "ollama",
+      "name": "llama3.2",
+      "promptVersion": "verify-v1"
+    },
+    "modelAvailable": true,
+    "method": "evidence-grounded-llm",
+    "version": "1.0.0",
+    "verifiedAt": "2026-11-19T11:56:53.562Z",
+    "truncated": false,
+    "reviewStatus": "requires_human_review"
+  }
+}
+```
+
+Field rules:
+
+- `evidence` lists every passage considered for the claim, in the order shown to the model (`evidenceId` `E1`...). `text` is the stored source sentence from retrieval, never text produced by the model. `relation` is the role the model gave it (`supports`, `contradicts`, `context`) or `not_cited`.
+- `evidenceScope` is `full_text`, `abstract_only`, `mixed`, or `none`; abstract-only verdicts carry a caveat in `reason`.
+- `explanation` is model-generated text and is not evidence.
+- `model` records the provider, model name, and prompt version used; it is `null` for rule decisions.
+
+Errors: all `POST /documents/evidence` errors apply unchanged. Additionally:
+
+| Status | Code                  | Meaning                                                      |
+| ------ | --------------------- | ------------------------------------------------------------ |
+| 500    | `VERIFICATION_FAILED` | Evidence was retrieved but verification failed unexpectedly. |
 
 ## Proposed job endpoints for a later phase
 

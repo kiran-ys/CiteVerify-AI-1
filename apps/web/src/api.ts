@@ -4,6 +4,8 @@ import type {
   ExtractClaimsResponse,
   ExtractEvidenceResponse,
   ExtractDocumentResponse,
+  VerificationStatusResponse,
+  VerifyClaimsResponse,
 } from "@citeverify/shared";
 
 type FetchLike = (
@@ -187,4 +189,74 @@ export function extractPdfEvidence(
     isEvidenceResponse,
     fetchImpl,
   );
+}
+
+const VERDICTS = [
+  "Supported",
+  "Partially supported",
+  "Contradicted",
+  "Insufficient evidence",
+  "Unable to verify",
+];
+
+function isVerificationResponse(value: unknown): value is VerifyClaimsResponse {
+  if (!isEvidenceResponse(value) || !("verification" in value)) return false;
+  const verification = value.verification;
+  return (
+    isRecord(verification) &&
+    verification.reviewStatus === "requires_human_review" &&
+    Array.isArray(verification.results) &&
+    verification.results.every(
+      (result) =>
+        isRecord(result) &&
+        typeof result.claimId === "string" &&
+        VERDICTS.includes(String(result.verdict)) &&
+        Array.isArray(result.evidence) &&
+        // A substantive verdict must come with evidence it relies on.
+        (result.verdict === "Unable to verify" ||
+          result.verdict === "Insufficient evidence" ||
+          result.evidence.some(
+            (item) =>
+              isRecord(item) &&
+              (item.relation === "supports" || item.relation === "contradicts"),
+          )),
+    )
+  );
+}
+
+/**
+ * Everything from extractPdfEvidence plus local-model verdicts. Uploads the
+ * PDF to the local API only; the model runs in the operator's Ollama.
+ */
+export function extractPdfVerification(
+  file: File,
+  fetchImpl: FetchLike = fetch,
+): Promise<VerifyClaimsResponse> {
+  return postPdf(
+    "/api/documents/verification",
+    file,
+    isVerificationResponse,
+    fetchImpl,
+  );
+}
+
+export async function getVerificationStatus(
+  fetchImpl: FetchLike = fetch,
+): Promise<VerificationStatusResponse> {
+  try {
+    const response = await fetchImpl("/api/verification/status");
+    const body: unknown = await response.json();
+    if (isRecord(body) && typeof body.available === "boolean") {
+      return body as VerificationStatusResponse;
+    }
+  } catch {
+    // fall through
+  }
+  return {
+    available: false,
+    host: "",
+    model: "",
+    modelInstalled: false,
+    reason: "The CiteVerify API could not report the local model's status.",
+  };
 }

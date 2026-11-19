@@ -5,9 +5,9 @@ Last inspected: 2026-11-19
 ## Repository baseline
 
 - Repository: `https://github.com/kiran-ys/CiteVerify-AI-1`
-- Active implementation branch: `feature/evidence-retrieval`
-- Baseline commit: `a63c58e` (`Add citation extraction and matching within uploaded papers`)
-- Milestone 4 changes are uncommitted and awaiting owner review.
+- Active implementation branch: `feature/rag-verification`
+- Baseline commit: `d1f4ef4` (`Explain unreachable-server errors and document dev port clashes`)
+- Milestone 5 changes are uncommitted and awaiting owner review.
 - Application stack: Bun, Turborepo, TypeScript, React, Vite, Tailwind CSS, Hono, Prisma, SQLite
 
 ## Status summary
@@ -21,17 +21,18 @@ Last inspected: 2026-11-19
 | PDF upload           | Implemented and verified     | `POST /api/documents/extract` validates and parses one PDF in memory.                                                             |
 | Claim extraction     | Implemented (committed)      | `POST /api/documents/claims` returns unverified candidate claims with page, offsets, section, and context. Quality is unmeasured. |
 | Citation matching    | Implemented (committed)      | `POST /api/documents/citations` links in-text citations to the paper's own reference list; matches are not evidence.              |
-| Source retrieval     | Implemented, awaiting review | `POST /api/documents/evidence` resolves cited references and retrieves accessible text; opt-in; never a verdict.                  |
+| Source retrieval     | Implemented (committed)      | `POST /api/documents/evidence` resolves cited references and retrieves accessible text; opt-in; never a verdict.                  |
+| Claim verification   | Implemented, awaiting review | `POST /api/documents/verification` returns evidence-grounded verdicts from a local Ollama model; accuracy unmeasured.             |
 | Worker               | Placeholder                  | It logs `[worker] started`; no job consumption exists.                                                                            |
 | Document parser      | Implemented and verified     | `unpdf` 2.2.1 returns full text, page text, page count, warnings, and parser metadata.                                            |
 | Claim extractor      | Implemented and tested       | `packages/claim-extractor` rule-based v1.0.0; deterministic and offline; no LLM or paid API.                                      |
 | Citation engine      | Implemented and tested       | `packages/citation-engine` rule-based v1.0.0; reference list, metadata, citation detection, and matching; offline, no lookups.    |
-| Verification engine  | Placeholder                  | Package exports nothing.                                                                                                          |
+| Verification engine  | Implemented and tested       | `packages/verification-engine` v1.0.0; Ollama over HTTP; validated JSON verdicts; rule-based Unable to verify; no confidence.     |
 | Evidence retrieval   | Implemented and tested       | `packages/evidence-retrieval` v1.0.0; Crossref, OpenAlex, Europe PMC, PubMed Central; free and keyless; term-overlap passages.    |
 | Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                          |
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                          |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                         |
-| Automated tests      | Implemented and passing      | 133 Bun tests pass offline (evidence 36, claims 31, citations 25, API 22, web 15, parser 4); 1 opt-in live network test.          |
+| Automated tests      | Implemented and passing      | 172 Bun tests pass offline (evidence 36, claims 31, verification 28, API 28, citations 25, web 20, parser 4); 1 opt-in live test. |
 | Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                |
 
 ## Completed milestones
@@ -68,7 +69,7 @@ How the rule-based citation engine (v1.0.0) works:
 5. Matches each cited item: numbers to the entry with that number; author-year items to entries whose first author has the cited surname (plus any second named author) and whose year matches. One candidate is `matched`, none is `unmatched` with a reason, several are `ambiguous` with every candidate listed.
 6. Links each marker to the extracted claim containing it. The Upload screen shows each claim's citations with the matched entry's exact text and parsed fields.
 
-### Milestone 4 - Source and evidence retrieval (uncommitted, awaiting review)
+### Milestone 4 - Source and evidence retrieval (committed `8768058`, fix `d1f4ef4`)
 
 `React "Retrieve cited sources" -> POST /api/documents/evidence -> parsePdf -> extractClaims -> extractCitations -> retrieveEvidence -> React "Source retrieved — claim not yet verified"`
 
@@ -94,21 +95,45 @@ The owner's DREW paper was not available. The genuine open-access paper Ioannidi
 - Full-text retrieval was verified separately against the same paper's own Europe PMC record (PMC1182327) with the opt-in live test.
 - An earlier run exposed letters, replies, and reprints being accepted as matches; the identity check was tightened and regression tests added from those genuine cases.
 
+### Milestone 5 - Evidence-grounded claim verification (uncommitted, awaiting review)
+
+`React "Verify claims with local model" -> POST /api/documents/verification -> parse -> claims -> citations -> retrieval -> verifyClaims (Ollama) -> React verdicts`
+
+How verification (`packages/verification-engine` v1.0.0) works:
+
+1. For each extracted claim, gather the retrieved passages from the references its matched citations point to (up to six, highest term overlap first).
+2. With no passage, return `Unable to verify` by rule, explaining per reference why (own result with no citation, unmatched citation, unresolved or skipped source, metadata only, or no relevant passage). The model is not called.
+3. Otherwise send the claim and numbered, fenced passages to a local Ollama model (`llama3.2` by default) with a JSON schema, temperature 0, and a fixed seed.
+4. Validate the answer in code: known verdict, only provided passage ids, a supporting passage for Supported/Partially supported, a contradicting passage for Contradicted. Failures become `Unable to verify` with the reason.
+5. Display the verdict with the stored passage text, location, source and DOI links, the model explanation labelled "not evidence", and the model and prompt version. Rule decisions are labelled as such. No confidence score is shown.
+
+### Live verification result (genuine paper)
+
+Run on 2026-11-19 with Ollama 0.22.1 and `llama3.2` (3.2B, Q4_K_M) on an Apple M4 (16 GB), through `localhost:5173`, on Ioannidis (2005) _PLoS Med_ 2(8): e124:
+
+- HTTP 200 in 93.6 s cold (40 s with the retrieval cache warm). The same verdicts were returned on both runs.
+- 29 claims: 1 Supported, 3 Partially supported, 0 Contradicted, 0 Insufficient evidence, 25 Unable to verify.
+- The 4 model verdicts were based on 13 retrieved passages: 11 abstract sentences and 2 full-text sentences from one open-access source (reference 27, BMC). Every model answer passed validation.
+- Rule decisions: 17 claims had no relevant passage retrieved for any cited reference; 8 report the paper's own result and cite no source.
+- Reviewer reading of the 4 model verdicts: claim-005 is reasonable; claim-011 is reasonable but cites weaker passages as "supports"; claim-004 arguably should be Supported (the passage names P value, prior probability, and power); claim-014's explanation overlooks a passage showing inadequate reporting. These are single-paper observations, not a measured accuracy.
+
 ## Next milestone
 
-Owner review of source retrieval, ideally on the DREW paper. Then Phase 2 durable jobs so retrieval can run in the worker with progress reporting and a shared cache, followed by a measured evaluation of claim, citation, and source resolution accuracy. Verification remains deferred.
+Owner review of verification, ideally on the DREW paper. Then a labelled evaluation set to measure claim, citation, retrieval, and verdict accuracy; a comparison of larger local models; better passage selection; and Phase 2 durable jobs so long runs move to the worker.
 
 ## Validation
 
-Milestone 4, executed 2026-11-19 with Bun 1.4.4 (`--force`, no cache replay):
+Milestone 5, executed 2026-11-19 with Bun 1.4.4 (`--force`, no cache replay):
 
 - `bun install` - passed
 - `bun run lint` - 11 workspace lint tasks passed
 - `bun run typecheck` - 12 workspace typecheck tasks passed
-- `bun run test` - 131 tests passed offline; 1 live test skipped by default
-- `RUN_NETWORK_TESTS=1 bun test` in `packages/evidence-retrieval` - live test passed twice: once with Ioannidis 2005 resolved by DOI and full text from Europe PMC (2 passages); once while Europe PMC returned HTTP 503, correctly reported as metadata only with the outage listed
+- `bun run test` - 172 tests passed offline; 1 live retrieval test skipped by default
 - `bun run build` - API, worker, and web production builds passed
-- Browser smoke test - the genuine paper uploaded through the Upload screen; extraction showed 37 references with no lookups until "Retrieve cited sources" was clicked; retrieval completed through the Vite proxy (35 sources: 10 abstract only, 13 metadata only, 12 unavailable including 10 skipped), showing labels, access badges, passages, and per-service errors; no horizontal scrolling at desktop width or 375 px; API logs contained no document text.
+- Live run - Ollama 0.22.1 with `llama3.2` verified the genuine Ioannidis (2005) paper end to end through `localhost:5173` (see above)
+- Browser check - verification bar showed the model status; verdicts, passages, links, and labels rendered under claims; rule decisions labelled separately; the demo Results page showed no real verdicts; 375 px layout without horizontal scrolling
+
+Milestone 4 validation (2026-11-19): lint 11/11, typecheck 12/12, 133 tests, build 4/4, live retrieval test, and a browser run through `localhost:5173`.
 
 Milestone 3 validation (2026-11-19): lint 10/10, typecheck 11/11, 87 tests, build 4/4, and a browser smoke test with a generated three-page paper.
 
@@ -127,6 +152,17 @@ Investigated 2026-11-19 after a "Failed to fetch" report:
 - Source retrieval takes about 60 seconds; the Vite proxy and the API (`idleTimeout: 120`) both allow it. Verified through `localhost:5173` with the genuine Ioannidis (2005) paper: 24 of 25 looked-up references resolved and 6 abstract passages returned (Europe PMC timed out 10 times, so full-text availability for those sources is unknown).
 
 ## Known limitations and deferred work
+
+Claim verification:
+
+- Verdicts are judgements by a small local model (3B by default) over short retrieved passages. Their accuracy has not been measured; on the one paper tested, two of four model verdicts were debatable on review.
+- Evidence is limited to term-overlap passages from the claim's own cited sources, mostly abstracts; claims are not checked against the wider literature.
+- Most claims end as `Unable to verify` because the evidence pipeline yields no passage for them; verification cannot be better than retrieval.
+- `Contradicted` and `Insufficient evidence` were not produced in the live run; those paths are tested with a fake model only.
+- Prompt-injection defences (fencing, instructions, output validation) reduce but do not eliminate the risk from untrusted passage text.
+- Verification runs synchronously (up to about four minutes) and repeats the whole pipeline; the retrieval cache makes repeats faster.
+- A reference list with only one numbered entry is not recognised as numbered, so its citation stays unmatched (citation-engine limitation found while testing).
+- The page shell sets `body { min-width: 320px }`, so panes narrower than 320 px scroll horizontally.
 
 Source retrieval:
 
@@ -172,6 +208,6 @@ General:
 - The 15-second timeout ends the HTTP request but does not stop the parser; a document still loading when the timeout fires is not cleaned up.
 - Processing is synchronous and in memory; the timeout does not yet provide durable cancellation or resumability.
 - Automated coverage does not yet include a real encrypted fixture, a 25 MB boundary fixture, or a representative multi-column scientific paper.
-- `docs/CITEVERIFY_MASTER_HANDBOOK.md` and its PDF do not yet describe the claim-extractor, citation-engine, or evidence-retrieval work; update and regenerate them after owner review.
+- `docs/CITEVERIFY_MASTER_HANDBOOK.md` and its PDF do not yet describe the claim-extractor, citation-engine, evidence-retrieval, or verification work; update and regenerate them after owner review.
 - CI, persistence, worker jobs, authentication, and deployment remain unimplemented.
 - Define retention policy before persisting uploaded files.

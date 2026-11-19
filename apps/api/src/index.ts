@@ -9,6 +9,14 @@ import {
   retrieveEvidence,
 } from "@citeverify/evidence-retrieval";
 import {
+  DEFAULT_OLLAMA_HOST,
+  DEFAULT_OLLAMA_MODEL,
+  type OllamaConfig,
+  ollamaJudge,
+  ollamaStatus,
+  verifyClaims,
+} from "@citeverify/verification-engine";
+import {
   PDF_PARSER_NAME,
   PDF_PARSER_VERSION,
   PdfParserError,
@@ -23,6 +31,8 @@ import {
   type ExtractDocumentResponse,
   type ExtractEvidenceResponse,
   type PdfExtractionErrorCode,
+  type VerificationStatusResponse,
+  type VerifyClaimsResponse,
 } from "@citeverify/shared";
 import { type Context, Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -244,6 +254,39 @@ export function configureEvidenceRetrieval(options: RetrievalOptions): void {
   retrievalOptions = options;
 }
 
+type EvidenceOutcome =
+  | { ok: true; result: ExtractEvidenceResponse }
+  | { ok: false; response: Response };
+
+/** Retrieves cited sources for a PDF whose claims and citations are extracted. */
+async function addEvidence(
+  c: Context,
+  withCitations: ExtractCitationsResponse,
+): Promise<EvidenceOutcome> {
+  try {
+    const evidence = await retrieveEvidence(
+      {
+        references: withCitations.citations.references,
+        claims: withCitations.claims.items,
+        citations: withCitations.citations.inText,
+      },
+      retrievalOptions,
+    );
+    return { ok: true, result: { ...withCitations, evidence } };
+  } catch {
+    return {
+      ok: false,
+      response: c.json(
+        errorResponse(
+          "EVIDENCE_RETRIEVAL_FAILED",
+          "Source retrieval failed unexpectedly after claims and citations were extracted.",
+        ),
+        500,
+      ),
+    };
+  }
+}
+
 app.post("/documents/evidence", async (c) => {
   const outcome = await extractUploadedPdf(c);
   if (!outcome.ok) return outcome.response;
@@ -251,37 +294,86 @@ app.post("/documents/evidence", async (c) => {
   if (!withClaims.ok) return withClaims.response;
   const withCitations = addCitations(c, withClaims.result);
   if (!withCitations.ok) return withCitations.response;
+  const withEvidence = await addEvidence(c, withCitations.result);
+  if (!withEvidence.ok) return withEvidence.response;
+  return c.json(withEvidence.result, 200);
+});
 
-  let evidence: ExtractEvidenceResponse["evidence"];
+/**
+ * Local model settings. The model runs in Ollama on the operator's machine;
+ * prompts never leave it. Tests replace fetch.
+ */
+type VerificationConfig = OllamaConfig & { timeBudgetMs?: number };
+let verificationConfig: VerificationConfig = {
+  host: process.env.OLLAMA_HOST || DEFAULT_OLLAMA_HOST,
+  model: process.env.OLLAMA_MODEL || DEFAULT_OLLAMA_MODEL,
+};
+
+export function configureVerification(config: VerificationConfig): void {
+  verificationConfig = config;
+}
+
+app.get("/verification/status", async (c) => {
+  const status = await ollamaStatus(verificationConfig);
+  const response: VerificationStatusResponse = {
+    available: status.available && status.modelInstalled,
+    host: verificationConfig.host,
+    model: verificationConfig.model,
+    modelInstalled: status.modelInstalled,
+    reason: status.reason,
+  };
+  return c.json(response, 200);
+});
+
+app.post("/documents/verification", async (c) => {
+  const outcome = await extractUploadedPdf(c);
+  if (!outcome.ok) return outcome.response;
+  const withClaims = addClaims(c, outcome.result);
+  if (!withClaims.ok) return withClaims.response;
+  const withCitations = addCitations(c, withClaims.result);
+  if (!withCitations.ok) return withCitations.response;
+  const withEvidence = await addEvidence(c, withCitations.result);
+  if (!withEvidence.ok) return withEvidence.response;
+
+  const status = await ollamaStatus(verificationConfig);
+  const usable = status.available && status.modelInstalled;
+  let verification: VerifyClaimsResponse["verification"];
   try {
-    evidence = await retrieveEvidence(
+    verification = await verifyClaims(
       {
-        references: withCitations.result.citations.references,
-        claims: withCitations.result.claims.items,
-        citations: withCitations.result.citations.inText,
+        claims: withEvidence.result.claims.items,
+        citations: withEvidence.result.citations.inText,
+        references: withEvidence.result.citations.references,
+        sources: withEvidence.result.evidence.sources,
       },
-      retrievalOptions,
+      {
+        judge: usable ? ollamaJudge(verificationConfig) : null,
+        modelName: usable ? verificationConfig.model : null,
+        unavailableReason: status.reason,
+        timeBudgetMs: verificationConfig.timeBudgetMs,
+      },
     );
   } catch {
     return c.json(
       errorResponse(
-        "EVIDENCE_RETRIEVAL_FAILED",
-        "Source retrieval failed unexpectedly after claims and citations were extracted.",
+        "VERIFICATION_FAILED",
+        "Claim verification failed unexpectedly after evidence was retrieved.",
       ),
       500,
     );
   }
 
-  const response: ExtractEvidenceResponse = {
-    ...withCitations.result,
-    evidence,
+  const response: VerifyClaimsResponse = {
+    ...withEvidence.result,
+    verification,
   };
   return c.json(response, 200);
 });
 
 export default {
   port: Number(process.env.API_PORT ?? 3001),
-  // Source retrieval can take up to its 60 s budget; Bun's default idle timeout is 10 s.
-  idleTimeout: 120,
+  // Retrieval (up to ~70 s) plus local-model verification (150 s budget) exceed
+  // Bun's 10 s default idle timeout; 240 s stays under Bun's 255 s maximum.
+  idleTimeout: 240,
   fetch: app.fetch,
 };

@@ -1,12 +1,27 @@
 import type {
   ExtractCitationsResponse,
   ExtractClaimsResponse,
+  ClaimVerification,
   ExtractEvidenceResponse,
+  VerificationStatusResponse,
+  VerifyClaimsResponse,
   ExtractedClaimType,
 } from "@citeverify/shared";
 import { useState } from "react";
 import { CitationSummary, ClaimCitations } from "./ClaimCitations.tsx";
+import { ClaimVerdict, VerificationBar } from "./ClaimVerdict.tsx";
 import { SourceRetrievalBar } from "./RetrievedSource.tsx";
+
+function VerdictFor({
+  claimId,
+  verdicts,
+}: {
+  claimId: string;
+  verdicts?: Map<string, ClaimVerification>;
+}) {
+  const result = verdicts?.get(claimId);
+  return result ? <ClaimVerdict result={result} /> : null;
+}
 
 const typeLabel: Record<ExtractedClaimType, string> = {
   reported_finding: "Reported finding",
@@ -23,6 +38,7 @@ export function ExtractedClaims({
   claims,
   citations,
   retrieval,
+  verification,
 }: {
   claims: ExtractClaimsResponse["claims"];
   citations?: ExtractCitationsResponse["citations"];
@@ -33,7 +49,20 @@ export function ExtractedClaims({
     error: string;
     onRetrieve: () => void;
   };
+  /** Opt-in local-model verification; real results only, never demo data. */
+  verification?: {
+    status?: VerificationStatusResponse;
+    result?: VerifyClaimsResponse["verification"];
+    verifying: boolean;
+    error: string;
+    onVerify: () => void;
+  };
 }) {
+  const verdicts = verification?.result
+    ? new Map(
+        verification.result.results.map((result) => [result.claimId, result]),
+      )
+    : undefined;
   const sources = retrieval?.evidence
     ? new Map(
         retrieval.evidence.sources.map((source) => [
@@ -71,6 +100,15 @@ export function ExtractedClaims({
           retrieving={retrieval.retrieving}
           error={retrieval.error}
           onRetrieve={retrieval.onRetrieve}
+        />
+      )}
+      {citations && verification && (
+        <VerificationBar
+          status={verification.status}
+          verification={verification.result}
+          verifying={verification.verifying}
+          error={verification.error}
+          onVerify={verification.onVerify}
         />
       )}
 
@@ -122,11 +160,14 @@ export function ExtractedClaims({
                 </div>
                 <blockquote>{claim.text}</blockquote>
                 {citations && (
-                  <ClaimCitations
-                    claim={claim}
-                    citations={citations}
-                    sources={sources}
-                  />
+                  <>
+                    <VerdictFor claimId={claim.id} verdicts={verdicts} />
+                    <ClaimCitations
+                      claim={claim}
+                      citations={citations}
+                      sources={sources}
+                    />
+                  </>
                 )}
                 <details>
                   <summary>Context and extraction details</summary>
