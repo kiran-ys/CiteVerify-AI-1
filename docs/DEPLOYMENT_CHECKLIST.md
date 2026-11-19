@@ -47,4 +47,3 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] Browser smoke tests cover upload, extraction, errors, and mobile layout.
 - [ ] Rollback is tested.
 - [ ] Final public deployment has explicit owner approval.
-

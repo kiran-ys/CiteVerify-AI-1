@@ -1,10 +1,10 @@
 # CiteVerify AI API Contract
 
-Status: proposed contract for the next milestone. Only the health endpoint currently exists.
+Status: extraction endpoint implemented on `feature/pdf-upload`.
 
 Base path: `/api`
 
-## Existing endpoint
+## Implemented endpoints
 
 ### `GET /health`
 
@@ -13,8 +13,6 @@ Response `200`:
 ```json
 { "status": "ok" }
 ```
-
-## Proposed milestone endpoint
 
 ### `POST /documents/extract`
 
@@ -28,6 +26,9 @@ Request:
 - Required signature: bytes beginning with the PDF signature
 - Maximum: 25 MB
 - One file only
+- Parser limit: 500 pages
+- Response timeout: 15 seconds
+- Persistence: none; the request is processed in memory
 
 Success `200`:
 
@@ -41,16 +42,14 @@ Success `200`:
   },
   "extraction": {
     "text": "Actual extracted text...",
-    "pages": [
-      { "page": 1, "text": "Page one text..." }
-    ],
+    "pages": [{ "page": 1, "text": "Page one text..." }],
     "warnings": [],
-    "parser": { "name": "selected-parser", "version": "x.y.z" }
+    "parser": { "name": "unpdf", "version": "2.2.1" }
   }
 }
 ```
 
-If a parser cannot provide trustworthy page boundaries, `pages` may be omitted and a warning must explain the limitation.
+The current parser returns page-level text. OCR is not available, and complex visual reading order still requires representative-document evaluation.
 
 Error envelope:
 
@@ -64,16 +63,17 @@ Error envelope:
 }
 ```
 
-| Status | Code | Meaning |
-| --- | --- | --- |
-| 400 | `FILE_REQUIRED` | No file field was supplied. |
-| 400 | `INVALID_PDF` | Signature or parser validation failed. |
-| 400 | `ENCRYPTED_PDF` | The file requires a password. |
-| 413 | `FILE_TOO_LARGE` | The request exceeds 25 MB. |
-| 415 | `UNSUPPORTED_MEDIA_TYPE` | The declared or detected type is not PDF. |
-| 422 | `NO_EXTRACTABLE_TEXT` | The PDF is valid but contains no usable text; OCR is not yet available. |
-| 500 | `EXTRACTION_FAILED` | An unexpected safe-to-report extraction error occurred. |
-| 503 | `SERVICE_UNAVAILABLE` | Extraction capacity is temporarily unavailable. |
+| Status | Code                     | Meaning                                                                 |
+| ------ | ------------------------ | ----------------------------------------------------------------------- |
+| 400    | `FILE_REQUIRED`          | No file field was supplied.                                             |
+| 400    | `INVALID_PDF`            | Signature or parser validation failed.                                  |
+| 400    | `ENCRYPTED_PDF`          | The file requires a password.                                           |
+| 413    | `FILE_TOO_LARGE`         | The request exceeds 25 MB.                                              |
+| 413    | `PAGE_LIMIT_EXCEEDED`    | The PDF has more than 500 pages.                                        |
+| 415    | `UNSUPPORTED_MEDIA_TYPE` | The declared or detected type is not PDF.                               |
+| 422    | `NO_EXTRACTABLE_TEXT`    | The PDF is valid but contains no usable text; OCR is not yet available. |
+| 500    | `EXTRACTION_FAILED`      | An unexpected safe-to-report extraction error occurred.                 |
+| 503    | `EXTRACTION_TIMEOUT`     | Extraction did not finish within 15 seconds; the request may be retried. |
 
 Security and privacy rules:
 
@@ -81,7 +81,7 @@ Security and privacy rules:
 - Do not log file bytes or extracted text.
 - Bound memory, processing time, page count, and decompression behavior.
 - Return generic internal errors; keep sensitive diagnostics in protected logs.
-- Delete temporary files in success and failure paths.
+- Do not create temporary files for the synchronous endpoint.
 - Do not persist uploads during the first milestone unless retention is explicitly designed.
 
 ## Proposed job endpoints for a later phase
@@ -95,4 +95,3 @@ Security and privacy rules:
 - `POST /reports` and `GET /reports/:reportId` - create and retrieve traceable reports.
 
 These later endpoints are design targets, not implemented behavior.
-

@@ -4,29 +4,31 @@
 
 - [x] Inspect current repository and separate implemented behavior from placeholders.
 - [x] Add agent instructions, project status, proposed API contract, deployment checklist, and master handbook.
-- [ ] Review documentation with the project owner.
+- [x] Review documentation with the project owner and proceed to implementation.
 
 ## Phase 1 - Real PDF upload and extraction
 
 Goal: upload one text-based scientific PDF and display real extracted text.
 
-1. Add shared upload response and error types.
-2. Select a maintained Bun-compatible TypeScript PDF extraction library after a small compatibility spike.
-3. Implement parser output with document text, page count, per-page text when supported, warnings, and extraction metadata.
-4. Add `POST /api/documents/extract` with multipart validation.
-5. Enforce PDF signature, MIME allowlist, 25 MB maximum, single-file request, request timeout, and safe errors.
-6. Connect the existing React upload screen to the endpoint.
-7. Add loading, error, empty-text, and success views; remove simulated progress from live mode.
-8. Add unit tests for validation and parser behavior plus an API integration test.
-9. Add legally redistributable fixtures: one small text PDF, one malformed file, and one image-only PDF.
-10. Run lint, typecheck, tests, and build; update status documents.
+1. [x] Add shared upload response and error types.
+2. [x] Select and pin a Bun-compatible parser (`unpdf` 2.2.1) after a compatibility spike.
+3. [x] Return document text, page count, per-page text, warnings, and parser metadata.
+4. [x] Add `POST /api/documents/extract` with multipart validation.
+5. [x] Enforce PDF signature, MIME allowlist, 25 MB maximum, single-file request, timeout, page limit, and safe errors.
+6. [x] Connect the React upload screen to the endpoint.
+7. [x] Add loading, error, empty-text, and success views; remove simulated progress from live extraction.
+8. [x] Add parser, API integration, and web API-client tests.
+9. [x] Generate controlled PDF fixtures in memory so document bytes are not committed.
+10. [x] Run lint, typecheck, tests, build, and a browser smoke test; update status documents.
 
 Acceptance evidence:
 
-- A real PDF produces actual extracted text in the browser.
-- Invalid, oversized, malformed, encrypted, and image-only inputs fail safely or return explicit warnings.
-- No uploaded document or text is logged or committed.
-- Demo mode remains visibly separate.
+- [x] A real PDF produces actual extracted text in the browser.
+- [ ] Invalid, oversized, malformed, encrypted, and image-only inputs all have dedicated fixtures. Current automated coverage verifies valid, malformed/signature, wrong media type, missing file, and empty-text behavior; remaining boundary fixtures are deferred.
+- [x] No uploaded document or text is logged, committed, or persisted.
+- [x] Demo mode remains visibly separate.
+
+Phase 1 is functionally complete and ready for review. The unchecked fixture matrix above is hardening work, not permission to claim OCR, encryption support, or production readiness.
 
 ## Phase 2 - Durable processing jobs
 
@@ -64,4 +66,3 @@ Acceptance evidence:
 - Generate traceable human-review reports.
 - Migrate production persistence away from a local SQLite file when services are separated.
 - Add CI, managed database, controlled object storage, HTTPS, CORS policy, monitoring, backups, and incident procedures.
-

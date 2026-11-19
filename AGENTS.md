@@ -83,4 +83,3 @@ A feature is done only when:
 - Update `docs/API_CONTRACT.md` before or with API behavior changes.
 - Update `docs/DEPLOYMENT_CHECKLIST.md` when infrastructure requirements change.
 - Update `docs/CITEVERIFY_MASTER_HANDBOOK.md` only for durable architectural or workflow changes, then regenerate and visually verify its PDF.
-

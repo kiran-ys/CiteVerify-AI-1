@@ -8,10 +8,12 @@
   },
   "scripts": {
     "lint": "biome lint .",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@citeverify/shared": "workspace:*"
+    "@citeverify/shared": "workspace:*",
+    "unpdf": "^2.2.1"
   },
   "devDependencies": {
     "@citeverify/config": "workspace:*",
