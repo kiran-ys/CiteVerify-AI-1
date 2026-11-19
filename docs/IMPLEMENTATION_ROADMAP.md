@@ -60,9 +60,24 @@ Acceptance evidence:
 
 ## Phase 4 - Citation extraction and association
 
-- Parse bibliography entries and in-text citations.
-- Resolve DOI and metadata conservatively.
-- Associate claims with citations and expose ambiguous matches for review.
+Goal: link each extracted claim's in-text citations to entries in the same paper's reference list, with explicit unmatched and ambiguous results.
+
+1. [x] Implement `packages/citation-engine` (rule-based v1.0.0): find the reference list, split numbered and author-year entries (including full-name ML-style lists), and drop running headers.
+2. [x] Read authors, year, title, and DOI from each entry's own text only; leave unclear fields empty.
+3. [x] Detect numeric (`[1]`, `[2, 3]`, `[4-7]`) and author-year (parenthetical and narrative) citations with exact markers and page offsets.
+4. [x] Match cited items by number, or by first-author surname and year; report `unmatched` and `ambiguous` with reasons instead of choosing.
+5. [x] Add `POST /api/documents/citations`, reusing upload validation, `parsePdf`, and `extractClaims`.
+6. [x] Show matched references under each extracted claim, labelled "Citation matched — evidence not yet verified".
+7. [x] Test numbered, ranged, listed, author-year, narrative, missing, ambiguous, repeated, and no-reference-list cases, plus a real generated PDF through the API.
+8. [ ] Validate on representative real papers (including the owner's 16-page DREW paper and two-column layouts) and record measured match accuracy.
+9. [ ] Resolve DOIs and metadata against external registries conservatively (Phase 5 dependency).
+10. [ ] Let reviewers correct or confirm ambiguous and unmatched citations.
+
+Acceptance evidence:
+
+- [x] Every marker and single-page reference entry maps back to the returned page text by offsets.
+- [x] Responses contain no verdicts, support labels, or confidence scores.
+- [ ] Measured matching accuracy on real papers.
 
 ## Phase 5 - Source retrieval and evidence extraction
 

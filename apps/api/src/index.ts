@@ -1,3 +1,4 @@
+import { extractCitations } from "@citeverify/citation-engine";
 import {
   CLAIM_EXTRACTION_METHOD,
   CLAIM_EXTRACTOR_VERSION,
@@ -13,6 +14,7 @@ import {
   MAX_PDF_BYTES,
   type ApiErrorCode,
   type ApiErrorResponse,
+  type ExtractCitationsResponse,
   type ExtractClaimsResponse,
   type ExtractDocumentResponse,
   type PdfExtractionErrorCode,
@@ -139,32 +141,77 @@ app.post("/documents/extract", async (c) => {
   return c.json(outcome.result, 200);
 });
 
+type ClaimsOutcome =
+  | { ok: true; result: ExtractClaimsResponse }
+  | { ok: false; response: Response };
+
+/** Runs claim extraction on an already-extracted PDF. */
+function addClaims(
+  c: Context,
+  extracted: ExtractDocumentResponse,
+): ClaimsOutcome {
+  try {
+    const claims = extractClaims(extracted.extraction.pages);
+    return {
+      ok: true,
+      result: {
+        ...extracted,
+        claims: {
+          items: claims.claims,
+          method: CLAIM_EXTRACTION_METHOD,
+          version: CLAIM_EXTRACTOR_VERSION,
+          truncated: claims.truncated,
+          verificationStatus: "not_verified",
+        },
+      },
+    };
+  } catch {
+    return {
+      ok: false,
+      response: c.json(
+        errorResponse(
+          "CLAIM_EXTRACTION_FAILED",
+          "Claim extraction failed after the PDF text was extracted.",
+        ),
+        500,
+      ),
+    };
+  }
+}
+
 app.post("/documents/claims", async (c) => {
   const outcome = await extractUploadedPdf(c);
   if (!outcome.ok) return outcome.response;
+  const withClaims = addClaims(c, outcome.result);
+  if (!withClaims.ok) return withClaims.response;
+  return c.json(withClaims.result, 200);
+});
 
-  let claims: ReturnType<typeof extractClaims>;
+app.post("/documents/citations", async (c) => {
+  const outcome = await extractUploadedPdf(c);
+  if (!outcome.ok) return outcome.response;
+  const withClaims = addClaims(c, outcome.result);
+  if (!withClaims.ok) return withClaims.response;
+
+  let citations: ExtractCitationsResponse["citations"];
   try {
-    claims = extractClaims(outcome.result.extraction.pages);
+    citations = extractCitations(
+      withClaims.result.extraction.pages,
+      withClaims.result.claims.items,
+    );
   } catch {
     return c.json(
       errorResponse(
-        "CLAIM_EXTRACTION_FAILED",
-        "Claim extraction failed after the PDF text was extracted.",
+        "CITATION_EXTRACTION_FAILED",
+        "Citation matching failed after the PDF text and claims were extracted.",
       ),
       500,
     );
   }
 
-  const response: ExtractClaimsResponse = {
-    ...outcome.result,
-    claims: {
-      items: claims.claims,
-      method: CLAIM_EXTRACTION_METHOD,
-      version: CLAIM_EXTRACTOR_VERSION,
-      truncated: claims.truncated,
-      verificationStatus: "not_verified",
-    },
+  const response: ExtractCitationsResponse = {
+    ...withClaims.result,
+    citations,
   };
   return c.json(response, 200);
 });

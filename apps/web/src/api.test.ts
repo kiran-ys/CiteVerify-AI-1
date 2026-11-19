@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type {
+  ExtractCitationsResponse,
   ExtractClaimsResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
-import { extractPdf, extractPdfClaims } from "./api.ts";
+import { extractPdf, extractPdfCitations, extractPdfClaims } from "./api.ts";
 
 const success: ExtractDocumentResponse = {
   document: {
@@ -144,6 +145,104 @@ describe("extractPdfClaims", () => {
 
     expect(
       extractPdfClaims(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        mockFetch,
+      ),
+    ).rejects.toThrow("invalid extraction response");
+  });
+});
+
+const citationsSuccess: ExtractCitationsResponse = {
+  ...claimsSuccess,
+  citations: {
+    referenceList: { found: true, page: 9, style: "numbered" },
+    references: [
+      {
+        id: "ref-001",
+        number: 1,
+        text: "[1] Smith J. A study. J Test. 2020;1:1-2.",
+        page: 9,
+        pageEnd: 9,
+        location: { start: 0, end: 41 },
+        metadata: {
+          authors: ["Smith J"],
+          year: "2020",
+          title: "A study",
+          doi: null,
+        },
+      },
+    ],
+    inText: [
+      {
+        id: "cit-001",
+        marker: "[1]",
+        style: "numeric",
+        page: 1,
+        location: { start: 45, end: 48 },
+        claimId: "claim-001",
+        matches: [
+          {
+            key: "1",
+            status: "matched",
+            referenceIds: ["ref-001"],
+            reason: null,
+          },
+        ],
+      },
+    ],
+    method: "rule-based",
+    version: "1.0.0",
+    truncated: false,
+    evidenceStatus: "not_verified",
+  },
+};
+
+describe("extractPdfCitations", () => {
+  test("posts the PDF to the citations endpoint", async () => {
+    let calledWith = "";
+    const mockFetch = (input: RequestInfo | URL) => {
+      calledWith = String(input);
+      return Promise.resolve(Response.json(citationsSuccess));
+    };
+    const result = await extractPdfCitations(
+      new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+      mockFetch,
+    );
+
+    expect(calledWith).toBe("/api/documents/citations");
+    expect(result.citations.inText[0]?.matches[0]?.status).toBe("matched");
+  });
+
+  test("rejects a response that claims evidence was verified", async () => {
+    const mockFetch = () =>
+      Promise.resolve(
+        Response.json({
+          ...citationsSuccess,
+          citations: {
+            ...citationsSuccess.citations,
+            evidenceStatus: "verified",
+          },
+        }),
+      );
+
+    expect(
+      extractPdfCitations(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        mockFetch,
+      ),
+    ).rejects.toThrow("invalid extraction response");
+  });
+
+  test("rejects an unknown match status", async () => {
+    const bad = structuredClone(citationsSuccess) as unknown as {
+      citations: { inText: { matches: { status: string }[] }[] };
+    };
+    const first = bad.citations.inText[0]?.matches[0];
+    if (first) first.status = "supported";
+    const mockFetch = () => Promise.resolve(Response.json(bad));
+
+    expect(
+      extractPdfCitations(
         new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
         mockFetch,
       ),

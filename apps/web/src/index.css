@@ -1894,3 +1894,136 @@ tbody tr:hover {
     margin-bottom: 6px;
   }
 }
+.citation-summary {
+  margin: 12px 18px 0;
+  padding: 10px 12px;
+  border: 1px solid #d8dfeb;
+  border-radius: 8px;
+  background: #f6f9fd;
+  color: #3d4a5f;
+  font-size: 0.64rem;
+  line-height: 1.55;
+}
+.citation-summary p {
+  margin: 0;
+}
+.citation-summary p + p {
+  margin-top: 5px;
+  color: #6a778b;
+}
+.claim-citations {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #f8f9fb;
+  border: 1px solid #e6e9ef;
+}
+.claim-citations h3 {
+  margin: 0 0 6px;
+  color: #3d4a5f;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.claim-citations ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.claim-citation + .claim-citation {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #dfe3ea;
+}
+.citation-marker {
+  margin: 0;
+  color: #6a778b;
+  font-size: 0.62rem;
+}
+.citation-marker code {
+  color: #27364e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.match-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  font-size: 0.62rem;
+}
+.match-key {
+  color: #27364e;
+  font-weight: 700;
+}
+.match-status {
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-weight: 700;
+}
+.match-status.matched {
+  background: #e6f4ee;
+  color: #1d6b4f;
+}
+.match-status.unmatched {
+  background: #fbeaea;
+  color: #9a3434;
+}
+.match-status.ambiguous {
+  background: #fff3dc;
+  color: #8a5a12;
+}
+.match-reason {
+  margin: 5px 0 0;
+  color: #5d6676;
+  font-size: 0.62rem;
+}
+.reference-entry {
+  margin-top: 7px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #e6e9ef;
+}
+.reference-source,
+.reference-note {
+  margin: 0;
+  color: #7b8494;
+  font-size: 0.58rem;
+}
+.reference-note {
+  margin-top: 6px;
+}
+.claims-list .reference-entry blockquote {
+  margin: 6px 0 0;
+  border-left-color: #b7c3d6;
+  font-size: 0.66rem;
+}
+.reference-entry dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 12px;
+  margin: 7px 0 0;
+  font-size: 0.62rem;
+}
+.reference-entry dt {
+  color: #7b8494;
+  font-weight: 650;
+}
+.reference-entry dd {
+  margin: 0;
+  color: #3d4a5f;
+  overflow-wrap: anywhere;
+}
+.claim-citations-empty {
+  margin: 8px 0 0;
+  color: #7b8494;
+  font-size: 0.62rem;
+}
+@media (max-width: 560px) {
+  .reference-entry dl {
+    grid-template-columns: 1fr;
+  }
+}

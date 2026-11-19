@@ -1,8 +1,10 @@
 import type {
+  ExtractCitationsResponse,
   ExtractClaimsResponse,
   ExtractedClaimType,
 } from "@citeverify/shared";
 import { useState } from "react";
+import { CitationSummary, ClaimCitations } from "./ClaimCitations.tsx";
 
 const typeLabel: Record<ExtractedClaimType, string> = {
   reported_finding: "Reported finding",
@@ -17,8 +19,10 @@ type Filter = "all" | ExtractedClaimType;
  */
 export function ExtractedClaims({
   claims,
+  citations,
 }: {
   claims: ExtractClaimsResponse["claims"];
+  citations?: ExtractCitationsResponse["citations"];
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const visible = claims.items.filter(
@@ -42,6 +46,7 @@ export function ExtractedClaims({
         candidates for review: nothing here has been checked against its
         sources, and no verdict or confidence score is assigned.
       </p>
+      {citations && <CitationSummary citations={citations} />}
 
       {claims.items.length === 0 ? (
         <p className="claims-empty">
@@ -90,6 +95,9 @@ export function ExtractedClaims({
                   </span>
                 </div>
                 <blockquote>{claim.text}</blockquote>
+                {citations && (
+                  <ClaimCitations claim={claim} citations={citations} />
+                )}
                 <details>
                   <summary>Context and extraction details</summary>
                   <dl>

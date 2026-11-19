@@ -5,8 +5,8 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ExtractClaimsResponse } from "@citeverify/shared";
-import { extractPdfClaims } from "./api.ts";
+import type { ExtractCitationsResponse } from "@citeverify/shared";
+import { extractPdfCitations } from "./api.ts";
 import { ExtractedClaims } from "./ExtractedClaims.tsx";
 
 type Page = "dashboard" | "upload" | "results" | "reports";
@@ -409,7 +409,7 @@ function Upload() {
   const [file, setFile] = useState<File>();
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "success">("idle");
-  const [result, setResult] = useState<ExtractClaimsResponse>();
+  const [result, setResult] = useState<ExtractCitationsResponse>();
   const [drag, setDrag] = useState(false);
   const accept = (f?: File) => {
     setError("");
@@ -443,7 +443,7 @@ function Upload() {
     setResult(undefined);
     setPhase("extracting");
     try {
-      setResult(await extractPdfClaims(file));
+      setResult(await extractPdfCitations(file));
       setPhase("success");
     } catch (cause) {
       setPhase("idle");
@@ -514,19 +514,20 @@ function Upload() {
         <div className="upload-actions">
           <Button disabled={!file || phase === "extracting"} onClick={upload}>
             {phase === "extracting"
-              ? "Extracting text and claims…"
+              ? "Extracting text, claims and citations…"
               : phase === "success"
                 ? "Extract again"
-                : "Extract text and claims"}
+                : "Extract text, claims and citations"}
           </Button>
         </div>
         <div className="info">
           <Icon name="info" />
           <p>
             <b>Live extraction.</b> The PDF is sent to the local Hono API and
-            parsed in memory. It is not saved. Candidate claims are selected by
-            transparent rules and are not verified; verification results
-            elsewhere in the app remain demo-only.
+            parsed in memory. It is not saved. Candidate claims and their
+            citations are found by transparent rules; a matched citation only
+            links a claim to the paper's own reference list and is not evidence.
+            Verification results elsewhere in the app remain demo-only.
           </p>
         </div>
         {result && (
@@ -574,7 +575,12 @@ function Upload() {
             </div>
           </section>
         )}
-        {result && <ExtractedClaims claims={result.claims} />}
+        {result && (
+          <ExtractedClaims
+            claims={result.claims}
+            citations={result.citations}
+          />
+        )}
       </section>
       <aside>
         <section className="panel process">

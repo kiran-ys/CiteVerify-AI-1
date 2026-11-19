@@ -1,5 +1,6 @@
 import type {
   ApiErrorResponse,
+  ExtractCitationsResponse,
   ExtractClaimsResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
@@ -50,6 +51,34 @@ function isClaimsResponse(value: unknown): value is ExtractClaimsResponse {
   );
 }
 
+function isCitationsResponse(
+  value: unknown,
+): value is ExtractCitationsResponse {
+  if (!isClaimsResponse(value) || !("citations" in value)) return false;
+  const citations = value.citations;
+  return (
+    isRecord(citations) &&
+    citations.evidenceStatus === "not_verified" &&
+    isRecord(citations.referenceList) &&
+    Array.isArray(citations.references) &&
+    Array.isArray(citations.inText) &&
+    citations.inText.every(
+      (citation) =>
+        isRecord(citation) &&
+        typeof citation.marker === "string" &&
+        Array.isArray(citation.matches) &&
+        citation.matches.every(
+          (match) =>
+            isRecord(match) &&
+            ["matched", "unmatched", "ambiguous"].includes(
+              String(match.status),
+            ) &&
+            Array.isArray(match.referenceIds),
+        ),
+    )
+  );
+}
+
 async function postPdf<T>(
   path: string,
   file: File,
@@ -97,4 +126,17 @@ export function extractPdfClaims(
   fetchImpl: FetchLike = fetch,
 ): Promise<ExtractClaimsResponse> {
   return postPdf("/api/documents/claims", file, isClaimsResponse, fetchImpl);
+}
+
+/** Text, unverified claims, and citation-to-reference matches, from one upload. */
+export function extractPdfCitations(
+  file: File,
+  fetchImpl: FetchLike = fetch,
+): Promise<ExtractCitationsResponse> {
+  return postPdf(
+    "/api/documents/citations",
+    file,
+    isCitationsResponse,
+    fetchImpl,
+  );
 }

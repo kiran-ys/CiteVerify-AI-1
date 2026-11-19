@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@citeverify/citation-engine": "workspace:*",
     "@citeverify/claim-extractor": "workspace:*",
     "@citeverify/database": "workspace:*",
     "@citeverify/document-parser": "workspace:*",

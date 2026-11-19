@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type {
   ApiErrorResponse,
+  ExtractCitationsResponse,
   ExtractClaimsResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
@@ -219,5 +220,152 @@ describe("POST /api/documents/claims", () => {
       ),
     );
     expect(wrongType.status).toBe(415);
+  });
+});
+
+const CITATIONS_PATH = "/api/documents/citations";
+
+describe("POST /api/documents/citations", () => {
+  const pages = [
+    [
+      "Example Journal of Medicine 2025",
+      "Abstract",
+      "We found that drug A reduced mortality by 20% (p < 0.01) [1].",
+      "1. Introduction",
+      "Hypertension affects one billion adults worldwide [2, 3].",
+      "Earlier trials disagree on optimal dosing [4-5].",
+    ],
+    [
+      "Example Journal of Medicine 2025",
+      "3. Results",
+      "Our results show that systolic pressure decreased by 8 mmHg [9].",
+      "References",
+      "[1] Kumar A, Lee B. Early treatment of hypertension. N Engl J Med. 2019;380:1-10. doi:10.1056/NEJMoa1234567",
+      "[2] Smith J, Brown K. Global burden of hypertension. Lancet. 2020;395:795-808.",
+      "[3] Lee K, Park S. Hypertension prevalence in Asia. Hypertens Res. 2018;41:1-9.",
+    ],
+    [
+      "Example Journal of Medicine 2025",
+      "[4] Wong T, Chan M. Early antihypertensive therapy. BMJ. 2017;356:j10.",
+      "[5] Garcia R. Long-term outcomes of early therapy. JAMA. 2016;315:200-210.",
+    ],
+  ];
+
+  async function post(): Promise<ExtractCitationsResponse> {
+    const response = await app.request(
+      uploadRequest(pdfFile(createMultiPagePdf(pages)), CITATIONS_PATH),
+    );
+    expect(response.status).toBe(200);
+    return (await response.json()) as ExtractCitationsResponse;
+  }
+
+  test("returns extraction, claims, references, and matched citations from a real PDF", async () => {
+    const body = await post();
+
+    expect(body.document.pageCount).toBe(3);
+    expect(body.claims.items.length).toBeGreaterThan(0);
+    expect(body.citations).toMatchObject({
+      method: "rule-based",
+      evidenceStatus: "not_verified",
+      referenceList: { found: true, page: 2, style: "numbered" },
+    });
+    expect(
+      body.citations.references.map((reference) => [
+        reference.number,
+        reference.page,
+      ]),
+    ).toEqual([
+      [1, 2],
+      [2, 2],
+      [3, 2],
+      [4, 3],
+      [5, 3],
+    ]);
+    expect(body.citations.references[0]?.metadata).toEqual({
+      authors: ["Kumar A", "Lee B"],
+      year: "2019",
+      title: "Early treatment of hypertension",
+      doi: "10.1056/NEJMoa1234567",
+    });
+    expect(
+      body.citations.inText.map((citation) => [
+        citation.marker,
+        citation.page,
+        citation.matches.map((match) => `${match.key}:${match.status}`),
+      ]),
+    ).toEqual([
+      ["[1]", 1, ["1:matched"]],
+      ["[2, 3]", 1, ["2:matched", "3:matched"]],
+      ["[4-5]", 1, ["4:matched", "5:matched"]],
+      ["[9]", 2, ["9:unmatched"]],
+    ]);
+  });
+
+  test("links each citation to the extracted claim that contains it", async () => {
+    const body = await post();
+    const claimText = new Map(
+      body.claims.items.map((claim) => [claim.id, claim.text]),
+    );
+
+    for (const citation of body.citations.inText) {
+      expect(citation.claimId).not.toBeNull();
+      expect(claimText.get(citation.claimId ?? "")).toContain(citation.marker);
+    }
+  });
+
+  test("citation and reference offsets point into the returned page text", async () => {
+    const body = await post();
+    for (const citation of body.citations.inText) {
+      const pageText = body.extraction.pages[citation.page - 1]?.text ?? "";
+      expect(
+        pageText.slice(citation.location.start, citation.location.end),
+      ).toBe(citation.marker);
+    }
+    for (const reference of body.citations.references) {
+      const pageText = body.extraction.pages[reference.page - 1]?.text ?? "";
+      expect(
+        pageText
+          .slice(reference.location?.start, reference.location?.end)
+          .replace(/\s+/g, " "),
+      ).toBe(reference.text);
+    }
+  });
+
+  test("never returns verdicts or support labels", async () => {
+    const response = await app.request(
+      uploadRequest(pdfFile(createMultiPagePdf(pages)), CITATIONS_PATH),
+    );
+    const text = await response.text();
+    expect(text).not.toMatch(
+      /"(verdict|confidence|score|supported|contradicted)"/i,
+    );
+  });
+
+  test("reports a missing reference list instead of guessing", async () => {
+    const response = await app.request(
+      uploadRequest(
+        pdfFile(
+          createTextPdf(
+            "Drug A lowered blood pressure significantly in adults [1].",
+          ),
+        ),
+        CITATIONS_PATH,
+      ),
+    );
+    const body = (await response.json()) as ExtractCitationsResponse;
+
+    expect(response.status).toBe(200);
+    expect(body.citations.referenceList.found).toBe(false);
+    expect(body.citations.inText[0]?.matches[0]?.status).toBe("unmatched");
+  });
+
+  test("reuses upload validation and extraction errors", async () => {
+    expect(
+      (await app.request(uploadRequest(undefined, CITATIONS_PATH))).status,
+    ).toBe(400);
+    const empty = await app.request(
+      uploadRequest(pdfFile(createEmptyPdf()), CITATIONS_PATH),
+    );
+    expect(empty.status).toBe(422);
   });
 });

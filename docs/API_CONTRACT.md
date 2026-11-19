@@ -1,6 +1,6 @@
 # CiteVerify AI API Contract
 
-Status: text extraction implemented on `feature/pdf-upload`; claim extraction implemented on `feature/claim-extraction` (not yet reviewed or merged).
+Status: text extraction implemented on `feature/pdf-upload`; claim extraction on `feature/claim-extraction`; citation extraction and matching on `feature/citation-matching` (not yet reviewed or merged).
 
 Base path: `/api`
 
@@ -155,6 +155,95 @@ Errors: all `POST /documents/extract` errors apply unchanged. Additionally:
 | Status | Code                      | Meaning                                                                |
 | ------ | ------------------------- | ---------------------------------------------------------------------- |
 | 500    | `CLAIM_EXTRACTION_FAILED` | Text extraction succeeded but the claim extractor failed unexpectedly. |
+
+### `POST /documents/citations`
+
+Purpose: accept one PDF, run the same text and claim extraction as `POST /documents/claims`, then find the paper's reference list and in-text citations and match each cited item to reference entries **within the same paper**. A match is not evidence: the response never says whether a source supports or contradicts a claim, and nothing is looked up online.
+
+Request: identical to `POST /documents/extract`. The server re-parses the PDF; it does not accept client-supplied text.
+
+Success `200`: the full `POST /documents/claims` body plus a `citations` object:
+
+```json
+{
+  "citations": {
+    "referenceList": { "found": true, "page": 2, "style": "numbered" },
+    "references": [
+      {
+        "id": "ref-001",
+        "number": 1,
+        "text": "[1] A. Kumar, B. Lee, \"Early treatment of hypertension in adults,\" N. Engl. J. Med., vol. 380, pp. 1-10, 2019, doi: 10.1056/NEJMoa1234567.",
+        "page": 2,
+        "pageEnd": 2,
+        "location": { "start": 123, "end": 261 },
+        "metadata": {
+          "authors": ["A. Kumar", "B. Lee"],
+          "year": "2019",
+          "title": "Early treatment of hypertension in adults",
+          "doi": "10.1056/NEJMoa1234567"
+        }
+      }
+    ],
+    "inText": [
+      {
+        "id": "cit-003",
+        "marker": "[4-6]",
+        "style": "numeric",
+        "page": 1,
+        "location": { "start": 229, "end": 234 },
+        "claimId": "claim-003",
+        "matches": [
+          {
+            "key": "4",
+            "status": "matched",
+            "referenceIds": ["ref-004"],
+            "reason": null
+          },
+          {
+            "key": "5",
+            "status": "matched",
+            "referenceIds": ["ref-005"],
+            "reason": null
+          },
+          {
+            "key": "6",
+            "status": "matched",
+            "referenceIds": ["ref-006"],
+            "reason": null
+          }
+        ]
+      }
+    ],
+    "method": "rule-based",
+    "version": "1.0.0",
+    "truncated": false,
+    "evidenceStatus": "not_verified"
+  }
+}
+```
+
+(Values come from a generated three-page test paper; offsets depend on each PDF's extracted page text. An unmatched item looks like `{ "key": "9", "status": "unmatched", "referenceIds": [], "reason": "No reference entry is numbered 9." }`.)
+
+Field rules:
+
+- `referenceList.found` is `false` when no References/Bibliography/Literature cited heading is found; every citation is then `unmatched` with that reason.
+- `referenceList.style` is `numbered` when entries count up from 1 as `[n]`, `n.`, or `n `; otherwise `author-year`.
+- `references[].text` is the exact entry text with line breaks and whitespace collapsed. Running headers and page numbers inside the list are dropped.
+- `references[].location` gives offsets into `extraction.pages[page - 1].text` only when the entry lies on one page and the slice reproduces `text`; otherwise it is `null`.
+- `references[].metadata` fields are read from that entry's own text. Missing or unclear fields are `[]` or `null`; no DOI, title, author, or year is ever inferred or fetched.
+- `inText[].marker` is the exact marker text. Supported forms: `[1]`, `[2, 3]`, `[4-7]` (hyphen or dash, ranges of at most 50 and ascending only), `(Smith et al., 2020)`, `(Lee and Park, 2019; Ng, 2021)`, `(Brown, 2020a, 2020b)`, and narrative `Smith et al. (2020)`.
+- `inText[].claimId` is the extracted claim whose text contains the marker, or `null`.
+- `matches[]` has one entry per cited item, de-duplicated within a marker:
+  - `matched`: exactly one reference entry has that number, or that first-author surname (plus any second named author) and year.
+  - `unmatched`: no candidate; `reason` explains why (missing number, no such author/year, no reference list, or numbered citation against an author-year list).
+  - `ambiguous`: more than one candidate (for example `(Brown, 2020)` when the list has Brown 2020a and 2020b); every candidate id is listed and none is chosen.
+- `truncated` is `true` when more than 1000 references or 2000 in-text citations were found.
+
+Errors: all `POST /documents/claims` errors apply unchanged. Additionally:
+
+| Status | Code                         | Meaning                                                                        |
+| ------ | ---------------------------- | ------------------------------------------------------------------------------ |
+| 500    | `CITATION_EXTRACTION_FAILED` | Text and claim extraction succeeded but citation matching failed unexpectedly. |
 
 ## Proposed job endpoints for a later phase
 
