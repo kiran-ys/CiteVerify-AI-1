@@ -13,6 +13,7 @@ import {
   type RetrievalOptions,
   retrieveEvidence,
 } from "./index.ts";
+import { announcedIntervalMs, HttpClient } from "./http.ts";
 import { normalize } from "./identity.ts";
 import { stripMarkup } from "./text.ts";
 
@@ -1345,9 +1346,10 @@ describe("statistics with < and > survive markup removal", () => {
     expect(stripMarkup("<i>n</i> = 15 (P < 0.05 and r > 0.3)").text).toBe(
       "n = 15 (P < 0.05 and r > 0.3)",
     );
-    expect(stripMarkup('<jats:p>a<sup>2</sup> <br/>b <a href="x">c</a></jats:p>').text).toBe(
-      "a2 b c",
-    );
+    expect(
+      stripMarkup('<jats:p>a<sup>2</sup> <br/>b <a href="x">c</a></jats:p>')
+        .text,
+    ).toBe("a2 b c");
   });
 
   test("abstract passages keep the exact statistics", () => {
@@ -1367,5 +1369,49 @@ describe("statistics with < and > survive markup removal", () => {
     expect(normalize("Effects of <i>exercise</i> when P<0.01 >50%")).toBe(
       "effects of exercise when p 0 01 50",
     );
+  });
+});
+
+describe("pacing for per-IP rate limits", () => {
+  test("reads the spacing Crossref announces", () => {
+    const headers = new Headers({
+      "x-rate-limit-limit": "5",
+      "x-rate-limit-interval": "1s",
+    });
+    expect(announcedIntervalMs(headers)).toBe(200);
+    expect(announcedIntervalMs(new Headers())).toBeNull();
+  });
+
+  test("spaces consecutive Crossref requests and adds the OpenAlex key only to OpenAlex", async () => {
+    const waits: number[] = [];
+    const urls: string[] = [];
+    const http = new HttpClient({
+      cache: new Map(),
+      openAlexApiKey: "oa-key",
+      sleep: async (ms) => {
+        waits.push(ms);
+      },
+      fetch: async (input: string) => {
+        urls.push(input);
+        return new Response("{}", {
+          headers: { "x-rate-limit-limit": "1", "x-rate-limit-interval": "1s" },
+        });
+      },
+    });
+    await http.get("https://api.crossref.org/works?q=1", "crossref");
+    await http.get("https://api.crossref.org/works?q=2", "crossref");
+    expect(waits.length).toBeGreaterThan(0);
+    expect(Math.max(...waits)).toBeGreaterThan(500);
+    expect(Math.max(...waits)).toBeLessThanOrEqual(1000);
+    expect(
+      http
+        .withContact(new URL("https://api.openalex.org/works"), "openalex")
+        .toString(),
+    ).toContain("api_key=oa-key");
+    expect(
+      http
+        .withContact(new URL("https://api.crossref.org/works"), "crossref")
+        .toString(),
+    ).not.toContain("api_key");
   });
 });

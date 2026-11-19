@@ -189,6 +189,11 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 - Reasoning benchmark: `eval/benchmark/cases.json` (48 cases: 38 real claims from PMC7065031 and Ioannidis 2005 plus 10 deliberately altered ones: 5 numeric/direction/population changes, 5 mis-citations) with fixed evidence in `eval/benchmark/evidence-snapshot.json`. **All labels are provisional and AI-assisted; none is human-reviewed.** Runner: `bun run --cwd apps/api scripts/run-benchmark.ts --provider groq|ollama`; reports go to `docs/evaluation/`.
 - First benchmark run, local `llama3.2` (2026-11-20, report `docs/evaluation/benchmark-2026-11-19-ollama.md`): 16/48 (33%) agreement with the provisional labels, macro F1 0.29; it never answered Supported (0/16, 15 became Partially supported), 1 invalid output after retry, 0 API failures, 100% of positive verdicts cited only stored source text, 9.5 s per claim. This is a preliminary baseline, not validated accuracy. The Groq model has not been benchmarked yet (the key is not available to this session).
 
+### Live retrieval rate limits (uncommitted)
+
+- Live test of `b7e7f00` (2026-11-20): Groq was ready, but Crossref and OpenAlex answered "rate limited" for 32 of 35 references, so no evidence was retrieved and all 21 claims were correctly reported as Unable to verify (no model call, no guessed verdict). Response headers show Crossref now allows anonymous clients 1 request per second and OpenAlex meters anonymous use per IP (about 100 searches a day); Render's free tier shares IP addresses.
+- Fix: Crossref requests from this server are now spaced (1 per second anonymously, or as Crossref announces in its `x-rate-limit-*` headers; clients with `CITEVERIFY_CONTACT_EMAIL` use Crossref's polite pool), and an optional `OPENALEX_API_KEY` is sent only to OpenAlex. Not yet deployed or live-tested.
+
 ## Next milestone
 
 Owner review of verification, ideally on the DREW paper. Then a labelled evaluation set to measure claim, citation, retrieval, and verdict accuracy; a comparison of larger local models; better passage selection; and Phase 2 durable jobs so long runs move to the worker.

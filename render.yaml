@@ -14,3 +14,9 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: openai/gpt-oss-120b
+      # Optional retrieval settings (set in the Render dashboard):
+      # an operator mailbox for Crossref's polite pool, and a free OpenAlex key.
+      - key: CITEVERIFY_CONTACT_EMAIL
+        sync: false
+      - key: OPENALEX_API_KEY
+        sync: false

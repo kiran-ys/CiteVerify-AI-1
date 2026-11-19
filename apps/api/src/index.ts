@@ -277,6 +277,7 @@ app.post("/documents/citations", async (c) => {
  */
 let retrievalOptions: RetrievalOptions = {
   contactEmail: process.env.CITEVERIFY_CONTACT_EMAIL || undefined,
+  openAlexApiKey: process.env.OPENALEX_API_KEY || undefined,
 };
 
 export function configureEvidenceRetrieval(options: RetrievalOptions): void {

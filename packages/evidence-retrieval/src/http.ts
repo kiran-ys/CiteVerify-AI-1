@@ -22,6 +22,8 @@ export type HttpOptions = {
   deadline?: number;
   /** Optional operator contact sent to Crossref's polite pool; never the uploader's details. */
   contactEmail?: string;
+  /** Optional free OpenAlex API key (server-side only) for its own daily budget. */
+  openAlexApiKey?: string;
   sleep?: (ms: number) => Promise<void>;
   cache?: Map<string, { expires: number; body: string }>;
   cacheTtlMs?: number;
@@ -39,13 +41,47 @@ export const USER_AGENT =
 
 const sharedCache = new Map<string, { expires: number; body: string }>();
 
+/**
+ * Minimum spacing between requests to a service, shared by every request
+ * from this server because providers limit per IP address. Crossref allows
+ * anonymous clients one request per second; the spacing then follows the
+ * limit Crossref announces in its x-rate-limit headers.
+ */
+type Pacing = {
+  intervalMs: Map<ScholarlyService, number>;
+  nextAt: Map<ScholarlyService, number>;
+};
+/** Pacing lives with the cache, so clients sharing the server cache share it. */
+const pacingByCache = new WeakMap<object, Pacing>();
+function pacingFor(cache: object): Pacing {
+  let state = pacingByCache.get(cache);
+  if (!state) {
+    state = { intervalMs: new Map(), nextAt: new Map() };
+    pacingByCache.set(cache, state);
+  }
+  return state;
+}
+/** Anonymous Crossref clients get one request per second until Crossref announces otherwise. */
+const ANONYMOUS_CROSSREF_INTERVAL_MS = 1_000;
+
+/** Spacing announced by "x-rate-limit-limit: 5" and "x-rate-limit-interval: 1s". */
+export function announcedIntervalMs(headers: Headers): number | null {
+  const limit = Number(headers.get("x-rate-limit-limit"));
+  const match = /^(\d+(?:\.\d+)?)s$/.exec(
+    headers.get("x-rate-limit-interval") ?? "",
+  );
+  if (!match || !Number.isFinite(limit) || limit <= 0) return null;
+  return Math.ceil((Number(match[1]) * 1000) / limit);
+}
+
 export class HttpClient {
   private readonly active = new Map<ScholarlyService, number>();
   private readonly waiting = new Map<ScholarlyService, (() => void)[]>();
   private readonly options: Required<
-    Omit<HttpOptions, "contactEmail" | "deadline">
+    Omit<HttpOptions, "contactEmail" | "deadline" | "openAlexApiKey">
   > & {
     contactEmail?: string;
+    openAlexApiKey?: string;
     deadline?: number;
   };
 
@@ -63,12 +99,15 @@ export class HttpClient {
       cache: options.cache ?? sharedCache,
       cacheTtlMs: options.cacheTtlMs ?? 6 * 60 * 60 * 1000,
       contactEmail: options.contactEmail,
+      openAlexApiKey: options.openAlexApiKey,
       deadline: options.deadline,
     };
   }
 
   /** Crossref and NCBI ask clients to identify themselves; we add an operator email only when configured. */
   withContact(url: URL, service: ScholarlyService): URL {
+    if (service === "openalex" && this.options.openAlexApiKey)
+      url.searchParams.set("api_key", this.options.openAlexApiKey);
     if (!this.options.contactEmail) return url;
     if (service === "crossref")
       url.searchParams.set("mailto", this.options.contactEmail);
@@ -112,6 +151,21 @@ export class HttpClient {
     this.active.set(service, (this.active.get(service) ?? 0) + 1);
   }
 
+  /** Waits for this service's next free slot (see `pacing`). */
+  private async pace(service: ScholarlyService): Promise<void> {
+    const pacing = pacingFor(this.options.cache);
+    const interval =
+      pacing.intervalMs.get(service) ??
+      (service === "crossref" && !this.options.contactEmail
+        ? ANONYMOUS_CROSSREF_INTERVAL_MS
+        : 0);
+    if (!interval) return;
+    const now = Date.now();
+    const at = Math.max(now, pacing.nextAt.get(service) ?? 0);
+    pacing.nextAt.set(service, at + interval);
+    if (at > now) await this.options.sleep(at - now);
+  }
+
   private release(service: ScholarlyService): void {
     this.active.set(service, (this.active.get(service) ?? 1) - 1);
     this.waiting.get(service)?.shift()?.();
@@ -145,6 +199,9 @@ export class HttpClient {
         headers: { "User-Agent": USER_AGENT, Accept: accept },
         signal: controller.signal,
       });
+      const announced = announcedIntervalMs(response.headers);
+      if (announced !== null)
+        pacingFor(this.options.cache).intervalMs.set(service, announced);
       const body = await response.text();
       if (response.ok) return { ok: true, status: response.status, body };
       const retryAfter = Number(response.headers.get("retry-after"));
@@ -206,6 +263,8 @@ export class HttpClient {
       try {
         // The deadline may have passed while this request waited its turn.
         if (this.deadlinePassed()) break;
+        await this.pace(service);
+        if (this.deadlinePassed()) break;
         result = await this.once(url, accept, service);
       } finally {
         this.release(service);
@@ -233,6 +292,8 @@ export class HttpClient {
         this.options.maxBackoffMs,
       );
       await this.options.sleep(backoff);
+      // The backoff already spaced this retry out.
+      pacingFor(this.options.cache).nextAt.set(service, Date.now());
     }
     return last;
   }

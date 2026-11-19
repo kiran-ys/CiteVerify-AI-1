@@ -223,7 +223,10 @@ export async function openAlexSearch(
   const url = new URL("https://api.openalex.org/works");
   url.searchParams.set("search", query.slice(0, 300));
   url.searchParams.set("per-page", "5");
-  const result = await http.getJson(url.toString(), "openalex");
+  const result = await http.getJson(
+    http.withContact(url, "openalex").toString(),
+    "openalex",
+  );
   if (!result.ok) return { ok: false, notFound: false, error: result.error };
   const results =
     isJson(result.data) && Array.isArray(result.data.results)
