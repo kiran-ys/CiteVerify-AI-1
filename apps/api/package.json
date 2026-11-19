@@ -16,6 +16,7 @@
     "@citeverify/claim-extractor": "workspace:*",
     "@citeverify/database": "workspace:*",
     "@citeverify/document-parser": "workspace:*",
+    "@citeverify/evidence-retrieval": "workspace:*",
     "@citeverify/shared": "workspace:*",
     "hono": "^4.13.19"
   },

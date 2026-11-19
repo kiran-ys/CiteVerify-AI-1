@@ -1,10 +1,12 @@
 import type {
   ExtractCitationsResponse,
   ExtractClaimsResponse,
+  ExtractEvidenceResponse,
   ExtractedClaimType,
 } from "@citeverify/shared";
 import { useState } from "react";
 import { CitationSummary, ClaimCitations } from "./ClaimCitations.tsx";
+import { SourceRetrievalBar } from "./RetrievedSource.tsx";
 
 const typeLabel: Record<ExtractedClaimType, string> = {
   reported_finding: "Reported finding",
@@ -20,10 +22,26 @@ type Filter = "all" | ExtractedClaimType;
 export function ExtractedClaims({
   claims,
   citations,
+  retrieval,
 }: {
   claims: ExtractClaimsResponse["claims"];
   citations?: ExtractCitationsResponse["citations"];
+  /** Opt-in source retrieval; absent when the caller cannot re-send the PDF. */
+  retrieval?: {
+    evidence?: ExtractEvidenceResponse["evidence"];
+    retrieving: boolean;
+    error: string;
+    onRetrieve: () => void;
+  };
 }) {
+  const sources = retrieval?.evidence
+    ? new Map(
+        retrieval.evidence.sources.map((source) => [
+          source.referenceId,
+          source,
+        ]),
+      )
+    : undefined;
   const [filter, setFilter] = useState<Filter>("all");
   const visible = claims.items.filter(
     (claim) => filter === "all" || claim.type === filter,
@@ -47,6 +65,14 @@ export function ExtractedClaims({
         sources, and no verdict or confidence score is assigned.
       </p>
       {citations && <CitationSummary citations={citations} />}
+      {citations && retrieval && (
+        <SourceRetrievalBar
+          evidence={retrieval.evidence}
+          retrieving={retrieval.retrieving}
+          error={retrieval.error}
+          onRetrieve={retrieval.onRetrieve}
+        />
+      )}
 
       {claims.items.length === 0 ? (
         <p className="claims-empty">
@@ -96,7 +122,11 @@ export function ExtractedClaims({
                 </div>
                 <blockquote>{claim.text}</blockquote>
                 {citations && (
-                  <ClaimCitations claim={claim} citations={citations} />
+                  <ClaimCitations
+                    claim={claim}
+                    citations={citations}
+                    sources={sources}
+                  />
                 )}
                 <details>
                   <summary>Context and extraction details</summary>

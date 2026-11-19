@@ -2027,3 +2027,146 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+.source-retrieval {
+  margin: 10px 18px 0;
+  padding: 10px 12px;
+  border: 1px solid #cfe0d8;
+  border-radius: 8px;
+  background: #f4faf7;
+  color: #2f4a3f;
+  font-size: 0.64rem;
+  line-height: 1.55;
+}
+.source-retrieval p {
+  margin: 0;
+}
+.source-retrieval-note {
+  margin-top: 5px !important;
+  color: #5f7a6e;
+}
+.source-retrieval-error {
+  margin-top: 6px !important;
+  color: #9a3434;
+  font-weight: 650;
+}
+.source-retrieval button {
+  margin-top: 9px;
+  border: 1px solid #1d6b4f;
+  border-radius: 6px;
+  padding: 6px 12px;
+  background: #1d6b4f;
+  color: white;
+  font-size: 0.64rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.source-retrieval button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.retrieved-source {
+  margin-top: 7px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #d7e6df;
+  background: #fbfefc;
+  font-size: 0.62rem;
+  color: #3d4a5f;
+}
+.retrieved-source.unavailable {
+  border-color: #eadfdf;
+  background: #fdfafa;
+}
+.retrieved-source p {
+  margin: 0;
+}
+.retrieved-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.retrieved-label {
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: #e1f1ea;
+  color: #1d5e46;
+  font-weight: 700;
+}
+.access-badge {
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-weight: 700;
+}
+.access-badge.full_text {
+  background: #dff0ff;
+  color: #1f4f86;
+}
+.access-badge.abstract_only {
+  background: #eef0fb;
+  color: #424f8f;
+}
+.access-badge.metadata_only {
+  background: #f1f1f1;
+  color: #555;
+}
+.access-badge.unavailable {
+  background: #fbeaea;
+  color: #9a3434;
+}
+.retrieved-work {
+  margin-top: 6px;
+  display: grid;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.retrieved-provenance {
+  color: #7b8494;
+}
+.retrieved-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 3px !important;
+}
+.retrieved-links a,
+.retrieved-passages a {
+  color: #1f4f86;
+  text-decoration: underline;
+}
+.retrieved-reason {
+  margin-top: 6px !important;
+  color: #6a5a3a;
+}
+.retrieved-candidates,
+.retrieved-errors {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  overflow-wrap: anywhere;
+}
+.retrieved-errors {
+  color: #9a3434;
+}
+.retrieved-passages {
+  margin-top: 8px;
+}
+.retrieved-passages-title {
+  color: #2f4a3f;
+  font-weight: 700;
+}
+.retrieved-passages figure {
+  margin: 6px 0 0;
+}
+.claims-list .retrieved-passages blockquote {
+  margin: 0;
+  border-left-color: #8fc2ab;
+  font-size: 0.66rem;
+}
+.retrieved-passages figcaption {
+  margin-top: 4px;
+  color: #7b8494;
+  overflow-wrap: anywhere;
+}
+.markup-note {
+  color: #8a6a2a;
+}

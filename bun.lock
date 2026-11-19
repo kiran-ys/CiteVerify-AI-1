@@ -19,6 +19,7 @@
         "@citeverify/claim-extractor": "workspace:*",
         "@citeverify/database": "workspace:*",
         "@citeverify/document-parser": "workspace:*",
+        "@citeverify/evidence-retrieval": "workspace:*",
         "@citeverify/shared": "workspace:*",
         "hono": "^4.13.19",
       },
@@ -113,6 +114,17 @@
         "@types/bun": "^1.4.4",
       },
     },
+    "packages/evidence-retrieval": {
+      "name": "@citeverify/evidence-retrieval",
+      "version": "0.0.0",
+      "dependencies": {
+        "@citeverify/shared": "workspace:*",
+      },
+      "devDependencies": {
+        "@citeverify/config": "workspace:*",
+        "@types/bun": "^1.4.4",
+      },
+    },
     "packages/shared": {
       "name": "@citeverify/shared",
       "version": "0.0.0",
@@ -179,6 +191,8 @@
     "@citeverify/database": ["@citeverify/database@workspace:packages/database"],
 
     "@citeverify/document-parser": ["@citeverify/document-parser@workspace:packages/document-parser"],
+
+    "@citeverify/evidence-retrieval": ["@citeverify/evidence-retrieval@workspace:packages/evidence-retrieval"],
 
     "@citeverify/shared": ["@citeverify/shared@workspace:packages/shared"],
 

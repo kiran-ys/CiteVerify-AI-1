@@ -1,6 +1,6 @@
 # CiteVerify AI API Contract
 
-Status: text extraction implemented on `feature/pdf-upload`; claim extraction on `feature/claim-extraction`; citation extraction and matching on `feature/citation-matching` (not yet reviewed or merged).
+Status: text extraction implemented on `feature/pdf-upload`; claim extraction on `feature/claim-extraction`; citation extraction and matching on `feature/citation-matching`; source retrieval on `feature/evidence-retrieval` (not yet reviewed or merged).
 
 Base path: `/api`
 
@@ -244,6 +244,107 @@ Errors: all `POST /documents/claims` errors apply unchanged. Additionally:
 | Status | Code                         | Meaning                                                                        |
 | ------ | ---------------------------- | ------------------------------------------------------------------------------ |
 | 500    | `CITATION_EXTRACTION_FAILED` | Text and claim extraction succeeded but citation matching failed unexpectedly. |
+
+### `POST /documents/evidence`
+
+Purpose: accept one PDF, run the same text, claim, and citation pipeline as `POST /documents/citations`, then retrieve genuine records and legally accessible text for the references that extracted claims cite. **A retrieved source is not a verdict.** The response never says whether a source supports or contradicts a claim.
+
+Request: identical to `POST /documents/extract`. The server re-parses the PDF.
+
+Outbound data: only cited-reference details (entry text, parsed title, DOI, and identifiers returned by the services) are sent to Crossref, OpenAlex, Europe PMC, and PubMed Central (NCBI E-utilities). The uploaded PDF and its text are never sent. Requests carry a generic `User-Agent`; an operator contact is added only when `CITEVERIFY_CONTACT_EMAIL` is configured. All four services are free and need no API key.
+
+Which references are looked up: those that at least one `matched` in-text citation inside an extracted claim points to, in reference-list order, at most 25 per request. Later ones are returned with `resolution.status: "skipped"` and `truncated: true`.
+
+Limits: each outbound request times out after 20 s (never beyond the overall budget); `429` and `5xx` responses are retried up to twice, honouring `Retry-After` up to 5 s; Crossref receives one request at a time (three with an operator contact) and other services three; new requests stop after a 60 s budget. Successful responses are cached in memory for 6 hours. Expect responses of up to about 60-70 seconds.
+
+Success `200`: the full `POST /documents/citations` body plus an `evidence` object. Example from the genuine paper Ioannidis (2005) _PLoS Med_ 2(8): e124, reference 18:
+
+```json
+{
+  "evidence": {
+    "sources": [
+      {
+        "referenceId": "ref-018",
+        "claimIds": ["claim-011"],
+        "resolution": {
+          "status": "resolved",
+          "reason": null,
+          "matchedBy": "bibliographic-search",
+          "resolver": "crossref",
+          "candidates": []
+        },
+        "work": {
+          "title": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "authors": ["David Moher", "Kenneth F Schulz", "Douglas G Altman"],
+          "year": "2001",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "journal": "The Lancet",
+          "pmid": "11323066",
+          "pmcid": null,
+          "openAlexId": null
+        },
+        "access": "abstract_only",
+        "accessReason": "The work is not in the Europe PMC open-access subset; only its abstract is available.",
+        "license": null,
+        "urls": {
+          "doi": "https://doi.org/10.1016/s0140-6736(00)04337-3",
+          "landingPage": "https://doi.org/10.1016/s0140-6736(00)04337-3",
+          "fullText": null
+        },
+        "passages": [
+          {
+            "claimId": "claim-011",
+            "text": "To comprehend the results of a randomised controlled trial (RCT), readers must understand its design, conduct, analysis, and interpretation.",
+            "markupRemoved": false,
+            "origin": "abstract",
+            "location": { "section": null, "paragraph": 1, "sentence": 1 },
+            "sourceUrl": "https://europepmc.org/article/MED/11323066",
+            "relevance": {
+              "method": "term-overlap",
+              "sharedTerms": ["conduct", "controlled", "design", "trial"],
+              "score": 0.33
+            }
+          }
+        ],
+        "errors": []
+      }
+    ],
+    "services": ["crossref", "openalex", "europepmc", "ncbi-pmc"],
+    "retrievedAt": "2026-11-19T11:19:56.658Z",
+    "method": "metadata-resolution+term-overlap",
+    "version": "1.0.0",
+    "truncated": true,
+    "claimStatus": "not_verified"
+  }
+}
+```
+
+Field rules:
+
+- `resolution.status`:
+  - `resolved`: one record passed the identity check, either from the reference's own DOI (`matchedBy: "doi"`) or from bibliographic search (`"bibliographic-search"`, via Crossref then OpenAlex).
+  - `ambiguous`: several records passed and the reference's volume and first page do not single one out; `candidates` lists them and none is used.
+  - `unresolved`: no record passed; `reason` explains (including a DOI that is unregistered or belongs to a different work).
+  - `error`: the services could not be reached; see `errors`.
+  - `skipped`: beyond the per-request limit.
+- Identity check: the record's whole title must match the reference's parsed title (Jaccard similarity of at least 0.85, identical ignoring spaces, or the cited title followed by a subtitle); letters, replies, and corrections are rejected; the year must be within one; the record's first author's surname must appear in the reference; and when the record has a first page and the reference gives pagination, that page must appear in the reference (this rejects reprints in other journals).
+- `work` is the service's record, not the paper's reference text. It is `null` unless `resolved`.
+- `access`:
+  - `full_text`: open-access JATS from Europe PMC, or from PubMed Central when Europe PMC cannot serve it. Only works Europe PMC lists as open access are fetched.
+  - `abstract_only`: an abstract from Europe PMC or Crossref, but no accessible full text.
+  - `metadata_only`: the work was identified, but no abstract or full text was available.
+  - `unavailable`: not resolved.
+  - When Europe PMC cannot be reached, `accessReason` says availability could not be checked; it never claims the work was not found.
+- `license` is Europe PMC's licence or Crossref's published-version (`vor`) licence. Text-and-data-mining licences are not reported.
+- `urls` are DOIs, landing pages, and full-text links returned by, or built from identifiers returned by, the services.
+- `passages`: at most two per claim, sentences sharing at least two key terms and at least 20% of the claim's key terms. `text` is the source sentence with markup removed and whitespace collapsed; `markupRemoved: true` warns that formatting such as superscripts was flattened. `location.paragraph` counts body paragraphs (full text) or abstract paragraphs. `relevance.score` is the shared fraction of the claim's key terms and measures wording overlap only.
+- `errors` lists per-service failures (`timeout`, `network`, `rate_limited`, `http`, `invalid_response`). A failure never turns the whole response into an error.
+
+Errors: all `POST /documents/citations` errors apply unchanged. Additionally:
+
+| Status | Code                        | Meaning                                                                       |
+| ------ | --------------------------- | ----------------------------------------------------------------------------- |
+| 500    | `EVIDENCE_RETRIEVAL_FAILED` | Claims and citations were extracted but source retrieval failed unexpectedly. |
 
 ## Proposed job endpoints for a later phase
 

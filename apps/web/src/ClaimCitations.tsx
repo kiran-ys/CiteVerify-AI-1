@@ -3,7 +3,9 @@ import type {
   ExtractCitationsResponse,
   ExtractedClaim,
   ReferenceEntry,
+  RetrievedSource,
 } from "@citeverify/shared";
+import { RetrievedSourceView } from "./RetrievedSource.tsx";
 
 type Citations = ExtractCitationsResponse["citations"];
 
@@ -65,9 +67,13 @@ function ReferenceDetails({ reference }: { reference: ReferenceEntry }) {
 function MatchResult({
   match,
   references,
+  claimId,
+  sources,
 }: {
   match: CitationMatch;
   references: Map<string, ReferenceEntry>;
+  claimId: string;
+  sources?: Map<string, RetrievedSource>;
 }) {
   const candidates = match.referenceIds
     .map((id) => references.get(id))
@@ -83,9 +89,18 @@ function MatchResult({
         </span>
       </p>
       {match.reason && <p className="match-reason">{match.reason}</p>}
-      {candidates.map((reference) => (
-        <ReferenceDetails key={reference.id} reference={reference} />
-      ))}
+      {candidates.map((reference) => {
+        const source =
+          match.status === "matched" ? sources?.get(reference.id) : undefined;
+        return (
+          <div key={reference.id}>
+            <ReferenceDetails reference={reference} />
+            {source && (
+              <RetrievedSourceView source={source} claimId={claimId} />
+            )}
+          </div>
+        );
+      })}
     </li>
   );
 }
@@ -94,9 +109,11 @@ function MatchResult({
 export function ClaimCitations({
   claim,
   citations,
+  sources,
 }: {
   claim: ExtractedClaim;
   citations: Citations;
+  sources?: Map<string, RetrievedSource>;
 }) {
   const inClaim = citations.inText.filter(
     (citation) => citation.claimId === claim.id,
@@ -130,6 +147,8 @@ export function ClaimCitations({
                 key={match.key}
                 match={match}
                 references={references}
+                claimId={claim.id}
+                sources={sources}
               />
             ))}
           </ul>

@@ -5,6 +5,10 @@ import {
   extractClaims,
 } from "@citeverify/claim-extractor";
 import {
+  type RetrievalOptions,
+  retrieveEvidence,
+} from "@citeverify/evidence-retrieval";
+import {
   PDF_PARSER_NAME,
   PDF_PARSER_VERSION,
   PdfParserError,
@@ -17,6 +21,7 @@ import {
   type ExtractCitationsResponse,
   type ExtractClaimsResponse,
   type ExtractDocumentResponse,
+  type ExtractEvidenceResponse,
   type PdfExtractionErrorCode,
 } from "@citeverify/shared";
 import { type Context, Hono } from "hono";
@@ -187,36 +192,96 @@ app.post("/documents/claims", async (c) => {
   return c.json(withClaims.result, 200);
 });
 
+type CitationsOutcome =
+  | { ok: true; result: ExtractCitationsResponse }
+  | { ok: false; response: Response };
+
+/** Runs citation matching on a PDF whose text and claims are already extracted. */
+function addCitations(
+  c: Context,
+  withClaims: ExtractClaimsResponse,
+): CitationsOutcome {
+  try {
+    const citations = extractCitations(
+      withClaims.extraction.pages,
+      withClaims.claims.items,
+    );
+    return { ok: true, result: { ...withClaims, citations } };
+  } catch {
+    return {
+      ok: false,
+      response: c.json(
+        errorResponse(
+          "CITATION_EXTRACTION_FAILED",
+          "Citation matching failed after the PDF text and claims were extracted.",
+        ),
+        500,
+      ),
+    };
+  }
+}
+
 app.post("/documents/citations", async (c) => {
   const outcome = await extractUploadedPdf(c);
   if (!outcome.ok) return outcome.response;
   const withClaims = addClaims(c, outcome.result);
   if (!withClaims.ok) return withClaims.response;
+  const withCitations = addCitations(c, withClaims.result);
+  if (!withCitations.ok) return withCitations.response;
+  return c.json(withCitations.result, 200);
+});
 
-  let citations: ExtractCitationsResponse["citations"];
+/**
+ * Options for outbound scholarly lookups. The operator may set
+ * CITEVERIFY_CONTACT_EMAIL for Crossref/NCBI etiquette; uploader details are
+ * never sent. Tests replace the fetch implementation.
+ */
+let retrievalOptions: RetrievalOptions = {
+  contactEmail: process.env.CITEVERIFY_CONTACT_EMAIL || undefined,
+};
+
+export function configureEvidenceRetrieval(options: RetrievalOptions): void {
+  retrievalOptions = options;
+}
+
+app.post("/documents/evidence", async (c) => {
+  const outcome = await extractUploadedPdf(c);
+  if (!outcome.ok) return outcome.response;
+  const withClaims = addClaims(c, outcome.result);
+  if (!withClaims.ok) return withClaims.response;
+  const withCitations = addCitations(c, withClaims.result);
+  if (!withCitations.ok) return withCitations.response;
+
+  let evidence: ExtractEvidenceResponse["evidence"];
   try {
-    citations = extractCitations(
-      withClaims.result.extraction.pages,
-      withClaims.result.claims.items,
+    evidence = await retrieveEvidence(
+      {
+        references: withCitations.result.citations.references,
+        claims: withCitations.result.claims.items,
+        citations: withCitations.result.citations.inText,
+      },
+      retrievalOptions,
     );
   } catch {
     return c.json(
       errorResponse(
-        "CITATION_EXTRACTION_FAILED",
-        "Citation matching failed after the PDF text and claims were extracted.",
+        "EVIDENCE_RETRIEVAL_FAILED",
+        "Source retrieval failed unexpectedly after claims and citations were extracted.",
       ),
       500,
     );
   }
 
-  const response: ExtractCitationsResponse = {
-    ...withClaims.result,
-    citations,
+  const response: ExtractEvidenceResponse = {
+    ...withCitations.result,
+    evidence,
   };
   return c.json(response, 200);
 });
 
 export default {
   port: Number(process.env.API_PORT ?? 3001),
+  // Source retrieval can take up to its 60 s budget; Bun's default idle timeout is 10 s.
+  idleTimeout: 120,
   fetch: app.fetch,
 };

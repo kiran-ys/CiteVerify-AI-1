@@ -2,6 +2,7 @@ import type {
   ApiErrorResponse,
   ExtractCitationsResponse,
   ExtractClaimsResponse,
+  ExtractEvidenceResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
 
@@ -137,6 +138,43 @@ export function extractPdfCitations(
     "/api/documents/citations",
     file,
     isCitationsResponse,
+    fetchImpl,
+  );
+}
+
+const ACCESS = ["full_text", "abstract_only", "metadata_only", "unavailable"];
+
+function isEvidenceResponse(value: unknown): value is ExtractEvidenceResponse {
+  if (!isCitationsResponse(value) || !("evidence" in value)) return false;
+  const evidence = value.evidence;
+  return (
+    isRecord(evidence) &&
+    evidence.claimStatus === "not_verified" &&
+    Array.isArray(evidence.sources) &&
+    evidence.sources.every(
+      (source) =>
+        isRecord(source) &&
+        typeof source.referenceId === "string" &&
+        ACCESS.includes(String(source.access)) &&
+        isRecord(source.resolution) &&
+        Array.isArray(source.passages) &&
+        Array.isArray(source.errors),
+    )
+  );
+}
+
+/**
+ * Everything from extractPdfCitations plus retrieved sources. The server
+ * sends cited references' details (never the PDF) to scholarly services.
+ */
+export function extractPdfEvidence(
+  file: File,
+  fetchImpl: FetchLike = fetch,
+): Promise<ExtractEvidenceResponse> {
+  return postPdf(
+    "/api/documents/evidence",
+    file,
+    isEvidenceResponse,
     fetchImpl,
   );
 }

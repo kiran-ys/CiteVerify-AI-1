@@ -38,6 +38,10 @@ No deployment configuration currently exists. Do not deploy until the applicable
 - [ ] Structured logs include request/job correlation IDs.
 - [ ] Alerts have owners and actionable thresholds.
 - [ ] Cost limits and usage alerts are configured before paid services are enabled.
+- [ ] Outbound HTTPS is allowed to `api.crossref.org`, `api.openalex.org`, `www.ebi.ac.uk` (Europe PMC), and `eutils.ncbi.nlm.nih.gov` (PubMed Central) for source retrieval.
+- [ ] `CITEVERIFY_CONTACT_EMAIL` is set to an operator mailbox (not a user's) so Crossref and NCBI requests use their polite pools, or deliberately left empty.
+- [ ] The API host and any proxy allow requests of at least 70 seconds for `POST /api/documents/evidence` (Bun `idleTimeout` is set to 120 s).
+- [ ] A shared cache or rate-limit budget is in place before multiple API instances query the scholarly services.
 
 ## Release evidence
 

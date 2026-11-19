@@ -3,6 +3,7 @@ import type {
   ApiErrorResponse,
   ExtractCitationsResponse,
   ExtractClaimsResponse,
+  ExtractEvidenceResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
 import {
@@ -10,7 +11,11 @@ import {
   createMultiPagePdf,
   createTextPdf,
 } from "../../../test/pdf-fixture.ts";
-import { app, statusForParserError } from "./index.ts";
+import {
+  app,
+  configureEvidenceRetrieval,
+  statusForParserError,
+} from "./index.ts";
 
 describe("statusForParserError", () => {
   test("maps parser error codes to the documented HTTP statuses", () => {
@@ -367,5 +372,149 @@ describe("POST /api/documents/citations", () => {
       uploadRequest(pdfFile(createEmptyPdf()), CITATIONS_PATH),
     );
     expect(empty.status).toBe(422);
+  });
+});
+
+const EVIDENCE_PATH = "/api/documents/evidence";
+const fixtures = "../../../packages/evidence-retrieval/src/fixtures";
+const readFixture = (name: string) =>
+  Bun.file(new URL(`${fixtures}/${name}`, import.meta.url)).text();
+
+describe("POST /api/documents/evidence", async () => {
+  const crossref = await readFixture("crossref-ioannidis-2005.json");
+  const europePmc = await readFixture("europepmc-ioannidis-2005.json");
+  const fullText = await readFixture("europepmc-fulltext-PMC1182327.xml");
+
+  const pages = [
+    [
+      "Abstract",
+      "We found that most published research findings are false in fields with small studies [1].",
+      "1. Introduction",
+      "Small sample sizes reduce the reliability of reported findings [2].",
+    ],
+    [
+      "References",
+      "[1] Ioannidis JPA. Why most published research findings are false. PLoS Med. 2005;2(8):e124. doi:10.1371/journal.pmed.0020124",
+      "[2] Nobody A. An invented reference that no service knows about. J Nowhere. 2001;1:1-2.",
+    ],
+  ];
+
+  function mock(routes: [RegExp, () => Response][]) {
+    const calls: string[] = [];
+    configureEvidenceRetrieval({
+      cache: new Map(),
+      sleep: async () => {},
+      maxRetries: 0,
+      fetch: async (input: string) => {
+        calls.push(input);
+        const route = routes.find(([pattern]) =>
+          pattern.test(decodeURIComponent(input)),
+        );
+        return route ? route[1]() : new Response("not mocked", { status: 404 });
+      },
+    });
+    return calls;
+  }
+
+  const empty = {
+    crossrefSearch: JSON.stringify({ status: "ok", message: { items: [] } }),
+    openAlexSearch: JSON.stringify({ results: [] }),
+  };
+
+  async function post(): Promise<ExtractEvidenceResponse> {
+    const response = await app.request(
+      uploadRequest(pdfFile(createMultiPagePdf(pages)), EVIDENCE_PATH),
+    );
+    expect(response.status).toBe(200);
+    return (await response.json()) as ExtractEvidenceResponse;
+  }
+
+  test("retrieves a genuine source with full-text passages and reports an unresolvable one", async () => {
+    mock([
+      [/api\.crossref\.org\/works\/10\.1371/, () => new Response(crossref)],
+      [/rest\/search\?query=DOI:"10\.1371/, () => new Response(europePmc)],
+      [/PMC1182327\/fullTextXML/, () => new Response(fullText)],
+      [
+        /api\.crossref\.org\/works\?query/,
+        () => new Response(empty.crossrefSearch),
+      ],
+      [/api\.openalex\.org/, () => new Response(empty.openAlexSearch)],
+    ]);
+    const body = await post();
+
+    expect(body.evidence).toMatchObject({
+      claimStatus: "not_verified",
+      truncated: false,
+    });
+    const [ioannidis, invented] = body.evidence.sources;
+    expect(ioannidis).toMatchObject({
+      referenceId: "ref-001",
+      access: "full_text",
+      resolution: { status: "resolved", matchedBy: "doi" },
+      work: {
+        title: "Why Most Published Research Findings Are False",
+        pmcid: "PMC1182327",
+      },
+    });
+    expect(ioannidis?.claimIds).toEqual([body.claims.items[0]?.id ?? ""]);
+    expect(ioannidis?.passages.length).toBeGreaterThan(0);
+    expect(invented).toMatchObject({
+      referenceId: "ref-002",
+      access: "unavailable",
+      work: null,
+      passages: [],
+      resolution: { status: "unresolved" },
+    });
+  });
+
+  test("still answers 200 with per-source errors when every service is down", async () => {
+    mock([[/./, () => new Response("unavailable", { status: 503 })]]);
+    const body = await post();
+
+    expect(body.citations.inText.length).toBeGreaterThan(0);
+    for (const source of body.evidence.sources) {
+      expect(source.access).toBe("unavailable");
+      expect(source.resolution.status).toBe("error");
+      expect(source.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  test("makes no outbound requests when no claim cites a matched reference", async () => {
+    const calls = mock([]);
+    const response = await app.request(
+      uploadRequest(
+        pdfFile(
+          createTextPdf(
+            "We found that drug A lowered blood pressure (p < 0.01).",
+          ),
+        ),
+        EVIDENCE_PATH,
+      ),
+    );
+    const body = (await response.json()) as ExtractEvidenceResponse;
+
+    expect(response.status).toBe(200);
+    expect(body.evidence.sources).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  test("never returns verdicts or support labels", async () => {
+    mock([
+      [/api\.crossref\.org\/works\/10\.1371/, () => new Response(crossref)],
+      [/rest\/search\?query=DOI:"10\.1371/, () => new Response(europePmc)],
+      [/PMC1182327\/fullTextXML/, () => new Response(fullText)],
+    ]);
+    const text = await (
+      await app.request(
+        uploadRequest(pdfFile(createMultiPagePdf(pages)), EVIDENCE_PATH),
+      )
+    ).text();
+    expect(text).not.toMatch(/"(verdict|confidence|supported|contradicted)"/i);
+  });
+
+  test("reuses upload validation", async () => {
+    expect(
+      (await app.request(uploadRequest(undefined, EVIDENCE_PATH))).status,
+    ).toBe(400);
   });
 });

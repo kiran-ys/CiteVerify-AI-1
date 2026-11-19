@@ -5,8 +5,11 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ExtractCitationsResponse } from "@citeverify/shared";
-import { extractPdfCitations } from "./api.ts";
+import type {
+  ExtractCitationsResponse,
+  ExtractEvidenceResponse,
+} from "@citeverify/shared";
+import { extractPdfCitations, extractPdfEvidence } from "./api.ts";
 import { ExtractedClaims } from "./ExtractedClaims.tsx";
 
 type Page = "dashboard" | "upload" | "results" | "reports";
@@ -409,11 +412,23 @@ function Upload() {
   const [file, setFile] = useState<File>();
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "success">("idle");
-  const [result, setResult] = useState<ExtractCitationsResponse>();
+  const [result, setResult] = useState<
+    ExtractCitationsResponse | ExtractEvidenceResponse
+  >();
   const [drag, setDrag] = useState(false);
+  const [retrieving, setRetrieving] = useState(false);
+  const [retrieveError, setRetrieveError] = useState("");
+  // Each new file or extraction bumps this, so late responses for an older file are ignored.
+  const generation = useRef(0);
+  const reset = () => {
+    generation.current++;
+    setResult(undefined);
+    setRetrieving(false);
+    setRetrieveError("");
+  };
   const accept = (f?: File) => {
     setError("");
-    setResult(undefined);
+    reset();
     setPhase("idle");
     if (!f) return;
     if (
@@ -432,7 +447,7 @@ function Upload() {
   };
   const remove = () => {
     setFile(undefined);
-    setResult(undefined);
+    reset();
     setError("");
     setPhase("idle");
     if (input.current) input.current.value = "";
@@ -440,16 +455,38 @@ function Upload() {
   const upload = async () => {
     if (!file) return;
     setError("");
-    setResult(undefined);
+    reset();
+    const current = generation.current;
     setPhase("extracting");
     try {
-      setResult(await extractPdfCitations(file));
+      const extracted = await extractPdfCitations(file);
+      if (current !== generation.current) return;
+      setResult(extracted);
       setPhase("success");
     } catch (cause) {
+      if (current !== generation.current) return;
       setPhase("idle");
       setError(
         cause instanceof Error ? cause.message : "PDF extraction failed.",
       );
+    }
+  };
+  const retrieveSources = async () => {
+    if (!file) return;
+    const current = generation.current;
+    setRetrieving(true);
+    setRetrieveError("");
+    try {
+      const withEvidence = await extractPdfEvidence(file);
+      if (current === generation.current) setResult(withEvidence);
+    } catch (cause) {
+      if (current === generation.current) {
+        setRetrieveError(
+          cause instanceof Error ? cause.message : "Source retrieval failed.",
+        );
+      }
+    } finally {
+      if (current === generation.current) setRetrieving(false);
     }
   };
   return (
@@ -579,6 +616,12 @@ function Upload() {
           <ExtractedClaims
             claims={result.claims}
             citations={result.citations}
+            retrieval={{
+              evidence: "evidence" in result ? result.evidence : undefined,
+              retrieving,
+              error: retrieveError,
+              onRetrieve: retrieveSources,
+            }}
           />
         )}
       </section>

@@ -1,0 +1,25 @@
+{
+  "status": "ok",
+  "message": {
+    "DOI": "10.1371/journal.pmed.0020124",
+    "title": ["Why Most Published Research Findings Are False"],
+    "author": [
+      {
+        "given": "John P. A.",
+        "family": "Ioannidis",
+        "sequence": "first"
+      }
+    ],
+    "issued": {
+      "date-parts": [[2005, 8, 30]]
+    },
+    "container-title": ["PLoS Medicine"],
+    "license": [
+      {
+        "URL": "http://creativecommons.org/licenses/by/4.0/"
+      }
+    ],
+    "URL": "https://doi.org/10.1371/journal.pmed.0020124",
+    "type": "journal-article"
+  }
+}

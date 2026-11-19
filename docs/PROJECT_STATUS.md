@@ -5,9 +5,9 @@ Last inspected: 2026-11-19
 ## Repository baseline
 
 - Repository: `https://github.com/kiran-ys/CiteVerify-AI-1`
-- Active implementation branch: `feature/citation-matching`
-- Baseline commit: `0fe210b` (`Add rule-based scientific claim extraction`)
-- Milestone 3 changes are uncommitted and awaiting owner review.
+- Active implementation branch: `feature/evidence-retrieval`
+- Baseline commit: `a63c58e` (`Add citation extraction and matching within uploaded papers`)
+- Milestone 4 changes are uncommitted and awaiting owner review.
 - Application stack: Bun, Turborepo, TypeScript, React, Vite, Tailwind CSS, Hono, Prisma, SQLite
 
 ## Status summary
@@ -20,16 +20,18 @@ Last inspected: 2026-11-19
 | API health route     | Implemented and verified     | `GET /api/health` returns `{ "status": "ok" }`.                                                                                   |
 | PDF upload           | Implemented and verified     | `POST /api/documents/extract` validates and parses one PDF in memory.                                                             |
 | Claim extraction     | Implemented (committed)      | `POST /api/documents/claims` returns unverified candidate claims with page, offsets, section, and context. Quality is unmeasured. |
-| Citation matching    | Implemented, awaiting review | `POST /api/documents/citations` links in-text citations to the paper's own reference list; matches are not evidence.              |
+| Citation matching    | Implemented (committed)      | `POST /api/documents/citations` links in-text citations to the paper's own reference list; matches are not evidence.              |
+| Source retrieval     | Implemented, awaiting review | `POST /api/documents/evidence` resolves cited references and retrieves accessible text; opt-in; never a verdict.                  |
 | Worker               | Placeholder                  | It logs `[worker] started`; no job consumption exists.                                                                            |
 | Document parser      | Implemented and verified     | `unpdf` 2.2.1 returns full text, page text, page count, warnings, and parser metadata.                                            |
 | Claim extractor      | Implemented and tested       | `packages/claim-extractor` rule-based v1.0.0; deterministic and offline; no LLM or paid API.                                      |
 | Citation engine      | Implemented and tested       | `packages/citation-engine` rule-based v1.0.0; reference list, metadata, citation detection, and matching; offline, no lookups.    |
 | Verification engine  | Placeholder                  | Package exports nothing.                                                                                                          |
+| Evidence retrieval   | Implemented and tested       | `packages/evidence-retrieval` v1.0.0; Crossref, OpenAlex, Europe PMC, PubMed Central; free and keyless; term-overlap passages.    |
 | Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                          |
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                          |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                         |
-| Automated tests      | Implemented and passing      | 87 Bun tests: claim extractor 31, citation engine 25, API 17, web client 10, parser 4.                                            |
+| Automated tests      | Implemented and passing      | 131 Bun tests pass offline (evidence 36, claims 31, citations 25, API 22, web 13, parser 4); 1 opt-in live network test.          |
 | Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                |
 
 ## Completed milestones
@@ -53,7 +55,7 @@ How the rule-based extractor (v1.0.0) works:
 5. Accepts a sentence as a `reported_finding` when it contains first-person or "results show" wording, a statistical result (p-value, confidence interval, effect statistic), significance wording, or a quantified comparison; or as a `cited_claim` when it carries a numeric or author-year citation marker.
 6. Returns the exact sentence, page, character offsets into that page's text, section, neighbouring sentences, claim type, and the names of the rules that matched. No verdict or confidence score is produced.
 
-### Milestone 3 - Citation extraction and matching (uncommitted, awaiting review)
+### Milestone 3 - Citation extraction and matching (committed `a63c58e`)
 
 `React upload -> POST /api/documents/citations -> parsePdf -> extractClaims -> extractCitations -> React "Citation matched — evidence not yet verified"`
 
@@ -66,27 +68,67 @@ How the rule-based citation engine (v1.0.0) works:
 5. Matches each cited item: numbers to the entry with that number; author-year items to entries whose first author has the cited surname (plus any second named author) and whose year matches. One candidate is `matched`, none is `unmatched` with a reason, several are `ambiguous` with every candidate listed.
 6. Links each marker to the extracted claim containing it. The Upload screen shows each claim's citations with the matched entry's exact text and parsed fields.
 
+### Milestone 4 - Source and evidence retrieval (uncommitted, awaiting review)
+
+`React "Retrieve cited sources" -> POST /api/documents/evidence -> parsePdf -> extractClaims -> extractCitations -> retrieveEvidence -> React "Source retrieved — claim not yet verified"`
+
+How retrieval (`packages/evidence-retrieval` v1.0.0) works:
+
+1. Takes only references that a matched citation inside an extracted claim points to (at most 25 per request).
+2. Resolves each one: Crossref DOI lookup when the reference has a DOI, otherwise Crossref bibliographic search, then OpenAlex search. A record is accepted only when its whole title matches the cited title (or the cited title plus a subtitle), it is not a letter or reply, its year is within one, its first author is named in the reference, and its first page appears in the reference when both give pagination. Several survivors are narrowed only by volume and first page; otherwise the result is `ambiguous`.
+3. Looks the work up in Europe PMC. Open-access works get full text from Europe PMC, falling back to PubMed Central (NCBI); others get the Europe PMC or Crossref abstract when one exists. Access is reported as `full_text`, `abstract_only`, `metadata_only`, or `unavailable`.
+4. Picks at most two sentences per claim that share key terms with it, keeping exact text, section, paragraph, sentence, source URL, and shared terms.
+5. Handles timeouts, rate limits (`Retry-After`), server errors, and service outages per source, with a 60-second budget, per-service concurrency (Crossref one at a time), and a 6-hour in-memory cache.
+
+Retrieval is opt-in on the Upload screen because it sends cited-reference details (never the PDF) to external services.
+
+### Real-paper result (genuine open-access paper)
+
+The owner's DREW paper was not available. The genuine open-access paper Ioannidis JPA (2005) "Why most published research findings are false", _PLoS Med_ 2(8): e124 (CC BY), was downloaded from the publisher into the git-ignored `tmp/` folder and run through `POST /api/documents/evidence` on 2026-11-19:
+
+- 6 pages, 37,392 characters, 29 candidate claims; 37 numbered references found; 47 cited items in 30 markers (46 matched, 1 ambiguous).
+- 35 references cited within claims; 25 looked up (10 skipped by the per-request limit). Completed in 60.6 s.
+- Resolved 24 of 25 to a genuine record (20 via Crossref, 4 via OpenAlex); 1 unresolved (ref 12, a textbook: Kelsey et al., _Methods in Observational Epidemiology_, 2nd ed.).
+- Access: 9 abstract only, 15 metadata only, 0 full text; 8 passages selected. Europe PMC timed out on 14 lookups during this run, so many "metadata only" results mean availability could not be checked; the response says so for each source.
+- Ref 20 (ICH E9 guideline) resolved via OpenAlex to PubMed record 10532877; that record has no DOI and no authors, so it was accepted on title prefix and year alone.
+- Full-text retrieval was verified separately against the same paper's own Europe PMC record (PMC1182327) with the opt-in live test.
+- An earlier run exposed letters, replies, and reprints being accepted as matches; the identity check was tightened and regression tests added from those genuine cases.
+
 ## Next milestone
 
-Owner review of citation matching on the 16-page DREW paper and other real papers. Then a measured evaluation of claim and citation extraction, reviewer correction of ambiguous or unmatched citations, and Phase 2 durable jobs before persistence. Source retrieval and verification remain deferred.
+Owner review of source retrieval, ideally on the DREW paper. Then Phase 2 durable jobs so retrieval can run in the worker with progress reporting and a shared cache, followed by a measured evaluation of claim, citation, and source resolution accuracy. Verification remains deferred.
 
 ## Validation
 
-Milestone 3, executed 2026-11-19 with Bun 1.4.4 (`--force`, no cache replay):
+Milestone 4, executed 2026-11-19 with Bun 1.4.4 (`--force`, no cache replay):
 
 - `bun install` - passed
-- `bun run lint` - 10 workspace lint tasks passed
-- `bun run typecheck` - 11 workspace typecheck tasks passed
-- `bun run test` - 87 tests passed across claim-extractor, citation-engine, API, web, and parser packages
+- `bun run lint` - 11 workspace lint tasks passed
+- `bun run typecheck` - 12 workspace typecheck tasks passed
+- `bun run test` - 131 tests passed offline; 1 live test skipped by default
+- `RUN_NETWORK_TESTS=1 bun test` in `packages/evidence-retrieval` - live test passed twice: once with Ioannidis 2005 resolved by DOI and full text from Europe PMC (2 passages); once while Europe PMC returned HTTP 503, correctly reported as metadata only with the outage listed
 - `bun run build` - API, worker, and web production builds passed
-- Browser smoke test - a generated three-page paper uploaded through the real Upload screen showed a numbered reference list on page 2 with 6 entries; 7 cited items matched and `[9]` and `[12]` were reported unmatched. A reference entry wrapped across two lines was joined, and `[4-6]` resolved to three entries. Layout was checked at desktop width and at 375 px with no horizontal scrolling. The demo Results screen still renders separately. The API log contained no document text.
-- The owner's 16-page DREW paper was **not** available to this session, so real-paper behaviour is untested.
+- Browser smoke test - the genuine paper uploaded through the Upload screen; extraction showed 37 references with no lookups until "Retrieve cited sources" was clicked; retrieval completed through the Vite proxy (35 sources: 10 abstract only, 13 metadata only, 12 unavailable including 10 skipped), showing labels, access badges, passages, and per-service errors; no horizontal scrolling at desktop width or 375 px; API logs contained no document text.
+
+Milestone 3 validation (2026-11-19): lint 10/10, typecheck 11/11, 87 tests, build 4/4, and a browser smoke test with a generated three-page paper.
 
 Milestone 2 validation (2026-11-19): lint 10/10, typecheck 11/11, 53 tests, build 4/4, and a browser smoke test with a generated four-page paper.
 
 Milestone 1 validation (2026-11-19): lint 9/9, typecheck 10/10, 13 tests, build 4/4, and a browser smoke test with a generated one-page PDF.
 
 ## Known limitations and deferred work
+
+Source retrieval:
+
+- A retrieved source is not evidence that the claim is supported. Passages are chosen by shared words, which can surface unrelated or contradicting text.
+- Resolution accuracy has not been measured on a labelled set. On one genuine paper, 24 of 25 attempted references resolved; the DREW paper is untested.
+- Retrieval runs synchronously inside the HTTP request (about 60 s for 25 references) and repeats the PDF, claim, and citation work; Phase 2 should move it to the worker.
+- At most 25 references are looked up per request.
+- External services vary: Europe PMC timed out repeatedly during testing. Unreachable services are reported per source, never as "not found".
+- Full text is limited to the Europe PMC open-access subset; publisher sites, preprint servers, and repositories are not fetched.
+- OpenAlex abstracts are not used because they are stored as word indexes and cannot reproduce exact wording.
+- References without a DOI, title, or recognisable author (books, guidelines, reports) often stay unresolved or resolve on weaker evidence, as with the ICH E9 guideline.
+- The cache is per process and in memory; several API instances would each query the services.
 
 Citation matching:
 
@@ -120,6 +162,6 @@ General:
 - The 15-second timeout ends the HTTP request but does not stop the parser; a document still loading when the timeout fires is not cleaned up.
 - Processing is synchronous and in memory; the timeout does not yet provide durable cancellation or resumability.
 - Automated coverage does not yet include a real encrypted fixture, a 25 MB boundary fixture, or a representative multi-column scientific paper.
-- `docs/CITEVERIFY_MASTER_HANDBOOK.md` and its PDF do not yet describe the claim-extractor or citation-engine work; update and regenerate them after owner review.
+- `docs/CITEVERIFY_MASTER_HANDBOOK.md` and its PDF do not yet describe the claim-extractor, citation-engine, or evidence-retrieval work; update and regenerate them after owner review.
 - CI, persistence, worker jobs, authentication, and deployment remain unimplemented.
 - Define retention policy before persisting uploaded files.

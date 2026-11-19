@@ -1,0 +1,28 @@
+{
+  "status": "ok",
+  "message": {
+    "DOI": "10.1037/a0018883",
+    "title": [
+      "A meta-analysis of the impact of short-term sleep deprivation on cognitive variables."
+    ],
+    "author": [
+      {
+        "given": "Julian",
+        "family": "Lim",
+        "sequence": "first"
+      },
+      {
+        "given": "David F.",
+        "family": "Dinges",
+        "sequence": "additional"
+      }
+    ],
+    "issued": {
+      "date-parts": [[2010, 5]]
+    },
+    "container-title": ["Psychological Bulletin"],
+    "URL": "https://doi.org/10.1037/a0018883",
+    "type": "journal-article",
+    "license": []
+  }
+}

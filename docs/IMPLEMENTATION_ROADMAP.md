@@ -81,9 +81,24 @@ Acceptance evidence:
 
 ## Phase 5 - Source retrieval and evidence extraction
 
-- Query legitimate metadata and open-access services.
-- Track access status, license, retrieval time, and canonical source identity.
-- Extract passages with page or section provenance and relevance scores.
+Sequencing note (2026-11-19): built synchronously, in memory, and opt-in from the Upload screen before Phase 2 durable jobs, at the project owner's direction.
+
+1. [x] Add `packages/evidence-retrieval` (v1.0.0) using only free, keyless services: Crossref, OpenAlex, Europe PMC, and PubMed Central (NCBI E-utilities).
+2. [x] Resolve each reference that a claim cites: DOI lookup with an identity check, then bibliographic search; accept a record only when whole title, year (within one), first author, and (when given) first page agree with the reference; report `ambiguous` and `unresolved` with reasons.
+3. [x] Classify access as `full_text` (Europe PMC open-access subset, with PubMed Central fallback), `abstract_only`, `metadata_only`, or `unavailable`, and never describe an unreachable service as "not found".
+4. [x] Select passages by term overlap with the claim, keeping exact sentence text, section, paragraph, sentence, source URL, and shared terms.
+5. [x] Handle timeouts, HTTP 429 with `Retry-After`, server errors, per-service concurrency, an overall time budget, and a per-request source limit.
+6. [x] Add `POST /api/documents/evidence` and an opt-in "Retrieve cited sources" control labelled "Source retrieved — claim not yet verified".
+7. [x] Test with fixtures trimmed from real service responses, real-paper identity cases, and an opt-in live test against a genuine open-access paper.
+8. [ ] Move retrieval to the worker with durable jobs, a shared cache, and progress reporting (Phase 2 dependency).
+9. [ ] Measure resolution precision and recall on a labelled set of real reference lists.
+10. [ ] Replace term overlap with a reviewed passage-relevance method; keep it separate from verification.
+
+Acceptance evidence:
+
+- [x] Every returned title, DOI, URL, and passage comes from a service response or from identifiers those services returned.
+- [x] No verdicts, support labels, or confidence scores are produced.
+- [ ] Measured resolution accuracy on real papers.
 
 ## Phase 6 - Evidence-constrained verification
 

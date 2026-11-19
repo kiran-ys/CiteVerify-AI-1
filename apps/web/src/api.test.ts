@@ -2,9 +2,15 @@ import { describe, expect, test } from "bun:test";
 import type {
   ExtractCitationsResponse,
   ExtractClaimsResponse,
+  ExtractEvidenceResponse,
   ExtractDocumentResponse,
 } from "@citeverify/shared";
-import { extractPdf, extractPdfCitations, extractPdfClaims } from "./api.ts";
+import {
+  extractPdf,
+  extractPdfCitations,
+  extractPdfClaims,
+  extractPdfEvidence,
+} from "./api.ts";
 
 const success: ExtractDocumentResponse = {
   document: {
@@ -245,6 +251,98 @@ describe("extractPdfCitations", () => {
       extractPdfCitations(
         new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
         mockFetch,
+      ),
+    ).rejects.toThrow("invalid extraction response");
+  });
+});
+
+const evidenceSuccess: ExtractEvidenceResponse = {
+  ...citationsSuccess,
+  evidence: {
+    sources: [
+      {
+        referenceId: "ref-001",
+        claimIds: ["claim-001"],
+        resolution: {
+          status: "resolved",
+          reason: null,
+          matchedBy: "doi",
+          resolver: "crossref",
+          candidates: [],
+        },
+        work: {
+          title: "A study",
+          authors: ["J. Smith"],
+          year: "2020",
+          doi: "10.1000/example",
+          journal: null,
+          pmid: null,
+          pmcid: null,
+          openAlexId: null,
+        },
+        access: "metadata_only",
+        accessReason:
+          "The work was not found in Europe PMC, and Crossref supplied no abstract.",
+        license: null,
+        urls: {
+          doi: "https://doi.org/10.1000/example",
+          landingPage: null,
+          fullText: null,
+        },
+        passages: [],
+        errors: [],
+      },
+    ],
+    services: ["crossref", "openalex", "europepmc", "ncbi-pmc"],
+    retrievedAt: "2026-11-19T12:00:00.000Z",
+    method: "metadata-resolution+term-overlap",
+    version: "1.0.0",
+    truncated: false,
+    claimStatus: "not_verified",
+  },
+};
+
+describe("extractPdfEvidence", () => {
+  test("posts the PDF to the evidence endpoint", async () => {
+    let calledWith = "";
+    const mockFetch = (input: RequestInfo | URL) => {
+      calledWith = String(input);
+      return Promise.resolve(Response.json(evidenceSuccess));
+    };
+    const result = await extractPdfEvidence(
+      new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+      mockFetch,
+    );
+    expect(calledWith).toBe("/api/documents/evidence");
+    expect(result.evidence.sources[0]?.access).toBe("metadata_only");
+  });
+
+  test("rejects a response that marks claims as verified", async () => {
+    const mockFetch = () =>
+      Promise.resolve(
+        Response.json({
+          ...evidenceSuccess,
+          evidence: { ...evidenceSuccess.evidence, claimStatus: "verified" },
+        }),
+      );
+    expect(
+      extractPdfEvidence(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        mockFetch,
+      ),
+    ).rejects.toThrow("invalid extraction response");
+  });
+
+  test("rejects an unknown access level", async () => {
+    const bad = structuredClone(evidenceSuccess) as unknown as {
+      evidence: { sources: { access: string }[] };
+    };
+    const first = bad.evidence.sources[0];
+    if (first) first.access = "verified_full_text";
+    expect(
+      extractPdfEvidence(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        () => Promise.resolve(Response.json(bad)),
       ),
     ).rejects.toThrow("invalid extraction response");
   });
