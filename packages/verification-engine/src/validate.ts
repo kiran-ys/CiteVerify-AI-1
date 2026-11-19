@@ -35,9 +35,18 @@ export type ValidatedJudgement = {
 export function verdictFromParts(parts: PartAssessment[]): ModelVerdict {
   const all = parts.some((item) => item.part === "finding")
     ? parts
-    : [...parts, { part: "finding" as const, status: "not_reported" as const, evidence: null }];
+    : [
+        ...parts,
+        {
+          part: "finding" as const,
+          status: "not_reported" as const,
+          evidence: null,
+        },
+      ];
   const supported = all.filter((item) => item.status === "supported").length;
-  const contradicted = all.filter((item) => item.status === "contradicted").length;
+  const contradicted = all.filter(
+    (item) => item.status === "contradicted",
+  ).length;
   if (supported === all.length) return "Supported";
   if (supported > 0) return "Partially supported";
   if (contradicted > 0) return "Contradicted";
@@ -46,7 +55,30 @@ export function verdictFromParts(parts: PartAssessment[]): ModelVerdict {
 
 /** Splits "E1, E3" or "E1 and E3" into ids. */
 export function evidenceIds(text: string): string[] {
-  return [...new Set(text.split(/[\s,;]+|\band\b/).map((id) => id.trim()).filter(Boolean))];
+  return [
+    ...new Set(
+      text
+        .split(/[\s,;]+|\band\b/)
+        .map((id) => id.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+/**
+ * "Unsupported" only when no part is supported or contradicted AND the model
+ * judged the cited work to study a different question; otherwise the
+ * part-derived verdict stands. A missing or unknown topic_match never
+ * produces "Unsupported".
+ */
+export function withTopic(
+  verdict: ModelVerdict,
+  topicMatch: unknown,
+): ModelVerdict {
+  return verdict === "Insufficient evidence" &&
+    topicMatch === "different_question"
+    ? "Unsupported"
+    : verdict;
 }
 
 function validateParts(
@@ -55,20 +87,40 @@ function validateParts(
 ): { ok: true; parts: PartAssessment[] } | { ok: false; problem: string } {
   const parts: PartAssessment[] = [];
   for (const entry of raw) {
-    if (!isRecord(entry)) return { ok: false, problem: "the model listed a claim part that was not an object" };
+    if (!isRecord(entry))
+      return {
+        ok: false,
+        problem: "the model listed a claim part that was not an object",
+      };
     const part = entry.part;
     const status = entry.status;
-    if (typeof part !== "string" || !(CLAIM_PARTS as readonly string[]).includes(part)) {
-      return { ok: false, problem: `the model named an unknown claim part (${String(part)})` };
+    if (
+      typeof part !== "string" ||
+      !(CLAIM_PARTS as readonly string[]).includes(part)
+    ) {
+      return {
+        ok: false,
+        problem: `the model named an unknown claim part (${String(part)})`,
+      };
     }
-    if (typeof status !== "string" || !(PART_STATUSES as readonly string[]).includes(status)) {
-      return { ok: false, problem: `the model gave the ${part} an unknown status` };
+    if (
+      typeof status !== "string" ||
+      !(PART_STATUSES as readonly string[]).includes(status)
+    ) {
+      return {
+        ok: false,
+        problem: `the model gave the ${part} an unknown status`,
+      };
     }
     // The model may cite one id ("E2") or several ("E1, E3"); every one must have been provided.
-    const ids = typeof entry.evidence === "string" ? evidenceIds(entry.evidence) : [];
+    const ids =
+      typeof entry.evidence === "string" ? evidenceIds(entry.evidence) : [];
     const unknown = ids.find((id) => !knownIds.has(id));
     if (status !== "not_reported" && unknown) {
-      return { ok: false, problem: `the model cited evidence ${unknown}, which was not provided` };
+      return {
+        ok: false,
+        problem: `the model cited evidence ${unknown}, which was not provided`,
+      };
     }
     // A part marked supported or contradicted without any passage is not
     // grounded, so it counts as not reported. This can only weaken a verdict.
@@ -79,7 +131,9 @@ function validateParts(
       evidence: grounded ? ids.join(", ") : null,
     });
   }
-  return parts.length > 0 ? { ok: true, parts } : { ok: false, problem: "the model assessed no part of the claim" };
+  return parts.length > 0
+    ? { ok: true, parts }
+    : { ok: false, problem: "the model assessed no part of the claim" };
 }
 
 export type ValidationResult =
@@ -119,7 +173,8 @@ export function validateJudgement(
     const cited = new Map<string, (typeof MODEL_RELATIONS)[number]>();
     for (const item of checked.parts) {
       if (!item.evidence) continue;
-      const relation = item.status === "contradicted" ? "contradicts" : "supports";
+      const relation =
+        item.status === "contradicted" ? "contradicts" : "supports";
       for (const id of evidenceIds(item.evidence)) {
         const previous = cited.get(id);
         cited.set(id, previous && previous !== relation ? "context" : relation);
@@ -132,7 +187,7 @@ export function validateJudgement(
     return {
       ok: true,
       judgement: {
-        verdict: verdictFromParts(checked.parts),
+        verdict: withTopic(verdictFromParts(checked.parts), parsed.topic_match),
         cited,
         explanation,
         parts: checked.parts,

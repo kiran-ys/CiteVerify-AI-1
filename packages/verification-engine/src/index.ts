@@ -296,7 +296,7 @@ export async function verifyClaims(
       continue;
     }
 
-    const answer = await options.judge({
+    const request = {
       system: SYSTEM_PROMPT,
       user: buildUserPrompt(
         claim.text,
@@ -307,22 +307,34 @@ export async function verifyClaims(
         })),
       ),
       schema: OUTPUT_SCHEMA,
-    });
+    };
+    const answer = await options.judge(request);
     if (!answer.ok) {
       results.push(
         unable(
           claim.id,
           answer.kind === "timeout" ? "model_timeout" : "model_error",
-          `The local model could not be used: ${answer.reason}.`,
+          `The AI model could not be used: ${answer.reason}.`,
           evidence,
         ),
       );
       continue;
     }
-    const validated = validateJudgement(
-      answer.content,
-      new Set(evidence.map((item) => item.evidenceId)),
-    );
+    const knownIds = new Set(evidence.map((item) => item.evidenceId));
+    let validated = validateJudgement(answer.content, knownIds);
+    // One retry for a malformed answer, if time allows; never more.
+    if (!validated.ok && Date.now() < deadline) {
+      const second = await options.judge(request);
+      if (second.ok) {
+        const retried = validateJudgement(second.content, knownIds);
+        validated = retried.ok
+          ? retried
+          : {
+              ok: false,
+              problem: `${validated.problem} (and again on one retry: ${retried.problem})`,
+            };
+      }
+    }
     if (!validated.ok) {
       results.push(
         unable(
@@ -363,6 +375,7 @@ export async function verifyClaims(
           : null;
     // "Insufficient evidence" is reported as Unable to verify, with the reason.
     const insufficient = verdict === "Insufficient evidence";
+    const unsupported = verdict === "Unsupported";
     results.push({
       claimId: claim.id,
       verdict: insufficient ? "Unable to verify" : verdict,
@@ -372,7 +385,9 @@ export async function verifyClaims(
         [
           insufficient
             ? "The model found no part of the claim directly supported by the retrieved passages, so they are not sufficient to establish or refute it."
-            : null,
+            : unsupported
+              ? "The retrieved text of the cited source addresses a different question, so it does not back this claim (a possible mis-citation). Check the full source before concluding."
+              : null,
           partsNote,
           scopeNote,
         ]

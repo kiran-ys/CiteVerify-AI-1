@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type {
   ClaimVerification,
   EvidenceRelation,
@@ -18,6 +19,7 @@ const verdictClass: Record<VerificationVerdict, string> = {
   Supported: "verdict-supported",
   "Partially supported": "verdict-partial",
   Contradicted: "verdict-contradicted",
+  Unsupported: "verdict-insufficient",
   "Unable to verify": "verdict-unable",
 };
 
@@ -142,6 +144,18 @@ export function VerificationBar({
   for (const result of verification?.results ?? []) {
     counts.set(result.verdict, (counts.get(result.verdict) ?? 0) + 1);
   }
+  // Elapsed time while the request runs; the server answers once at the end.
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!verifying) return;
+    const started = Date.now();
+    setElapsed(0);
+    const timer = setInterval(
+      () => setElapsed(Math.round((Date.now() - started) / 1000)),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, [verifying]);
   return (
     <div className="verification-bar">
       {verification ? (
@@ -197,6 +211,12 @@ export function VerificationBar({
       {error && (
         <p className="verification-bar-error" role="alert">
           {error}
+        </p>
+      )}
+      {verifying && (
+        <p className="verification-bar-note" role="status">
+          Retrieving sources and checking claims… {elapsed} s elapsed. A paper
+          with about 20 cited claims usually takes 2-3 minutes.
         </p>
       )}
       <button type="button" onClick={onVerify} disabled={verifying}>

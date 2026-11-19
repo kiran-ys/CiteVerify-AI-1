@@ -200,6 +200,7 @@ const VERDICTS = [
   "Supported",
   "Partially supported",
   "Contradicted",
+  "Unsupported",
   "Unable to verify",
 ];
 

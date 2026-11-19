@@ -46,7 +46,14 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const app = new Hono().basePath("/api");
 
-app.get("/health", (c) => c.json({ status: "ok" }));
+// The deployed commit (Render sets RENDER_GIT_COMMIT) lets a tester confirm
+// which version is live. It is public in the repository, not a secret.
+app.get("/health", (c) =>
+  c.json({
+    status: "ok",
+    commit: process.env.RENDER_GIT_COMMIT?.slice(0, 7) ?? null,
+  }),
+);
 
 function errorResponse(code: ApiErrorCode, message: string): ApiErrorResponse {
   return { error: { code, message } };

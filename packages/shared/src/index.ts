@@ -317,6 +317,7 @@ export type VerificationVerdict =
   | "Supported"
   | "Partially supported"
   | "Contradicted"
+  | "Unsupported"
   | "Unable to verify";
 
 /**

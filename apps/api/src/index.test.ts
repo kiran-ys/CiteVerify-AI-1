@@ -11,6 +11,7 @@ import type {
 import {
   createEmptyPdf,
   createMultiPagePdf,
+  createPasswordProtectedPdf,
   createTextPdf,
 } from "../../../test/pdf-fixture.ts";
 import {
@@ -104,6 +105,42 @@ const CLAIMS_PATH = "/api/documents/claims";
 function pdfFile(bytes: Uint8Array, name = "paper.pdf"): File {
   return new File([bytes], name, { type: "application/pdf" });
 }
+
+describe("difficult uploads fail safely", () => {
+  test("a password-protected PDF is reported as encrypted", async () => {
+    const response = await app.request(
+      uploadRequest(pdfFile(createPasswordProtectedPdf())),
+    );
+    const body = (await response.json()) as ApiErrorResponse;
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(response.status).toBeLessThan(500);
+    expect(body.error.code).toBe("ENCRYPTED_PDF");
+  });
+
+  test("a truncated (corrupted) PDF never causes a server error", async () => {
+    const whole = createMultiPagePdf([
+      ["Line one of a real page."],
+      ["Second page text."],
+    ]);
+    const response = await app.request(
+      uploadRequest(pdfFile(whole.slice(0, Math.floor(whole.length / 2)))),
+    );
+    expect(response.status).not.toBe(500);
+    if (response.status !== 200) {
+      const body = (await response.json()) as ApiErrorResponse;
+      expect(["INVALID_PDF", "NO_EXTRACTABLE_TEXT"]).toContain(body.error.code);
+    }
+  });
+
+  test("a file over the 25 MB limit is rejected before parsing", async () => {
+    const big = new Uint8Array(25 * 1024 * 1024 + 10);
+    big.set(new TextEncoder().encode("%PDF-1.4\n"));
+    const response = await app.request(uploadRequest(pdfFile(big)));
+    const body = (await response.json()) as ApiErrorResponse;
+    expect(response.status).toBe(413);
+    expect(body.error.code).toBe("FILE_TOO_LARGE");
+  });
+});
 
 describe("POST /api/documents/claims", () => {
   const paperPages = [
@@ -763,6 +800,81 @@ describe("verification endpoints", async () => {
     );
   });
 
+  function groqFailing(respond: (path: string) => Response): void {
+    configureVerification({
+      host: "http://ollama.test",
+      model: "llama3.2",
+      provider: "groq",
+      timeBudgetMs: 60_000,
+      groq: {
+        apiKey: "test-key",
+        model: "openai/gpt-oss-120b",
+        sleep: async () => {},
+        fetch: async (input: string) =>
+          input.endsWith("/models")
+            ? Response.json({ data: [{ id: "openai/gpt-oss-120b" }] })
+            : respond(input),
+      },
+    });
+  }
+
+  test("a rejected Groq key makes status unavailable and every claim Unable to verify", async () => {
+    scholarlyServices();
+    configureVerification({
+      host: "http://ollama.test",
+      model: "llama3.2",
+      provider: "groq",
+      groq: {
+        apiKey: "bad-key",
+        model: "openai/gpt-oss-120b",
+        fetch: async () =>
+          new Response("invalid api key bad-key", { status: 401 }),
+      },
+    });
+    const status = (await (
+      await app.request("http://localhost/api/verification/status")
+    ).json()) as VerificationStatusResponse;
+    expect(status).toMatchObject({ available: false, provider: "groq" });
+    expect(status.reason).toContain("rejected the server's API key");
+    const body = await verify();
+    expect(JSON.stringify(body)).not.toContain("bad-key");
+    for (const r of body.verification.results)
+      expect(r).toMatchObject({
+        verdict: "Unable to verify",
+        unableCause: "model_unavailable",
+      });
+  });
+
+  test("a Groq rate limit that does not clear gives Unable to verify with the reason", async () => {
+    scholarlyServices();
+    groqFailing(
+      () => new Response("", { status: 429, headers: { "retry-after": "90" } }),
+    );
+    const body = await verify();
+    for (const r of body.verification.results) {
+      expect(r).toMatchObject({
+        verdict: "Unable to verify",
+        unableCause: "model_error",
+      });
+      expect(r.reason).toContain("free rate limit was reached");
+    }
+  });
+
+  test("malformed Groq answers are retried once, then reported as invalid output", async () => {
+    scholarlyServices();
+    let chats = 0;
+    groqFailing(() => {
+      chats++;
+      return Response.json({ choices: [{ message: { content: "not json" } }] });
+    });
+    const body = await verify();
+    const judged = body.verification.results.filter(
+      (r) => r.unableCause === "invalid_output",
+    );
+    expect(judged.length).toBeGreaterThan(0);
+    expect(chats).toBe(judged.length * 2);
+  });
+
   test("reuses upload validation", async () => {
     expect(
       (await app.request(uploadRequest(undefined, VERIFICATION_PATH))).status,
@@ -909,3 +1021,14 @@ describe.if(hasIoannidis)(
     });
   },
 );
+
+describe("health", () => {
+  test("reports ok and the deployed commit without secrets", async () => {
+    process.env.RENDER_GIT_COMMIT = "f55c35d0123456789";
+    const body = await (
+      await app.request("http://localhost/api/health")
+    ).json();
+    expect(body).toEqual({ status: "ok", commit: "f55c35d" });
+    delete process.env.RENDER_GIT_COMMIT;
+  });
+});

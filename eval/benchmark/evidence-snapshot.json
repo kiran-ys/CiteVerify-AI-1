@@ -1,0 +1,2963 @@
+{
+  "capturedAt": "2026-11-19T19:39:38.134Z",
+  "cases": [
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-004",
+      "page": 2,
+      "claim": "Menopause is associated with atherogenic changes, including a worsening of cardiovascular disease (CVD) risk factors1–3 and decreased aerobic fitness4 compared with premenopausal women.",
+      "references": [
+        {
+          "number": 1,
+          "title": "Noninvasive determination of endothelium-mediated vasodilation as a screening test for coronary artery disease: pilot study to assess the predictive value in comparison with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging.",
+          "doi": "10.1016/s0002-8703(99)70189-4",
+          "access": "abstract_only"
+        },
+        {
+          "number": 2,
+          "title": "Predictive value of noninvasively determined endothelial dysfunction for long-term cardiovascular events in patients with peripheral vascular disease.",
+          "doi": "10.1016/s0735-1097(03)00333-4",
+          "access": "abstract_only"
+        },
+        {
+          "number": 3,
+          "title": "Long-term association of brachial artery flow-mediated vasodilation and cardiovascular events in middle-aged subjects with no apparent heart disease.",
+          "doi": "10.1016/j.ijcard.2008.01.021",
+          "access": "abstract_only"
+        },
+        {
+          "number": 4,
+          "title": "Comparison of VO2max and disease risk factors between perimenopausal and postmenopausal women.",
+          "doi": "10.1097/00042192-200211000-00012",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 1,
+          "source": "Noninvasive determination of endothelium-mediated vasodilation as a screening test for coronary artery disease: pilot study to assess the predictive value in comparison with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging.",
+          "doi": "10.1016/s0002-8703(99)70189-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10502220/",
+          "origin": "abstract",
+          "text": "Peripheral endothelial dysfunction (ED) quantified by the determination of flow-mediated dilation (FMD%) of the brachial artery with the use of high-resolution ultrasound is an early marker of atherosclerosis."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 1,
+          "source": "Noninvasive determination of endothelium-mediated vasodilation as a screening test for coronary artery disease: pilot study to assess the predictive value in comparison with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging.",
+          "doi": "10.1016/s0002-8703(99)70189-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10502220/",
+          "origin": "abstract",
+          "text": "Although a positive correlation with coronary artery disease (CAD) has been reported, the unanswered clinical question is the validity of FMD% as a screening test in patients with clinical suspicion of CAD."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 1,
+          "source": "Noninvasive determination of endothelium-mediated vasodilation as a screening test for coronary artery disease: pilot study to assess the predictive value in comparison with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging.",
+          "doi": "10.1016/s0002-8703(99)70189-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10502220/",
+          "origin": "abstract",
+          "text": "Thus the aim of this study was to determine the predictive value of FMD% compared with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 1,
+          "source": "Noninvasive determination of endothelium-mediated vasodilation as a screening test for coronary artery disease: pilot study to assess the predictive value in comparison with angina pectoris, exercise electrocardiography, and myocardial perfusion imaging.",
+          "doi": "10.1016/s0002-8703(99)70189-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10502220/",
+          "origin": "abstract",
+          "text": "The determination of ED was found to be a sensitive and specific screening test to predict the presence of CAD."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 2,
+          "source": "Predictive value of noninvasively determined endothelial dysfunction for long-term cardiovascular events in patients with peripheral vascular disease.",
+          "doi": "10.1016/s0735-1097(03)00333-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12767663/",
+          "origin": "abstract",
+          "text": "The prospective relation between endothelial function determined by brachial-artery ultrasound and long-term cardiovascular risk is unknown."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 2,
+          "source": "Predictive value of noninvasively determined endothelial dysfunction for long-term cardiovascular events in patients with peripheral vascular disease.",
+          "doi": "10.1016/s0735-1097(03)00333-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12767663/",
+          "origin": "abstract",
+          "text": "Risk was approximately nine-fold higher in patients with FMD <8.1% (lower two tertiles) compared with those in the upper tertile (odds ratio 9.5; 95% confidence interval 2.3 to 40)."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 2,
+          "source": "Predictive value of noninvasively determined endothelial dysfunction for long-term cardiovascular events in patients with peripheral vascular disease.",
+          "doi": "10.1016/s0735-1097(03)00333-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12767663/",
+          "origin": "abstract",
+          "text": "Impaired brachial-artery endothelial function independently predicts long-term cardiovascular events in patients with peripheral arterial disease."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 2,
+          "source": "Predictive value of noninvasively determined endothelial dysfunction for long-term cardiovascular events in patients with peripheral vascular disease.",
+          "doi": "10.1016/s0735-1097(03)00333-4",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12767663/",
+          "origin": "abstract",
+          "text": "The findings suggest that noninvasive assessment of endothelial function using brachial-artery FMD may serve as a surrogate end point for cardiovascular risk."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 3,
+          "source": "Long-term association of brachial artery flow-mediated vasodilation and cardiovascular events in middle-aged subjects with no apparent heart disease.",
+          "doi": "10.1016/j.ijcard.2008.01.021",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18479768/",
+          "origin": "abstract",
+          "text": "The aim of this study was to detect the long-term association of peripheral vascular endothelial function and clinical outcome in healthy subjects without apparent coronary artery disease (CAD)."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 3,
+          "source": "Long-term association of brachial artery flow-mediated vasodilation and cardiovascular events in middle-aged subjects with no apparent heart disease.",
+          "doi": "10.1016/j.ijcard.2008.01.021",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18479768/",
+          "origin": "abstract",
+          "text": "Subjects were divided into 2 groups: below (n=221) and above (n=214) the median FMD of 10.7%, and were comparable regarding CAD risk factors, lipoproteins, fasting glucose, C-reactive protein, and concomitant medications, with a mean clinical follow-up of 32+/-2 months."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-005",
+      "page": 2,
+      "claim": "Similarly, vascular endothelial function measured via flow-mediated dilation (FMD) is impaired after menopause.56",
+      "references": [
+        {
+          "number": 5,
+          "title": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "access": "abstract_only"
+        },
+        {
+          "number": 6,
+          "title": "Circadian variation in endothelial function is attenuated in postmenopausal women.",
+          "doi": "10.1016/j.maturitas.2005.12.005",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "To evaluate the effect of endogenous estrogens on endothelial function in humans, we examined whether menopause is associated with impairment in endothelium-dependent vasodilation in normotensive and essential hypertensive women."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "In 73 normotensive subjects (37 women, 36 men) and 73 hypertensive patients (36 women, 37 men), we studied endothelial function by measuring forearm blood flow modifications (strain-gauge plethysmography) induced by intrabrachial acetylcholine (0.15, 0.45, 1.5, 4.5, and 15 micrograms/100 mL per minute), an endothelium-dependent vasodilator, and sodium nitroprusside (1,2, and 4 micrograms/100 mL per minute), an endothelium-independent vasodilator."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "However, in normally menstruating normotensive women, no endothelial dysfunction was observed, and age-related impairment in endothelium-dependent vasodilation was evident only after menopause."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "Age-related endothelial dysfunction is attenuated in premenopausal normotensive and hypertensive women compared with men, whereas no sex-induced difference is observed after menopause, suggesting a protective effect of endogenous estrogens on endothelial function."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 6,
+          "source": "Circadian variation in endothelial function is attenuated in postmenopausal women.",
+          "doi": "10.1016/j.maturitas.2005.12.005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16466869/",
+          "origin": "abstract",
+          "text": "The present study was undertaken to investigate the possible existence of an endogenously generated circadian rhythm in endothelial function in women and whether this rhythm is altered after the menopause."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 6,
+          "source": "Circadian variation in endothelial function is attenuated in postmenopausal women.",
+          "doi": "10.1016/j.maturitas.2005.12.005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16466869/",
+          "origin": "abstract",
+          "text": "Healthy non smoking women (11 pre-menopausal and 13 postmenopausal women) were studied during a 22 h period under constant routine conditions; endothelium-dependent (flow-mediated dilation (%FMD)) and -independent (glyceryl-trintrate (GTN)-mediated) function was assessed every 2 and 4 h, respectively, by high-resolution ultrasound of the brachial artery."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 6,
+          "source": "Circadian variation in endothelial function is attenuated in postmenopausal women.",
+          "doi": "10.1016/j.maturitas.2005.12.005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16466869/",
+          "origin": "abstract",
+          "text": "The findings show a circadian rhythm in %FMD in pre-menopausal women, which disappears after the menopause."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 6,
+          "source": "Circadian variation in endothelial function is attenuated in postmenopausal women.",
+          "doi": "10.1016/j.maturitas.2005.12.005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16466869/",
+          "origin": "abstract",
+          "text": "The reduction in %FMD and an absence of a day-night variation in %FMD in postmenopausal women may have important implications for the incidence of coronary heart disease in women after the menopause."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-006",
+      "page": 2,
+      "claim": "This initially may be due to a decrease in endogenous oestrogen levels,7 and likely further exacerbated by increased adiposity8 and reductions in exercise habits or physical activity levels.8",
+      "references": [
+        {
+          "number": 7,
+          "title": "Hemodynamic after-effects of acute dynamic exercise in sedentary normotensive postmenopausal women.",
+          "doi": "10.1097/00004872-200502000-00010",
+          "access": "abstract_only"
+        },
+        {
+          "number": 8,
+          "title": "Changes in energy balance and body composition at menopause: a controlled longitudinal study.",
+          "doi": "10.7326/0003-4819-123-9-199511010-00005",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 7,
+          "source": "Hemodynamic after-effects of acute dynamic exercise in sedentary normotensive postmenopausal women.",
+          "doi": "10.1097/00004872-200502000-00010",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15662216/",
+          "origin": "abstract",
+          "text": "To determine, in sedentary normotensive postmenopausal women, the after-effects of exercise on systemic and regional hemodynamics, and whether changes in total peripheral conductance after exercise relate to changes in brachial artery flow-mediated vasodilation (FMD)."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 7,
+          "source": "Hemodynamic after-effects of acute dynamic exercise in sedentary normotensive postmenopausal women.",
+          "doi": "10.1097/00004872-200502000-00010",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15662216/",
+          "origin": "abstract",
+          "text": "In 13 sedentary postmenopausal women, the blood pressure (BP), cardiac output, total peripheral resistance and total peripheral conductance, calf vascular resistance and FMD were measured during baseline rest, and again commencing 45 min after treadmill exercise."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 7,
+          "source": "Hemodynamic after-effects of acute dynamic exercise in sedentary normotensive postmenopausal women.",
+          "doi": "10.1097/00004872-200502000-00010",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15662216/",
+          "origin": "abstract",
+          "text": "In both groups the cardiac output (P < 0.01) increased and the calf vascular resistance (P < 0.01) and total peripheral resistance (P < 0.05) decreased after exercise, but resistance fell more (P < 0.05) in postmenopausal women."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 7,
+          "source": "Hemodynamic after-effects of acute dynamic exercise in sedentary normotensive postmenopausal women.",
+          "doi": "10.1097/00004872-200502000-00010",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15662216/",
+          "origin": "abstract",
+          "text": "These observations reinforce the concept of exercise as an important non-pharmacological intervention to modify cardiovascular risk in postmenopausal women."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 8,
+          "source": "Changes in energy balance and body composition at menopause: a controlled longitudinal study.",
+          "doi": "10.7326/0003-4819-123-9-199511010-00005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7574222/",
+          "origin": "abstract",
+          "text": "To describe the effects of menopause on resting metabolic rate, body composition, fat distribution, physical activity during leisure time, and fasting insulin levels."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 8,
+          "source": "Changes in energy balance and body composition at menopause: a controlled longitudinal study.",
+          "doi": "10.7326/0003-4819-123-9-199511010-00005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7574222/",
+          "origin": "abstract",
+          "text": "Women who experienced menopause lost more fat-free mass than women who remained premenopausal (-3.0 +/- 1.1 kg and -0.5 +/- 0.5 kg, respectively), had greater decreases in resting metabolic rate (-103 +/- 55 kcal/d and -8 +/- 17 kcal/d) and physical activity during leisure time (-127 +/- 79 kcal/d and 64 +/- 60 kcal/d), and had greater increases in fat mass (2.5 +/- 2 kg and 1.0 +/- 1.5 kg), fasting insulin levels (11 +/- 9 pmol/L and -2 +/- 5 pmol/L), and waist-to-hip ratios (0.04 +/- 0.01 and 0.01 +/- 0.01) (P < or = 0.01 for all comparisons)."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 8,
+          "source": "Changes in energy balance and body composition at menopause: a controlled longitudinal study.",
+          "doi": "10.7326/0003-4819-123-9-199511010-00005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7574222/",
+          "origin": "abstract",
+          "text": "Natural menopause is associated with reduced energy expenditure during rest and physical activity, an accelerated loss of fat-free mass, and increased central adiposity and fasting insulin levels."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 8,
+          "source": "Changes in energy balance and body composition at menopause: a controlled longitudinal study.",
+          "doi": "10.7326/0003-4819-123-9-199511010-00005",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7574222/",
+          "origin": "abstract",
+          "text": "These changes may indicate a worsening cardiovascular and metabolic risk profile."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-007",
+      "page": 2,
+      "claim": "Because endothelial dysfunction may represent one of the early subclinical events in atherogenesis,9 and has been shown to predict future risk of hypertension10 and cardiovascular events11 in postmenopausal women, effective intervention strategies capable of improving endothelial function are needed.",
+      "references": [
+        {
+          "number": 9,
+          "title": "Leukocyte adhesion molecules in atherogenesis.",
+          "doi": "10.1016/s0009-8981(99)00102-3",
+          "access": "abstract_only"
+        },
+        {
+          "number": 10,
+          "title": "Flow-mediated vasodilation and the risk of developing hypertension in healthy postmenopausal women.",
+          "doi": "10.1016/j.jacc.2004.07.027",
+          "access": "abstract_only"
+        },
+        {
+          "number": 11,
+          "title": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 9,
+          "source": "Leukocyte adhesion molecules in atherogenesis.",
+          "doi": "10.1016/s0009-8981(99)00102-3",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10511293/",
+          "origin": "abstract",
+          "text": "Functions of mononuclear leukocytes and endothelial cell leukocyte adhesion molecules in the formation of early atherosclerotic lesions is discussed."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 9,
+          "source": "Leukocyte adhesion molecules in atherogenesis.",
+          "doi": "10.1016/s0009-8981(99)00102-3",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10511293/",
+          "origin": "abstract",
+          "text": "The main transgenic mouse models developed to study cholesterol metabolism and atherosclerotic lesion formation, including apolipoprotein E knockout and low density lipoprotein receptor knockout (LDLR-/-) mice, are reviewed."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 9,
+          "source": "Leukocyte adhesion molecules in atherogenesis.",
+          "doi": "10.1016/s0009-8981(99)00102-3",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10511293/",
+          "origin": "abstract",
+          "text": "Differences in their dependence on dietary cholesterol supplementation is emphasized and a new semi-purified, cholate-free mouse diet for LDLR-/- mice is described."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 9,
+          "source": "Leukocyte adhesion molecules in atherogenesis.",
+          "doi": "10.1016/s0009-8981(99)00102-3",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10511293/",
+          "origin": "abstract",
+          "text": "Finally, ongoing studies are summarized which utilize transgenic mice to assess the roles of individual adhesion molecules in atherosclerotic lesion formation."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 10,
+          "source": "Flow-mediated vasodilation and the risk of developing hypertension in healthy postmenopausal women.",
+          "doi": "10.1016/j.jacc.2004.07.027",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15489096/",
+          "origin": "abstract",
+          "text": "This study provided the opportunity to assess the relationship between endothelial vasomotor function and incidence of hypertension in a cohort of postmenopausal women."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 10,
+          "source": "Flow-mediated vasodilation and the risk of developing hypertension in healthy postmenopausal women.",
+          "doi": "10.1016/j.jacc.2004.07.027",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15489096/",
+          "origin": "abstract",
+          "text": "Both menopause and hypertension are associated with endothelial dysfunction and are well-known risk factors for atherosclerotic-related disease."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 10,
+          "source": "Flow-mediated vasodilation and the risk of developing hypertension in healthy postmenopausal women.",
+          "doi": "10.1016/j.jacc.2004.07.027",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15489096/",
+          "origin": "abstract",
+          "text": "We conducted a prospective cohort study that began in 1996 on 952 apparently healthy postmenopausal women, age 53 +/- 5 years (range 44 to 60 years), with initially normal levels of blood pressure and no history of hypertension."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 10,
+          "source": "Flow-mediated vasodilation and the risk of developing hypertension in healthy postmenopausal women.",
+          "doi": "10.1016/j.jacc.2004.07.027",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15489096/",
+          "origin": "abstract",
+          "text": "This could suggest that an impaired endothelial vasomotor function precedes and predicts the future development of hypertension in postmenopausal women."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "The aim of this study was to examine the association between brachial artery flow-mediated dilation (FMD) and cardiovascular events in a cohort of initially asymptomatic post-menopausal women, with adjustment for the presence of the major cardiovascular risk factors."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "Conventional major cardiovascular risk factors (cigarette smoking, hypercholesterolemia, hypertension, and diabetes) fail to explain nearly 50% of cardiovascular events."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-008",
+      "page": 2,
+      "claim": "Aerobic exercise training as an intervention has been shown to improve endothelial function consistently in individuals with CVD risk12–15 and hypertension.141617",
+      "references": [
+        {
+          "number": 12,
+          "title": "The effect of combined aerobic and resistance exercise training on vascular function in type 2 diabetes.",
+          "doi": "10.1016/s0735-1097(01)01439-5",
+          "access": "abstract_only"
+        },
+        {
+          "number": 13,
+          "title": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "access": "abstract_only"
+        },
+        {
+          "number": 14,
+          "title": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "access": "abstract_only"
+        },
+        {
+          "number": 15,
+          "title": "Impact of physical training and detraining on endothelium-dependent vasodilation in patients with recent acute myocardial infarction.",
+          "doi": "10.1016/j.ahj.2003.12.023",
+          "access": "abstract_only"
+        },
+        {
+          "number": 16,
+          "title": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "access": "abstract_only"
+        },
+        {
+          "number": 17,
+          "title": "Low frequency regular exercise improves flow-mediated dilatation of subjects with mild hypertension.",
+          "doi": "10.1291/hypres.28.315",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 12,
+          "source": "The effect of combined aerobic and resistance exercise training on vascular function in type 2 diabetes.",
+          "doi": "10.1016/s0735-1097(01)01439-5",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11527646/",
+          "origin": "abstract",
+          "text": "The purpose of this study was to examine whether exercise training stimulates a generalized improvement in vascular function in patients with type 2 diabetes mellitus."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 12,
+          "source": "The effect of combined aerobic and resistance exercise training on vascular function in type 2 diabetes.",
+          "doi": "10.1016/s0735-1097(01)01439-5",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11527646/",
+          "origin": "abstract",
+          "text": "Exercise is often recommended for patients with type 2 diabetes to improve physical conditioning and glycemic control."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 12,
+          "source": "The effect of combined aerobic and resistance exercise training on vascular function in type 2 diabetes.",
+          "doi": "10.1016/s0735-1097(01)01439-5",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11527646/",
+          "origin": "abstract",
+          "text": "This study examined the effect of eight weeks of exercise training on conduit and resistance vessel function in patients with type 2 diabetes, using a randomized crossover design."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 12,
+          "source": "The effect of combined aerobic and resistance exercise training on vascular function in type 2 diabetes.",
+          "doi": "10.1016/s0735-1097(01)01439-5",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11527646/",
+          "origin": "abstract",
+          "text": "If endothelial dysfunction is an integral component of the pathogenesis of vascular disease, as currently believed, this study supports the value of an exercise program in the management of type 2 diabetes."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Exercise training has been shown, in many animal and human studies, to augment endothelial, NO-dependent vasodilatation in both large and small vessels."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Increased NO bioactivity with exercise training has been readily and consistently demonstrated in subjects with cardiovascular disease and risk factors, in whom antecedent endothelial dysfunction exists."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Recent human studies also indicate that exercise training may improve endothelial function by up-regulating eNOS protein expression and phosphorylation."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Given the strong prognostic links between vascular structure, function and cardiovascular events, the implications of these findings are obvious, yet many unanswered questions remain, not only concerning the mechanisms responsible for NO bioactivity, the nature of the cellular effect and relevance of other autacoids, but also such practical questions as the optimal intensity, modality and volume of exercise training required in different populations."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "Endothelial dysfunction that can be detected as impaired flow-mediated dilation by ultrasonography is an early event in atherogenesis and has been demonstrated in healthy subjects with risk factors for atherosclerosis many years before the appearance of atheromatous plaques."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "We examined the influence of physical training on flow-mediated dilation in patients with the polymetabolic syndrome."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-009",
+      "page": 2,
+      "claim": "Aerobic exercise is believed to improve endothelial function by increasing antegrade vascular shear stress, which leads to upregulation of nitric oxide synthase, and greater nitric oxide release.13",
+      "references": [
+        {
+          "number": 13,
+          "title": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Vascular endothelial function is essential for maintenance of health of the vessel wall and for vasomotor control in both conduit and resistance vessels."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "These conditions may all be associated with increased oxygen free radicals which impact on NO synthase activity and with which NO reacts; repeated exercise and shear stress stimulation of NO bioactivity redresses this radical imbalance, hence leading to greater potential for autacoid bioavailability."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Recent human studies also indicate that exercise training may improve endothelial function by up-regulating eNOS protein expression and phosphorylation."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Given the strong prognostic links between vascular structure, function and cardiovascular events, the implications of these findings are obvious, yet many unanswered questions remain, not only concerning the mechanisms responsible for NO bioactivity, the nature of the cellular effect and relevance of other autacoids, but also such practical questions as the optimal intensity, modality and volume of exercise training required in different populations."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-021",
+      "page": 6,
+      "claim": "The results of the present study suggest that moderate intensity aerobic exercise training may have cardioprotective benefits because improvements in endothelial function are associated with reduced risk of cardiovascular events in postmenopausal women.11",
+      "references": [
+        {
+          "number": 11,
+          "title": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "The aim of this study was to examine the association between brachial artery flow-mediated dilation (FMD) and cardiovascular events in a cohort of initially asymptomatic post-menopausal women, with adjustment for the presence of the major cardiovascular risk factors."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "Conventional major cardiovascular risk factors (cigarette smoking, hypercholesterolemia, hypertension, and diabetes) fail to explain nearly 50% of cardiovascular events."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "Evaluation of endothelial function, utilizing the noninvasive measurement of the brachial artery FMD, may serve as a screening tool to individualize high-risk patients."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "In post-menopausal women, the knowledge of FMD provided incremental prognostic information regarding the risk of developing cardiovascular events."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-022",
+      "page": 6,
+      "claim": "There are three published studies to our knowledge which have found no improvement in endothelial function in healthy postmenopausal women after aerobic exercise training.27–29",
+      "references": [
+        {
+          "number": 27,
+          "title": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "access": "abstract_only"
+        },
+        {
+          "number": 28,
+          "title": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "access": "abstract_only"
+        },
+        {
+          "number": 29,
+          "title": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "High-intensity resistance training (RT) increases arterial stiffness in young men and women."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "However, the effects of moderate intensity RT on central aortic pressure wave reflection in healthy postmenopausal women are unknown."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "Healthy sedentary normotensive postmenopausal women were randomly assigned to either 18 weeks (2 days/week) of RT (RES n = 13) or aerobic training (AER n = 10)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "This prospective, randomized study demonstrated that moderate intensity whole body RT in previously sedentary, normotensive postmenopausal women does not alter central aortic pressure wave reflection."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "Aging is associated with endothelial dysfunction, but underlying sex-related differences may exist and the effects of fitness and exercise on endothelial dysfunction in men (M) and women (W) are poorly understood."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "Exercise training improved brachial artery NO dilator function (FMD-to-GTN ratio) after 24 wk (P < 0.05) in OS women, but not men."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "These findings indicate that maintaining a high level of fitness, or undertaking exercise training, prevents the age-related decline in the brachial artery vasodilator function evident in women."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "This study has potential implications for the prevention of conduit artery endothelial dysfunction in men and women."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "In the present study, we determined whether regular aerobic exercise improves brachial artery FMD in MA/O (middle-aged/older) men and post-menopausal women."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "In a separate cross-sectional study (n=167), brachial artery FMD was approx. 50% greater in endurance-exercise-trained (6.4±0.4%; n=45) compared with sedentary (4.3±0.3%; n=60) MA/O men (P<0.001), whereas there were no differences between endurance-trained (5.3±0.7%, n=20) and sedentary (5.6±0.5%, n=42) post-menopausal women (P=0.70)."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-023",
+      "page": 6,
+      "claim": "Casey et al27 found no significant change in FMD after 18 weeks of treadmill training in healthy subjects (n=10).",
+      "references": [
+        {
+          "number": 27,
+          "title": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "Healthy sedentary normotensive postmenopausal women were randomly assigned to either 18 weeks (2 days/week) of RT (RES n = 13) or aerobic training (AER n = 10)."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "Eighteen weeks of RT did not change AI(a) (28.9 +/- 1.9 vs. 28.5 +/- 1.9%; mean +/- S.E.M.) or Deltat (p) (140.6 +/- 2.4 vs. 141.2 +/- 2.1 ms)."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "Brachial FMD did not significantly change in either group following training."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "This prospective, randomized study demonstrated that moderate intensity whole body RT in previously sedentary, normotensive postmenopausal women does not alter central aortic pressure wave reflection."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-024",
+      "page": 7,
+      "claim": "Recently, Pierce et al29 found no improvement in FMD in postmenopausal women with no CVD, but they found improvement in older men.",
+      "references": [
+        {
+          "number": 29,
+          "title": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "In the present study, we determined whether regular aerobic exercise improves brachial artery FMD in MA/O (middle-aged/older) men and post-menopausal women."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "In sedentary MA/O adults (age, 55-79 years) without CVD, 8 weeks of brisk walking (6 days/week for approx. 50 min/day; randomized controlled design) increased treadmill time approx. 20% in both MA/O men (n=11) and post-menopausal women (n=15) (P<0.01), without altering body composition or circulating CVD risk factors."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "Brachial artery FMD increased >50% in the MA/O men (from 4.6±0.6 to 7.1±0.6%; P<0.01), but did not change in the post-menopausal women (5.1±0.8 compared with 5.4±0.7%; P=0.50)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 29,
+          "source": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "url": "https://europepmc.org/article/MED/20642454",
+          "origin": "abstract",
+          "text": "Some post-menopausal women without CVD may be less responsive to habitual aerobic exercise than MA/O men."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-025",
+      "page": 7,
+      "claim": "Our results are in line with previous studies, because differences in improvements in endothelial function after exercise training are likely explained by the fact that our subjects had elevated blood pressure (which is associated with endothelial dysfunction),30 and presented with lower FMD values at baseline (4.1%) than the previous training studies in postmenopausal women already mentioned (Casey et al: 9.9%, Black et al: 5.3%, Pierce et al: 5.1%).27–29",
+      "references": [
+        {
+          "number": 30,
+          "title": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "access": "abstract_only"
+        },
+        {
+          "number": 27,
+          "title": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "access": "abstract_only"
+        },
+        {
+          "number": 28,
+          "title": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "access": "abstract_only"
+        },
+        {
+          "number": 29,
+          "title": "Sex-specific effects of habitual aerobic exercise on brachial artery flow-mediated dilation in middle-aged and older adults",
+          "doi": "10.1042/cs20100174",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "The structure and function of blood vessels varies along the vascular tree, and alterations found in hypertension are also different."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "The aim of this study was to determine whether non-invasive measurement of endothelial function in conduit arteries reflects that of subcutaneous resistance arteries measured in vitro."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "By multivariate analysis, FMD predicted resistance artery endothelial function independently of age, sex, body mass index, blood lipid status and lumen diameter of brachial artery (beta = 0.81, P< 0.001)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "Abnormal FMD in the brachial artery predicts the presence of endothelial dysfunction in human resistance arteries, suggesting that impairment of endothelial function is a generalized alteration in hypertension."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "High-intensity resistance training (RT) increases arterial stiffness in young men and women."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "However, the effects of moderate intensity RT on central aortic pressure wave reflection in healthy postmenopausal women are unknown."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "Healthy sedentary normotensive postmenopausal women were randomly assigned to either 18 weeks (2 days/week) of RT (RES n = 13) or aerobic training (AER n = 10)."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 27,
+          "source": "Effect of resistance training on arterial wave reflection and brachial artery reactivity in normotensive postmenopausal women.",
+          "doi": "10.1007/s00421-007-0447-2",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17394009/",
+          "origin": "abstract",
+          "text": "This prospective, randomized study demonstrated that moderate intensity whole body RT in previously sedentary, normotensive postmenopausal women does not alter central aortic pressure wave reflection."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "Aging is associated with endothelial dysfunction, but underlying sex-related differences may exist and the effects of fitness and exercise on endothelial dysfunction in men (M) and women (W) are poorly understood."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 28,
+          "source": "Impact of age, sex, and exercise on brachial artery flow-mediated dilatation.",
+          "doi": "10.1152/ajpheart.00226.2009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19633208/",
+          "origin": "abstract",
+          "text": "Differences between Y and OS subjects were due primarily to lower FMD in the OS women (4.3 +/- 0.6%)."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-026",
+      "page": 7,
+      "claim": "In addition, subject populations with elevated blood pressure have shown improvement in FMD with aerobic exercise training. 141617",
+      "references": [
+        {
+          "number": 14,
+          "title": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "access": "abstract_only"
+        },
+        {
+          "number": 16,
+          "title": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "access": "abstract_only"
+        },
+        {
+          "number": 17,
+          "title": "Low frequency regular exercise improves flow-mediated dilatation of subjects with mild hypertension.",
+          "doi": "10.1291/hypres.28.315",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "Endothelial dysfunction that can be detected as impaired flow-mediated dilation by ultrasonography is an early event in atherogenesis and has been demonstrated in healthy subjects with risk factors for atherosclerosis many years before the appearance of atheromatous plaques."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "On high-resolution ultrasound images, the diameter of the brachial artery was measured at rest, after reactive hyperemia (causing flow-mediated, endothelium-dependent dilation), and after sublingual glyceryltrinitrate (causing endothelium-independent vasodilation) in all subjects before and after the training period."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "There was no change in body mass index, blood pressure, insulin resistance, lipids, and big endothelin-1 in either group."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 14,
+          "source": "Physical training improves flow-mediated dilation in patients with the polymetabolic syndrome.",
+          "doi": "10.1161/01.atv.20.2.551",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10671187/",
+          "origin": "abstract",
+          "text": "In conclusion, our findings suggest that a 3-month physical training program, which improved maximal exercise capacity, enhances flow-mediated dilation in patients with the polymetabolic syndrome."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 16,
+          "source": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17330056/",
+          "origin": "abstract",
+          "text": "Aerobic physical exercise is broadly recommended as a helpful adjunct to obtain blood pressure control in hypertension."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 16,
+          "source": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17330056/",
+          "origin": "abstract",
+          "text": "Fifty-two patients (23 with beta-blocker, 29 without beta-blocker) > or =60 years with systolic 24-h ambulatory blood pressure (ABP) > or =140 mm Hg and/or antihypertensive treatment were randomly assigned to sedentary activity or a heart-rate controlled 12-week treadmill exercise programme (lactate 2.0 mmol/l)."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 16,
+          "source": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17330056/",
+          "origin": "abstract",
+          "text": "In the exercise group, the training significantly decreased systolic and diastolic 24-h ABP, blood pressure on exertion (100 W) and increased endothelium-dependent vasodilation (flow-mediated vasodilation, FMD) and physical performance both in the presence and absence of beta-blockade (P<0.05 each)."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 16,
+          "source": "Beta-blockers do not impair the cardiovascular benefits of endurance training in hypertensives.",
+          "doi": "10.1038/sj.jhh.1002173",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17330056/",
+          "origin": "abstract",
+          "text": "In the present study, target training heart rate with beta-blockers is about 18% lower than without."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 17,
+          "source": "Low frequency regular exercise improves flow-mediated dilatation of subjects with mild hypertension.",
+          "doi": "10.1291/hypres.28.315",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16138561/",
+          "origin": "abstract",
+          "text": "In the present study, therefore, we examined the effects of infrequently performed exercise on flow-mediated dilatation (FMD), which is an index of endothelial function, in 15 subjects with hypertension (mild hypertensives) and 10 normotensive subjects (normotensives)."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 17,
+          "source": "Low frequency regular exercise improves flow-mediated dilatation of subjects with mild hypertension.",
+          "doi": "10.1291/hypres.28.315",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16138561/",
+          "origin": "abstract",
+          "text": "The exercise decreased blood pressure in the mild hypertensives, and increased high-density lipoprotein (HDL) cholesterol in both groups."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-028",
+      "page": 7,
+      "claim": "Tinken et al31 observed evidence of vascular remodelling during cycle ergometer exercise training in young healthy subjects because FMD increased after 2 and 4 weeks but was not significantly different from baseline at 6 or 8 weeks.",
+      "references": [
+        {
+          "number": 31,
+          "title": "Time course of change in vasodilator function and capacity in response to exercise training in humans.",
+          "doi": "10.1113/jphysiol.2008.158014",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 31,
+          "source": "Time course of change in vasodilator function and capacity in response to exercise training in humans.",
+          "doi": "10.1113/jphysiol.2008.158014",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18755749/",
+          "origin": "abstract",
+          "text": "Studies of the impact of exercise training on arterial adaptation in healthy subjects have produced disparate results."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 31,
+          "source": "Time course of change in vasodilator function and capacity in response to exercise training in humans.",
+          "doi": "10.1113/jphysiol.2008.158014",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18755749/",
+          "origin": "abstract",
+          "text": "To gain insight into the time course of training-induced changes in artery function and structure, we examined conduit artery flow mediated dilatation (FMD), an index of nitric oxide (NO)-mediated artery function, and conduit dilator capacity (DC), a surrogate marker for arterial remodelling, in the brachial and popliteal arteries of 13 healthy male subjects (21.6 +/- 0.6 years) and seven non-active controls (22.8 +/- 0.2 years) studied at 2-week intervals across an 8-week cycle and treadmill exercise training programme."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 31,
+          "source": "Time course of change in vasodilator function and capacity in response to exercise training in humans.",
+          "doi": "10.1113/jphysiol.2008.158014",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18755749/",
+          "origin": "abstract",
+          "text": "FMD increased from baseline (5.9 +/- 0.5%) at weeks 2 and 4 (9.1 +/- 0.6, 8.5 +/- 0.6%, respectively, P < 0.01), but returned towards baseline levels again by week 8 (6.9 +/- 0.7%)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 31,
+          "source": "Time course of change in vasodilator function and capacity in response to exercise training in humans.",
+          "doi": "10.1113/jphysiol.2008.158014",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18755749/",
+          "origin": "abstract",
+          "text": "These data suggest that complimentary adaptations occur in arterial function and structure and future studies should adopt multiple time point assessments to comprehensively assess arterial adaptations to interventions such as exercise training in humans."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-030",
+      "page": 7,
+      "claim": "Approximately, 70% of exercisers in the present study presented with endothelial dysfunction, which was expected because our participants had elevated blood pressure30 and were post-menopausal.5",
+      "references": [
+        {
+          "number": 30,
+          "title": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "access": "abstract_only"
+        },
+        {
+          "number": 5,
+          "title": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "The structure and function of blood vessels varies along the vascular tree, and alterations found in hypertension are also different."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "The aim of this study was to determine whether non-invasive measurement of endothelial function in conduit arteries reflects that of subcutaneous resistance arteries measured in vitro."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "By multivariate analysis, FMD predicted resistance artery endothelial function independently of age, sex, body mass index, blood lipid status and lumen diameter of brachial artery (beta = 0.81, P< 0.001)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 30,
+          "source": "Correlation of endothelial function in large and small arteries in human essential hypertension.",
+          "doi": "10.1097/00004872-200103000-00009",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11288811/",
+          "origin": "abstract",
+          "text": "Abnormal FMD in the brachial artery predicts the presence of endothelial dysfunction in human resistance arteries, suggesting that impairment of endothelial function is a generalized alteration in hypertension."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "In 73 normotensive subjects (37 women, 36 men) and 73 hypertensive patients (36 women, 37 men), we studied endothelial function by measuring forearm blood flow modifications (strain-gauge plethysmography) induced by intrabrachial acetylcholine (0.15, 0.45, 1.5, 4.5, and 15 micrograms/100 mL per minute), an endothelium-dependent vasodilator, and sodium nitroprusside (1,2, and 4 micrograms/100 mL per minute), an endothelium-independent vasodilator."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "However, in normally menstruating normotensive women, no endothelial dysfunction was observed, and age-related impairment in endothelium-dependent vasodilation was evident only after menopause."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "In normally menstruating hypertensive women, aging was associated with endothelial dysfunction although the deterioration of endothelium-dependent vasodilation was less marked than that in men."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 5,
+          "source": "Menopause is associated with endothelial dysfunction in women.",
+          "doi": "10.1161/01.hyp.28.4.576",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/8843881/",
+          "origin": "abstract",
+          "text": "Age-related endothelial dysfunction is attenuated in premenopausal normotensive and hypertensive women compared with men, whereas no sex-induced difference is observed after menopause, suggesting a protective effect of endogenous estrogens on endothelial function."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-032",
+      "page": 7,
+      "claim": "This may explain why there is generally a consistent improvement in endothelial function in individuals with CVD risk, and inconsistent results in apparently healthy subjects in response to exercise training.13",
+      "references": [
+        {
+          "number": 13,
+          "title": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Increased NO bioactivity with exercise training has been readily and consistently demonstrated in subjects with cardiovascular disease and risk factors, in whom antecedent endothelial dysfunction exists."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Recent human studies also indicate that exercise training may improve endothelial function by up-regulating eNOS protein expression and phosphorylation."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "While improvement in NO vasodilator function has been less frequently found in healthy subjects, a higher level of training may lead to improvement."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 13,
+          "source": "Effect of exercise training on endothelium-derived nitric oxide function in humans.",
+          "doi": "10.1113/jphysiol.2004.068197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15375191/",
+          "origin": "abstract",
+          "text": "Given the strong prognostic links between vascular structure, function and cardiovascular events, the implications of these findings are obvious, yet many unanswered questions remain, not only concerning the mechanisms responsible for NO bioactivity, the nature of the cellular effect and relevance of other autacoids, but also such practical questions as the optimal intensity, modality and volume of exercise training required in different populations."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-033",
+      "page": 8,
+      "claim": "In addition, FMD normalisation via shear AUC may violate several statistical assumptions33 and may even introduce errors into the measurement.32",
+      "references": [
+        {
+          "number": 33,
+          "title": "Ultrasound assessment of flow-mediated dilation.",
+          "doi": "10.1161/hypertensionaha.110.150821",
+          "access": "abstract_only"
+        },
+        {
+          "number": 32,
+          "title": "Does arterial shear explain the magnitude of flow-mediated dilation?: a comparison between young and older humans.",
+          "doi": "10.1152/ajpheart.00980.2008",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 33,
+          "source": "Ultrasound assessment of flow-mediated dilation.",
+          "doi": "10.1161/hypertensionaha.110.150821",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/20351340/",
+          "origin": "abstract",
+          "text": "Developed in 1992, the flow-mediated dilation test is now the most commonly used noninvasive assessment of vascular endothelial function in humans."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 33,
+          "source": "Ultrasound assessment of flow-mediated dilation.",
+          "doi": "10.1161/hypertensionaha.110.150821",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/20351340/",
+          "origin": "abstract",
+          "text": "Since its inception, scientists have refined their understanding of the physiology, analysis, and interpretation of this measurement."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 33,
+          "source": "Ultrasound assessment of flow-mediated dilation.",
+          "doi": "10.1161/hypertensionaha.110.150821",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/20351340/",
+          "origin": "abstract",
+          "text": "Recently, a significant growth of knowledge has added to our understanding and implementation of this clinically relevant research methodology."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 33,
+          "source": "Ultrasound assessment of flow-mediated dilation.",
+          "doi": "10.1161/hypertensionaha.110.150821",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/20351340/",
+          "origin": "abstract",
+          "text": "Therefore, this tutorial provides timely insight into recent advances and practical information related to the ultrasonic assessment of vascular endothelial function in humans."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 32,
+          "source": "Does arterial shear explain the magnitude of flow-mediated dilation?: a comparison between young and older humans.",
+          "doi": "10.1152/ajpheart.00980.2008",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19028795/",
+          "origin": "abstract",
+          "text": "Recent studies emphasize the importance of normalizing the magnitude of FMD to its apparent eliciting stimulus, the postdeflation arterial shear."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 32,
+          "source": "Does arterial shear explain the magnitude of flow-mediated dilation?: a comparison between young and older humans.",
+          "doi": "10.1152/ajpheart.00980.2008",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19028795/",
+          "origin": "abstract",
+          "text": "However, the relationship between shear stress and the magnitude of FMD may differ between groups."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 32,
+          "source": "Does arterial shear explain the magnitude of flow-mediated dilation?: a comparison between young and older humans.",
+          "doi": "10.1152/ajpheart.00980.2008",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19028795/",
+          "origin": "abstract",
+          "text": "The aim of this study was to examine the relationship between the brachial FMD and four different indexes of postdeflation shear rate (SR) in healthy children (n = 51, 10 +/- 1 yr) and young (n = 57, 27 +/- 6 yr) and older (n = 27, 58 +/- 4 yr) adults."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 32,
+          "source": "Does arterial shear explain the magnitude of flow-mediated dilation?: a comparison between young and older humans.",
+          "doi": "10.1152/ajpheart.00980.2008",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19028795/",
+          "origin": "abstract",
+          "text": "Therefore, we support presenting SR(AUC) stimuli but not normalizing FMD responses for the SR(AUC) when using this technique."
+        }
+      ]
+    },
+    {
+      "paper": "PMC7065031",
+      "claimId": "claim-034",
+      "page": 8,
+      "claim": "Lastly, previous studies have observed significant relationships between FMD uncorrected for shear and CVD risk.113435",
+      "references": [
+        {
+          "number": 11,
+          "title": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "access": "abstract_only"
+        },
+        {
+          "number": 34,
+          "title": "Clinical correlates and heritability of flow-mediated dilation in the community: the Framingham Heart Study.",
+          "doi": "10.1161/01.cir.0000112565.60887.1e",
+          "access": "abstract_only"
+        },
+        {
+          "number": 35,
+          "title": "Brachial flow-mediated dilation predicts incident cardiovascular events in older adults: the Cardiovascular Health Study.",
+          "doi": "10.1161/circulationaha.106.678276",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "The aim of this study was to examine the association between brachial artery flow-mediated dilation (FMD) and cardiovascular events in a cohort of initially asymptomatic post-menopausal women, with adjustment for the presence of the major cardiovascular risk factors."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "Evaluation of endothelial function, utilizing the noninvasive measurement of the brachial artery FMD, may serve as a screening tool to individualize high-risk patients."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "Risk-adjusted relative risk values resulted 1.0, 1.33 (95% confidence interval [CI] 1.09 to 4.09), and 4.42 (95% CI 2.97 to 8.01) for women in the higher, intermediate, and lower tertile of FMD, respectively (p < 0.0001 for trend)."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 11,
+          "source": "Prognostic role of flow-mediated dilation and cardiac risk factors in post-menopausal women.",
+          "doi": "10.1016/j.jacc.2007.11.044",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18325438/",
+          "origin": "abstract",
+          "text": "In post-menopausal women, the knowledge of FMD provided incremental prognostic information regarding the risk of developing cardiovascular events."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 34,
+          "source": "Clinical correlates and heritability of flow-mediated dilation in the community: the Framingham Heart Study.",
+          "doi": "10.1161/01.cir.0000112565.60887.1e",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/14769683/",
+          "origin": "abstract",
+          "text": "Studies in selected samples have linked impaired endothelial function with cardiovascular disease and its risk factors."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 34,
+          "source": "Clinical correlates and heritability of flow-mediated dilation in the community: the Framingham Heart Study.",
+          "doi": "10.1161/01.cir.0000112565.60887.1e",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/14769683/",
+          "origin": "abstract",
+          "text": "We examined a measure of endothelial function, brachial artery flow-mediated dilation (FMD), expressed as both percent (FMD%) and actual dilation by ultrasound with the occlusion cuff below the elbow in 2883 Framingham Study participants (52.9% women; mean age, 61 years)."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 34,
+          "source": "Clinical correlates and heritability of flow-mediated dilation in the community: the Framingham Heart Study.",
+          "doi": "10.1161/01.cir.0000112565.60887.1e",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/14769683/",
+          "origin": "abstract",
+          "text": "A subset of 1096 participants performed a 6-minute walk test before FMD determination."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 34,
+          "source": "Clinical correlates and heritability of flow-mediated dilation in the community: the Framingham Heart Study.",
+          "doi": "10.1161/01.cir.0000112565.60887.1e",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/14769683/",
+          "origin": "abstract",
+          "text": "Future research will permit more complete characterization of the genetic and environmental determinants of endothelial function and its prognostic value in the community."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 35,
+          "source": "Brachial flow-mediated dilation predicts incident cardiovascular events in older adults: the Cardiovascular Health Study.",
+          "doi": "10.1161/circulationaha.106.678276",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17452608/",
+          "origin": "abstract",
+          "text": "The relationship between impaired brachial flow-mediated dilation (FMD) and subsequent clinical cardiovascular events is not well established, especially in older adults whose FMD is often diminished."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 35,
+          "source": "Brachial flow-mediated dilation predicts incident cardiovascular events in older adults: the Cardiovascular Health Study.",
+          "doi": "10.1161/circulationaha.106.678276",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17452608/",
+          "origin": "abstract",
+          "text": "FMD remained a significant predictor of cardiovascular events after adjustment for age, gender, diabetes mellitus, cigarette smoking, systolic and diastolic blood pressure, baseline cardiovascular disease status, and total cholesterol (hazard ratio, 0.91 [95% CI, 0.83 to 0.99], P=0.02 per unit SD of FMD) but added only approximately 1% to the prognostic accuracy of the best Cox model."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-001",
+      "page": 1,
+      "claim": "Refutation and controversy is seen across the range of research designs, from clinical trials and traditional epidemiological studies [1–3] to the most modern molecular research [4,5].",
+      "references": [
+        {
+          "number": 1,
+          "title": "Any casualties in the clash of randomised and observational evidence?",
+          "doi": "10.1136/bmj.322.7291.879",
+          "access": "metadata_only"
+        },
+        {
+          "number": 2,
+          "title": "Those confounded vitamins: what can we learn from the differences between observational versus randomised trial evidence?",
+          "doi": "10.1016/s0140-6736(04)16260-0",
+          "access": "metadata_only"
+        },
+        {
+          "number": 3,
+          "title": "When are observational studies as credible as randomised trials?",
+          "doi": "10.1016/s0140-6736(04)16261-2",
+          "access": "metadata_only"
+        },
+        {
+          "number": 4,
+          "title": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "access": "abstract_only"
+        },
+        {
+          "number": 5,
+          "title": "Replication validity of genetic association studies",
+          "doi": "10.1038/ng749",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "Knowledge of this gene-expression profile or molecular signature should improve treatment of patients by allowing treatment to be tailored to the severity of the disease."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "The standard strategy is to identify a molecular signature (ie, the subset of genes most differentially expressed in patients with different outcomes) in a training set of patients and to estimate the proportion of misclassifications with this signature on an independent validation set of patients."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "We expanded this strategy (based on unique training and validation sets) by using multiple random sets, to study the stability of the molecular signature and the proportion of misclassifications."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "We advocate the use of validation by repeated random sampling."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 5,
+          "source": "Replication validity of genetic association studies",
+          "doi": "10.1038/ng749",
+          "url": "https://europepmc.org/article/MED/11600885",
+          "origin": "abstract",
+          "text": "The rapid growth of human genetics creates countless opportunities for studies of disease association."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 5,
+          "source": "Replication validity of genetic association studies",
+          "doi": "10.1038/ng749",
+          "url": "https://europepmc.org/article/MED/11600885",
+          "origin": "abstract",
+          "text": "Given the number of potentially identifiable genetic markers and the multitude of clinical outcomes to which these may be linked, the testing and validation of statistical hypotheses in genetic epidemiology is a task of unprecedented scale."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 5,
+          "source": "Replication validity of genetic association studies",
+          "doi": "10.1038/ng749",
+          "url": "https://europepmc.org/article/MED/11600885",
+          "origin": "abstract",
+          "text": "We show that significant between-study heterogeneity (diversity) is frequent, and that the results of the first study correlate only modestly with subsequent research on the same association."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 5,
+          "source": "Replication validity of genetic association studies",
+          "doi": "10.1038/ng749",
+          "url": "https://europepmc.org/article/MED/11600885",
+          "origin": "abstract",
+          "text": "We conclude that a systematic meta-analytic approach may assist in estimating population-wide effects of genetic risk factors in human disease."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-002",
+      "page": 1,
+      "claim": "There is increasing concern that in modern research, false findings may be the majority or even the vast majority of published research claims [6–8].",
+      "references": [
+        {
+          "number": 6,
+          "title": "Problems of reporting genetic associations with complex outcomes",
+          "doi": "10.1016/s0140-6736(03)12715-8",
+          "access": "abstract_only"
+        },
+        {
+          "number": 7,
+          "title": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "access": "abstract_only"
+        },
+        {
+          "number": 8,
+          "title": "Microarrays and molecular research: noise discovery?",
+          "doi": "10.1016/s0140-6736(05)17878-7",
+          "access": "metadata_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 6,
+          "source": "Problems of reporting genetic associations with complex outcomes",
+          "doi": "10.1016/s0140-6736(03)12715-8",
+          "url": "https://europepmc.org/article/MED/12642066",
+          "origin": "abstract",
+          "text": "Inability to replicate many results has led to increasing scepticism about the value of simple association study designs for detection of genetic variants contributing to common complex traits."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 6,
+          "source": "Problems of reporting genetic associations with complex outcomes",
+          "doi": "10.1016/s0140-6736(03)12715-8",
+          "url": "https://europepmc.org/article/MED/12642066",
+          "origin": "abstract",
+          "text": "Much attention has been drawn to the problems that might, in theory, bedevil this approach, including confounding from population structure, misclassification of outcome, and allelic heterogeneity."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 6,
+          "source": "Problems of reporting genetic associations with complex outcomes",
+          "doi": "10.1016/s0140-6736(03)12715-8",
+          "url": "https://europepmc.org/article/MED/12642066",
+          "origin": "abstract",
+          "text": "Other researchers have argued that absence of replication may indicate true heterogeneity in gene-disease associations."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 6,
+          "source": "Problems of reporting genetic associations with complex outcomes",
+          "doi": "10.1016/s0140-6736(03)12715-8",
+          "url": "https://europepmc.org/article/MED/12642066",
+          "origin": "abstract",
+          "text": "Without changes to present practice, we risk wastage of scientific effort and rejection of a potentially useful research strategy."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Genetic association studies for multigenetic diseases are like fishing for the truth in a sea of trillions of candidate analyses."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Red herrings are unavoidably common, and bias might cause serious misconceptions."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "However, a sizeable proportion of identified genetic associations are probably true."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Meta-analysis, a rigorous, comprehensive, quantitative synthesis of all the available data, might help us to separate the true from the false."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-003",
+      "page": 1,
+      "claim": "Modeling the Framework for False Positive Findings Several methodologists have pointed out [9–11] that the high rate of nonreplication (lack of confi rmation) of research discoveries is a consequence of the convenient, yet ill-founded strategy of claiming conclusive research findings solely on the basis of a single study assessed by formal statistical significance, typically for a p-value less than 0.05.",
+      "references": [
+        {
+          "number": 9,
+          "title": "Sifting the evidence---what's wrong with significance tests? Another comment on the role of statistical methods",
+          "doi": "10.1136/bmj.322.7280.226",
+          "access": "metadata_only"
+        },
+        {
+          "number": 10,
+          "title": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "access": "abstract_only"
+        },
+        {
+          "number": 11,
+          "title": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "Too many reports of associations between genetic variants and common cancer sites and other complex diseases are false positives."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "A major reason for this unfortunate situation is the strategy of declaring statistical significance based on a P value alone, particularly, any P value below.05."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "The false positive report probability (FPRP), the probability of no true association between a genetic variant and disease given a statistically significant finding, depends not only on the observed P value but also on both the prior probability that the association between the genetic variant and the disease is real and the statistical power of the test."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "An FPRP-based criterion for deciding whether to call a finding noteworthy formalizes the process already used informally by investigators--that is, tempering enthusiasm for remarkable study findings with considerations of plausibility."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "Human genetics is now at a critical juncture."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "The molecular methods used successfully to identify the genes underlying rare mendelian syndromes are failing to find the numerous genes causing more common, familial, non-mendelian diseases."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "With the human genome sequence nearing completion, new opportunities are being presented for unravelling the complex genetic basis of non-mendelian disorders based on large-scale genome-wide studies."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "In this review I discuss these issues, together with suggestions for optimal post-genome strategies."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-004",
+      "page": 1,
+      "claim": "As has been shown previously, the probability that a research finding is indeed true depends on the prior probability of it being true (before doing the study), the statistical power of the study, and the level of statistical significance [10,11].",
+      "references": [
+        {
+          "number": 10,
+          "title": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "access": "abstract_only"
+        },
+        {
+          "number": 11,
+          "title": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "A major reason for this unfortunate situation is the strategy of declaring statistical significance based on a P value alone, particularly, any P value below.05."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "The false positive report probability (FPRP), the probability of no true association between a genetic variant and disease given a statistically significant finding, depends not only on the observed P value but also on both the prior probability that the association between the genetic variant and the disease is real and the statistical power of the test."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "Our proposal can help investigators, editors, and readers of research articles to protect themselves from overinterpreting statistically significant findings that are not likely to signify a true association."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "An FPRP-based criterion for deciding whether to call a finding noteworthy formalizes the process already used informally by investigators--that is, tempering enthusiasm for remarkable study findings with considerations of plausibility."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "Human genetics is now at a critical juncture."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "The molecular methods used successfully to identify the genes underlying rare mendelian syndromes are failing to find the numerous genes causing more common, familial, non-mendelian diseases."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "With the human genome sequence nearing completion, new opportunities are being presented for unravelling the complex genetic basis of non-mendelian disorders based on large-scale genome-wide studies."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 11,
+          "source": "Searching for genetic determinants in the new millennium",
+          "doi": "10.1038/35015718",
+          "url": "https://europepmc.org/article/MED/10866211",
+          "origin": "abstract",
+          "text": "In this review I discuss these issues, together with suggestions for optimal post-genome strategies."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-005",
+      "page": 1,
+      "claim": "The PPV is also the complementary probability of what Wacholder et al. have called the false positive report probability [10].",
+      "references": [
+        {
+          "number": 10,
+          "title": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "Too many reports of associations between genetic variants and common cancer sites and other complex diseases are false positives."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "A major reason for this unfortunate situation is the strategy of declaring statistical significance based on a P value alone, particularly, any P value below.05."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "The false positive report probability (FPRP), the probability of no true association between a genetic variant and disease given a statistically significant finding, depends not only on the observed P value but also on both the prior probability that the association between the genetic variant and the disease is real and the statistical power of the test."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "An FPRP-based criterion for deciding whether to call a finding noteworthy formalizes the process already used informally by investigators--that is, tempering enthusiasm for remarkable study findings with considerations of plausibility."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-006",
+      "page": 2,
+      "claim": "For example, with large measurement errors relationships are lost in noise [12], or investigators use data inefficiently or fail to notice statistically significant relationships, or there may be conflicts of interest that tend to “bury” significant findings [13].",
+      "references": [
+        {
+          "number": 12,
+          "title": null,
+          "doi": null,
+          "access": "unavailable"
+        },
+        {
+          "number": 13,
+          "title": "Failing the Public Health — Rofecoxib, Merck, and the FDA",
+          "doi": "10.1056/nejmp048286",
+          "access": "metadata_only"
+        }
+      ],
+      "passages": []
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-008",
+      "page": 2,
+      "claim": "Thus, other factors being equal, research findings are more likely true in scientific fields that undertake large studies, such as randomized controlled trials in cardiology (several thousand subjects randomized) [14] than in scientific fields with small studies, such as most research of molecular predictors (sample sizes 100-fold smaller) [15].",
+      "references": [
+        {
+          "number": 14,
+          "title": "Why do we need some large, simple randomized trials?",
+          "doi": "10.1002/sim.4780030421",
+          "access": "metadata_only"
+        },
+        {
+          "number": 15,
+          "title": "What do we mean by validating a prognostic model?",
+          "doi": "10.1002/(sici)1097-0258(20000229)19:4<453::aid-sim350>3.0.co;2-5",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 15,
+          "source": "What do we mean by validating a prognostic model?",
+          "doi": "10.1002/(sici)1097-0258(20000229)19:4<453::aid-sim350>3.0.co;2-5",
+          "url": "https://europepmc.org/article/MED/10694730",
+          "origin": "abstract",
+          "text": "Prognostic models are used in medicine for investigating patient outcome in relation to patient and disease characteristics."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 15,
+          "source": "What do we mean by validating a prognostic model?",
+          "doi": "10.1002/(sici)1097-0258(20000229)19:4<453::aid-sim350>3.0.co;2-5",
+          "url": "https://europepmc.org/article/MED/10694730",
+          "origin": "abstract",
+          "text": "Such models do not always work well in practice, so it is widely recommended that they need to be validated."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 15,
+          "source": "What do we mean by validating a prognostic model?",
+          "doi": "10.1002/(sici)1097-0258(20000229)19:4<453::aid-sim350>3.0.co;2-5",
+          "url": "https://europepmc.org/article/MED/10694730",
+          "origin": "abstract",
+          "text": "The idea of validating a prognostic model is generally taken to mean establishing that it works satisfactorily for patients other than those from whose data it was derived."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 15,
+          "source": "What do we mean by validating a prognostic model?",
+          "doi": "10.1002/(sici)1097-0258(20000229)19:4<453::aid-sim350>3.0.co;2-5",
+          "url": "https://europepmc.org/article/MED/10694730",
+          "origin": "abstract",
+          "text": "We illustrate the issues using several case studies."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-009",
+      "page": 2,
+      "claim": "Thus research findings are more likely true in scientific fields with large effects, such as the impact of smoking on cancer or cardiovascular disease (relative risks 3–20), than in scientific fi elds where postulated effects are small, such as genetic risk factors for multigenetic diseases (relative risks 1.1–1.5) [7].",
+      "references": [
+        {
+          "number": 7,
+          "title": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Genetic association studies for multigenetic diseases are like fishing for the truth in a sea of trillions of candidate analyses."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Red herrings are unavoidably common, and bias might cause serious misconceptions."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "However, a sizeable proportion of identified genetic associations are probably true."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 7,
+          "source": "Genetic associations: false or true?",
+          "doi": "10.1016/s1471-4914(03)00030-3",
+          "url": "https://europepmc.org/article/MED/12727138",
+          "origin": "abstract",
+          "text": "Meta-analysis, a rigorous, comprehensive, quantitative synthesis of all the available data, might help us to separate the true from the false."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-010",
+      "page": 3,
+      "claim": "Fields considered highly informative and creative given the wealth of the assembled and tested information, such as microarrays and other high-throughput discovery-oriented research [4,8,17], should have extremely low PPV.",
+      "references": [
+        {
+          "number": 4,
+          "title": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "access": "abstract_only"
+        },
+        {
+          "number": 8,
+          "title": "Microarrays and molecular research: noise discovery?",
+          "doi": "10.1016/s0140-6736(05)17878-7",
+          "access": "metadata_only"
+        },
+        {
+          "number": 17,
+          "title": "Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring",
+          "doi": "10.1126/science.286.5439.531",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "General studies of microarray gene-expression profiling have been undertaken to predict cancer outcome."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "Knowledge of this gene-expression profile or molecular signature should improve treatment of patients by allowing treatment to be tailored to the severity of the disease."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "The prognostic value of published microarray results in cancer studies should be considered with caution."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 4,
+          "source": "Prediction of cancer outcome with microarrays: a multiple random validation strategy",
+          "doi": "10.1016/s0140-6736(05)17866-0",
+          "url": "https://europepmc.org/article/MED/15705458",
+          "origin": "abstract",
+          "text": "We advocate the use of validation by repeated random sampling."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 17,
+          "source": "Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring",
+          "doi": "10.1126/science.286.5439.531",
+          "url": "https://europepmc.org/article/MED/10521349",
+          "origin": "abstract",
+          "text": "Although cancer classification has improved over the past 30 years, there has been no general approach for identifying new cancer classes (class discovery) or for assigning tumors to known classes (class prediction)."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 17,
+          "source": "Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring",
+          "doi": "10.1126/science.286.5439.531",
+          "url": "https://europepmc.org/article/MED/10521349",
+          "origin": "abstract",
+          "text": "Here, a generic approach to cancer classification based on gene expression monitoring by DNA microarrays is described and applied to human acute leukemias as a test case."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 17,
+          "source": "Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring",
+          "doi": "10.1126/science.286.5439.531",
+          "url": "https://europepmc.org/article/MED/10521349",
+          "origin": "abstract",
+          "text": "A class discovery procedure automatically discovered the distinction between acute myeloid leukemia (AML) and acute lymphoblastic leukemia (ALL) without previous knowledge of these classes."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 17,
+          "source": "Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring",
+          "doi": "10.1126/science.286.5439.531",
+          "url": "https://europepmc.org/article/MED/10521349",
+          "origin": "abstract",
+          "text": "The results demonstrate the feasibility of cancer classification based solely on gene expression monitoring and suggest a general strategy for discovering and predicting cancer classes for other types of cancer, independent of previous biological knowledge."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-011",
+      "page": 3,
+      "claim": "For several research designs, e.g., randomized controlled trials [18–20] or meta-analyses [21,22], there have been efforts to standardize their conduct and reporting.",
+      "references": [
+        {
+          "number": 18,
+          "title": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "access": "abstract_only"
+        },
+        {
+          "number": 19,
+          "title": "Better Reporting of Harms in Randomized Trials: An Extension of the CONSORT Statement",
+          "doi": "10.7326/0003-4819-141-10-200411160-00009",
+          "access": "abstract_only"
+        },
+        {
+          "number": 20,
+          "title": "ICH Harmonised Tripartite Guideline. Statistical principles for clinical trials. International Conference on Harmonisation E9 Expert Working Group.",
+          "doi": null,
+          "access": "metadata_only"
+        },
+        {
+          "number": 21,
+          "title": "Improving the quality of reports of meta-analyses of randomised controlled trials: the QUOROM statement",
+          "doi": "10.1016/s0140-6736(99)04149-5",
+          "access": "abstract_only"
+        },
+        {
+          "number": 22,
+          "title": "Meta-analysis of Observational Studies in Epidemiology A Proposal for Reporting",
+          "doi": "10.1001/jama.283.15.2008",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 18,
+          "source": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "url": "https://europepmc.org/article/MED/11323066",
+          "origin": "abstract",
+          "text": "To comprehend the results of a randomised controlled trial (RCT), readers must understand its design, conduct, analysis, and interpretation."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 18,
+          "source": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "url": "https://europepmc.org/article/MED/11323066",
+          "origin": "abstract",
+          "text": "Despite several decades of educational efforts, the reporting of RCTs needs improvement."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 18,
+          "source": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "url": "https://europepmc.org/article/MED/11323066",
+          "origin": "abstract",
+          "text": "Investigators and editors developed the original CONSORT (Consolidated Standards of Reporting Trials) statement to help authors improve reporting by use of a checklist and flow diagram."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 18,
+          "source": "The CONSORT statement: revised recommendations for improving the quality of reports of parallel-group randomised trials",
+          "doi": "10.1016/s0140-6736(00)04337-3",
+          "url": "https://europepmc.org/article/MED/11323066",
+          "origin": "abstract",
+          "text": "In sum, the CONSORT statement is intended to improve the reporting of an RCT, enabling readers to understand a trial's conduct and to assess the validity of its results."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 19,
+          "source": "Better Reporting of Harms in Randomized Trials: An Extension of the CONSORT Statement",
+          "doi": "10.7326/0003-4819-141-10-200411160-00009",
+          "url": "https://europepmc.org/article/MED/15545678",
+          "origin": "abstract",
+          "text": "In response to overwhelming evidence and the consequences of poor-quality reporting of randomized, controlled trials (RCTs), many medical journals and editorial groups have now endorsed the CONSORT (Consolidated Standards of Reporting Trials) statement, a 22-item checklist and flow diagram."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 19,
+          "source": "Better Reporting of Harms in Randomized Trials: An Extension of the CONSORT Statement",
+          "doi": "10.7326/0003-4819-141-10-200411160-00009",
+          "url": "https://europepmc.org/article/MED/15545678",
+          "origin": "abstract",
+          "text": "Because CONSORT primarily aimed at improving the quality of reporting of efficacy, only 1 checklist item specifically addressed the reporting of safety."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 19,
+          "source": "Better Reporting of Harms in Randomized Trials: An Extension of the CONSORT Statement",
+          "doi": "10.7326/0003-4819-141-10-200411160-00009",
+          "url": "https://europepmc.org/article/MED/15545678",
+          "origin": "abstract",
+          "text": "Better reporting will help readers critically appraise and interpret trial results."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 19,
+          "source": "Better Reporting of Harms in Randomized Trials: An Extension of the CONSORT Statement",
+          "doi": "10.7326/0003-4819-141-10-200411160-00009",
+          "url": "https://europepmc.org/article/MED/15545678",
+          "origin": "abstract",
+          "text": "Journals can support this goal by revising Instructions to Authors so that they refer authors to this document."
+        },
+        {
+          "id": "E9",
+          "referenceNumber": 21,
+          "source": "Improving the quality of reports of meta-analyses of randomised controlled trials: the QUOROM statement",
+          "doi": "10.1016/s0140-6736(99)04149-5",
+          "url": "https://europepmc.org/article/MED/10584742",
+          "origin": "abstract",
+          "text": "The Quality of Reporting of Meta-analyses (QUOROM) conference was convened to address standards for improving the quality of reporting of meta-analyses of clinical randomised controlled trials (RCTs)."
+        },
+        {
+          "id": "E10",
+          "referenceNumber": 21,
+          "source": "Improving the quality of reports of meta-analyses of randomised controlled trials: the QUOROM statement",
+          "doi": "10.1016/s0140-6736(99)04149-5",
+          "url": "https://europepmc.org/article/MED/10584742",
+          "origin": "abstract",
+          "text": "Whenever possible, checklist items were guided by research evidence suggesting that failure to adhere to the item proposed could lead to biased results."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-012",
+      "page": 3,
+      "claim": "True findings may be more common when outcomes are unequivocal and universally agreed (e.g., death) rather than when multifarious outcomes are devised (e.g., scales for schizophrenia outcomes) [23].",
+      "references": [
+        {
+          "number": 23,
+          "title": "Unpublished rating scales: A major source of bias in randomised controlled trials of treatments for schizophrenia",
+          "doi": "10.1192/bjp.176.3.249",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 23,
+          "source": "Unpublished rating scales: A major source of bias in randomised controlled trials of treatments for schizophrenia",
+          "doi": "10.1192/bjp.176.3.249",
+          "url": "https://europepmc.org/article/MED/10755072",
+          "origin": "abstract",
+          "text": "A recent review suggested an association between using unpublished scales in clinical trials and finding significant results."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 23,
+          "source": "Unpublished rating scales: A major source of bias in randomised controlled trials of treatments for schizophrenia",
+          "doi": "10.1192/bjp.176.3.249",
+          "url": "https://europepmc.org/article/MED/10755072",
+          "origin": "abstract",
+          "text": "To determine whether such an association existed in schizophrenia trials."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 23,
+          "source": "Unpublished rating scales: A major source of bias in randomised controlled trials of treatments for schizophrenia",
+          "doi": "10.1192/bjp.176.3.249",
+          "url": "https://europepmc.org/article/MED/10755072",
+          "origin": "abstract",
+          "text": "Three hundred trials were randomly selected from the Cochrane Schizophrenia Group's Register."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 23,
+          "source": "Unpublished rating scales: A major source of bias in randomised controlled trials of treatments for schizophrenia",
+          "doi": "10.1192/bjp.176.3.249",
+          "url": "https://europepmc.org/article/MED/10755072",
+          "origin": "abstract",
+          "text": "Unpublished scales are a source of bias in schizophrenia trials."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-013",
+      "page": 3,
+      "claim": "Similarly, fields that use commonly agreed, stereotyped analytical methods (e.g., Kaplan-Meier plots and the log-rank test) [24] may yield a larger proportion of true findings than fields where analytical methods are still under experimentation (e.g., artificial intelligence methods) and only “best” results are reported.",
+      "references": [
+        {
+          "number": 24,
+          "title": "Transfer of Technology From Statistical Journals to the Biomedical Literature",
+          "doi": "10.1001/jama.1994.03520020055015",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 24,
+          "source": "Transfer of Technology From Statistical Journals to the Biomedical Literature",
+          "doi": "10.1001/jama.1994.03520020055015",
+          "url": "https://europepmc.org/article/MED/8015123",
+          "origin": "abstract",
+          "text": "To investigate the speed of the transfer of new statistical methods into the medical literature and, on the basis of current data, to predict what methods medical journal editors should expect to see in the next decade."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 24,
+          "source": "Transfer of Technology From Statistical Journals to the Biomedical Literature",
+          "doi": "10.1001/jama.1994.03520020055015",
+          "url": "https://europepmc.org/article/MED/8015123",
+          "origin": "abstract",
+          "text": "Annual citations show some evidence of decreasing lag times between the introduction of new statistical methods and their appearance in medical journals."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 24,
+          "source": "Transfer of Technology From Statistical Journals to the Biomedical Literature",
+          "doi": "10.1001/jama.1994.03520020055015",
+          "url": "https://europepmc.org/article/MED/8015123",
+          "origin": "abstract",
+          "text": "Newer technical innovations still typically take 4 to 6 years before they achieve 25 citations in the medical literature."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 24,
+          "source": "Transfer of Technology From Statistical Journals to the Biomedical Literature",
+          "doi": "10.1001/jama.1994.03520020055015",
+          "url": "https://europepmc.org/article/MED/8015123",
+          "origin": "abstract",
+          "text": "Medical journals may need to modify reviewing procedures to deal with articles using these complex new methods."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-014",
+      "page": 3,
+      "claim": "Conflicts of interest are very common in biomedical research [26], and typically they are inadequately and sparsely reported [26,27].",
+      "references": [
+        {
+          "number": 26,
+          "title": "Scientific Journals and Their Authors’ Financial Interests: A Pilot Study",
+          "doi": "10.1159/000012281",
+          "access": "abstract_only"
+        },
+        {
+          "number": 27,
+          "title": "Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions",
+          "doi": "10.1186/1471-2288-1-3",
+          "access": "full_text"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 26,
+          "source": "Scientific Journals and Their Authors’ Financial Interests: A Pilot Study",
+          "doi": "10.1159/000012281",
+          "url": "https://europepmc.org/article/MED/9693346",
+          "origin": "abstract",
+          "text": "The credibility of modern science is grounded on the perception of the objectivity of its scientists, but that credibility can be undermined by financial conflicts of interest."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 26,
+          "source": "Scientific Journals and Their Authors’ Financial Interests: A Pilot Study",
+          "doi": "10.1159/000012281",
+          "url": "https://europepmc.org/article/MED/9693346",
+          "origin": "abstract",
+          "text": "The objectives of this study were: (1) to select a set of published articles and observe the degree to which a sample of authors hold a financial interest in areas related to their research that are reportable under current standards, and (2) to examine the hypothesis that significant numbers of authors of articles in life science and biomedical journals have verifiable financial interests that might be important for journal editors and readers to know."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 26,
+          "source": "Scientific Journals and Their Authors’ Financial Interests: A Pilot Study",
+          "doi": "10.1159/000012281",
+          "url": "https://europepmc.org/article/MED/9693346",
+          "origin": "abstract",
+          "text": "Authors are said to 'possess a financial interest' if they are listed as inventors in a patent or patent application closely related to their published work; serve on a scientific advisory board of a biotechnology company; or are officers, directors, or major shareholders (beneficial owner of 10% or more of stock issued) in a firm that has commercial interests related to their research."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 26,
+          "source": "Scientific Journals and Their Authors’ Financial Interests: A Pilot Study",
+          "doi": "10.1159/000012281",
+          "url": "https://europepmc.org/article/MED/9693346",
+          "origin": "abstract",
+          "text": "One of every three articles in our sample has at least one Massachusetts-based author with a financial interest, and 15% of the authors in our sample have a financial interest relevant to one of their publications."
+        },
+        {
+          "id": "E5",
+          "referenceNumber": 27,
+          "source": "Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions",
+          "doi": "10.1186/1471-2288-1-3",
+          "url": "https://europepmc.org/article/PMC/PMC32303",
+          "origin": "full_text",
+          "text": "We considered all reported conflicts of interest, financial and non-financial, that were judged to be relevant for publication by each journal."
+        },
+        {
+          "id": "E6",
+          "referenceNumber": 27,
+          "source": "Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions",
+          "doi": "10.1186/1471-2288-1-3",
+          "url": "https://europepmc.org/article/PMC/PMC32303",
+          "origin": "full_text",
+          "text": "Guidelines funded mostly by the government, universities or major professional organizations almost never reported on potential conflicts of interest while guidelines funded by private or mixed sources were more likely to disclose potential conflicts (p < 0.001)."
+        },
+        {
+          "id": "E7",
+          "referenceNumber": 27,
+          "source": "Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions",
+          "doi": "10.1186/1471-2288-1-3",
+          "url": "https://europepmc.org/article/PMC/PMC32303",
+          "origin": "full_text",
+          "text": "Among guidelines where specific authors assumed primary responsibility for writing the manuscript, reporting of conflicts of interest was more common when there were more authors (p=0.004) (table 1)."
+        },
+        {
+          "id": "E8",
+          "referenceNumber": 27,
+          "source": "Reporting of conflicts of interest in guidelines of preventive and therapeutic interventions",
+          "doi": "10.1186/1471-2288-1-3",
+          "url": "https://europepmc.org/article/MED/11405896",
+          "origin": "abstract",
+          "text": "Despite some recent improvement, reporting of conflicts of interest in clinical guidelines published in influential journals is largely neglected."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-015",
+      "page": 3,
+      "claim": "Empirical evidence on expert opinion shows that it is extremely unreliable [28].",
+      "references": [
+        {
+          "number": 28,
+          "title": "A Comparison of Results of Meta-analyses of Randomized Control Trials and Recommendations of Clinical Experts",
+          "doi": "10.1001/jama.1992.03490020088036",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 28,
+          "source": "A Comparison of Results of Meta-analyses of Randomized Control Trials and Recommendations of Clinical Experts",
+          "doi": "10.1001/jama.1992.03490020088036",
+          "url": "https://europepmc.org/article/MED/1535110",
+          "origin": "abstract",
+          "text": "To examine the temporal relationship between accumulating data from randomized control trials of treatments for myocardial infarction and the recommendations of clinical experts writing review articles and textbook chapters."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 28,
+          "source": "A Comparison of Results of Meta-analyses of Randomized Control Trials and Recommendations of Clinical Experts",
+          "doi": "10.1001/jama.1992.03490020088036",
+          "url": "https://europepmc.org/article/MED/1535110",
+          "origin": "abstract",
+          "text": "We used the technique of cumulative meta-analysis (performing a new meta-analysis when the results of a new clinical trial are published) and compared the results with the recommendations of the experts for various treatments for myocardial infarction."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 28,
+          "source": "A Comparison of Results of Meta-analyses of Randomized Control Trials and Recommendations of Clinical Experts",
+          "doi": "10.1001/jama.1992.03490020088036",
+          "url": "https://europepmc.org/article/MED/1535110",
+          "origin": "abstract",
+          "text": "In some cases, treatments that have no effect on mortality or are potentially harmful continued to be recommended by several clinical experts."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 28,
+          "source": "A Comparison of Results of Meta-analyses of Randomized Control Trials and Recommendations of Clinical Experts",
+          "doi": "10.1001/jama.1992.03490020088036",
+          "url": "https://europepmc.org/article/MED/1535110",
+          "origin": "abstract",
+          "text": "Finding and analyzing all therapeutic trials in a given field has become such a difficult and specialized task that the clinical experts called on to summarize the evidence in a timely fashion need access to better databases and new statistical techniques to assist them in this important task."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-016",
+      "page": 4,
+      "claim": "Empirical evidence suggests that this sequence of extreme opposites is very common in molecular genetics [29].",
+      "references": [
+        {
+          "number": 29,
+          "title": "Early extreme contradictory estimates may appear in published research: The Proteus phenomenon in molecular genetics research and randomized trials",
+          "doi": "10.1016/j.jclinepi.2004.10.019",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 29,
+          "source": "Early extreme contradictory estimates may appear in published research: The Proteus phenomenon in molecular genetics research and randomized trials",
+          "doi": "10.1016/j.jclinepi.2004.10.019",
+          "url": "https://europepmc.org/article/MED/15878467",
+          "origin": "abstract",
+          "text": "We hypothesized that controversial data are attractive to investigators and editors, and thus the most extreme, opposite results would appear very early rather than late, as data accumulate, provided data can be generated rapidly."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 29,
+          "source": "Early extreme contradictory estimates may appear in published research: The Proteus phenomenon in molecular genetics research and randomized trials",
+          "doi": "10.1016/j.jclinepi.2004.10.019",
+          "url": "https://europepmc.org/article/MED/15878467",
+          "origin": "abstract",
+          "text": "We used data from MEDLINE-indexed meta-analyses of case-control studies on genetic associations (retrospective, hypothesis-generating research with usually rapid turnaround) and meta-analyses of randomized trials of health care interventions (prospective, targeted research that usually takes longer) sampled from the Cochrane Library."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 29,
+          "source": "Early extreme contradictory estimates may appear in published research: The Proteus phenomenon in molecular genetics research and randomized trials",
+          "doi": "10.1016/j.jclinepi.2004.10.019",
+          "url": "https://europepmc.org/article/MED/15878467",
+          "origin": "abstract",
+          "text": "Such a sequence of extreme opposite results was not seen in the clinical trials meta-analyses."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 29,
+          "source": "Early extreme contradictory estimates may appear in published research: The Proteus phenomenon in molecular genetics research and randomized trials",
+          "doi": "10.1016/j.jclinepi.2004.10.019",
+          "url": "https://europepmc.org/article/MED/15878467",
+          "origin": "abstract",
+          "text": "In contrast to prospective trials, a rapid early sequence of extreme, opposite results is frequent in retrospective hypothesis-generating molecular research."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-018",
+      "page": 4,
+      "claim": "Finally, in discovery-oriented research with massive testing, where tested relationships exceed true ones 1,000-fold (e.g., 30,000 genes tested, of which 30 may be the true culprits) [30,31], PPV for each claimed relationship is extremely low, even with considerable Box 1. An Example: Science at Low Pre-Study Odds Let us assume that a team of investigators performs a whole genome association study to test whether any of 100,000 gene polymorphisms are associated with susceptibility to schizophrenia.",
+      "references": [
+        {
+          "number": 30,
+          "title": "Predictive ability of DNA microarrays for cancer outcomes and correlates: an empirical assessment",
+          "doi": "10.1016/s0140-6736(03)14686-7",
+          "access": "abstract_only"
+        },
+        {
+          "number": 31,
+          "title": "Rules of evidence for cancer molecular-marker discovery and validation",
+          "doi": "10.1038/nrc1322",
+          "access": "metadata_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 30,
+          "source": "Predictive ability of DNA microarrays for cancer outcomes and correlates: an empirical assessment",
+          "doi": "10.1016/s0140-6736(03)14686-7",
+          "url": "https://europepmc.org/article/MED/14602436",
+          "origin": "abstract",
+          "text": "DNA microarrays are being used for many applications, including the prediction of cancer outcomes by simultaneous analysis of the expression of thousands of genes."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 30,
+          "source": "Predictive ability of DNA microarrays for cancer outcomes and correlates: an empirical assessment",
+          "doi": "10.1016/s0140-6736(03)14686-7",
+          "url": "https://europepmc.org/article/MED/14602436",
+          "origin": "abstract",
+          "text": "We systematically assessed the predictive performance of this method for major clinical outcomes (death, metastasis, recurrence, response to therapy) and the correlation of gene profiling with other clinicopathological correlates of malignant disorders."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 30,
+          "source": "Predictive ability of DNA microarrays for cancer outcomes and correlates: an empirical assessment",
+          "doi": "10.1016/s0140-6736(03)14686-7",
+          "url": "https://europepmc.org/article/MED/14602436",
+          "origin": "abstract",
+          "text": "Across all 84 studies, significant associations were 3.5 (95% CI 1.5-8.0) times more likely per doubling of sample size and 9.7 (2.0-47.0) times more likely per ten-fold increase in microarray probes."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 30,
+          "source": "Predictive ability of DNA microarrays for cancer outcomes and correlates: an empirical assessment",
+          "doi": "10.1016/s0140-6736(03)14686-7",
+          "url": "https://europepmc.org/article/MED/14602436",
+          "origin": "abstract",
+          "text": "Larger studies with appropriate clinical design, adjustment for known predictors, and proper validation are essential for this highly promising technology."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-024",
+      "page": 5,
+      "claim": "Moreover, one should be cautious that extremely large studies may be more likely to find a formally statistical significant difference for a trivial effect that is not really meaningfully different from the null [32–34].",
+      "references": [
+        {
+          "number": 32,
+          "title": null,
+          "doi": null,
+          "access": "unavailable"
+        },
+        {
+          "number": 33,
+          "title": null,
+          "doi": null,
+          "access": "unavailable"
+        },
+        {
+          "number": 34,
+          "title": "Two cheers for P-values?",
+          "doi": "10.1080/135952201753172953",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 34,
+          "source": "Two cheers for P-values?",
+          "doi": "10.1080/135952201753172953",
+          "url": "https://europepmc.org/article/MED/11434499",
+          "origin": "abstract",
+          "text": "P-values are a practical success but a critical failure."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 34,
+          "source": "Two cheers for P-values?",
+          "doi": "10.1080/135952201753172953",
+          "url": "https://europepmc.org/article/MED/11434499",
+          "origin": "abstract",
+          "text": "Scientists the world over use them, but scarcely a statistician can be found to defend them."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 34,
+          "source": "Two cheers for P-values?",
+          "doi": "10.1080/135952201753172953",
+          "url": "https://europepmc.org/article/MED/11434499",
+          "origin": "abstract",
+          "text": "Bayesians in particular find them ridiculous, but even the modern frequentist has little time for them."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 34,
+          "source": "Two cheers for P-values?",
+          "doi": "10.1080/135952201753172953",
+          "url": "https://europepmc.org/article/MED/11434499",
+          "origin": "abstract",
+          "text": "In this essay, I consider what, if anything, might be said in their favour."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-026",
+      "page": 6,
+      "claim": "In some research designs, efforts may also be more successful with upfront registration of studies, e.g., randomized trials [35].",
+      "references": [
+        {
+          "number": 35,
+          "title": "Clinical Trial Registration: A Statement from the International Committee of Medical Journal Editors",
+          "doi": "10.1056/nejme048225",
+          "access": "metadata_only"
+        }
+      ],
+      "passages": []
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-027",
+      "page": 6,
+      "claim": "Finally, instead of chasing statistical significance, we should improve our understanding of the range of R values—the pre-study odds—where research efforts operate [10].",
+      "references": [
+        {
+          "number": 10,
+          "title": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "A major reason for this unfortunate situation is the strategy of declaring statistical significance based on a P value alone, particularly, any P value below.05."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "The false positive report probability (FPRP), the probability of no true association between a genetic variant and disease given a statistically significant finding, depends not only on the observed P value but also on both the prior probability that the association between the genetic variant and the disease is real and the statistical power of the test."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "Our proposal can help investigators, editors, and readers of research articles to protect themselves from overinterpreting statistically significant findings that are not likely to signify a true association."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 10,
+          "source": "Assessing the Probability That a Positive Report is False: An Approach for Molecular Epidemiology Studies",
+          "doi": "10.1093/jnci/djh075",
+          "url": "https://europepmc.org/article/MED/15026468",
+          "origin": "abstract",
+          "text": "An FPRP-based criterion for deciding whether to call a finding noteworthy formalizes the process already used informally by investigators--that is, tempering enthusiasm for remarkable study findings with considerations of plausibility."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-028",
+      "page": 6,
+      "claim": "I suspect several established “classics” will fail the test [36].",
+      "references": [
+        {
+          "number": 36,
+          "title": "Contradicted and Initially Stronger Effects in Highly Cited Clinical Research",
+          "doi": "10.1001/jama.294.2.218",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 36,
+          "source": "Contradicted and Initially Stronger Effects in Highly Cited Clinical Research",
+          "doi": "10.1001/jama.294.2.218",
+          "url": "https://europepmc.org/article/MED/16014596",
+          "origin": "abstract",
+          "text": "Controversy and uncertainty ensue when the results of clinical research on the effectiveness of interventions are subsequently contradicted."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 36,
+          "source": "Contradicted and Initially Stronger Effects in Highly Cited Clinical Research",
+          "doi": "10.1001/jama.294.2.218",
+          "url": "https://europepmc.org/article/MED/16014596",
+          "origin": "abstract",
+          "text": "Controversies are most prominent when high-impact research is involved."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 36,
+          "source": "Contradicted and Initially Stronger Effects in Highly Cited Clinical Research",
+          "doi": "10.1001/jama.294.2.218",
+          "url": "https://europepmc.org/article/MED/16014596",
+          "origin": "abstract",
+          "text": "To understand how frequently highly cited studies are contradicted or find effects that are stronger than in other similar studies and to discern whether specific characteristics are associated with such refutation over time."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 36,
+          "source": "Contradicted and Initially Stronger Effects in Highly Cited Clinical Research",
+          "doi": "10.1001/jama.294.2.218",
+          "url": "https://europepmc.org/article/MED/16014596",
+          "origin": "abstract",
+          "text": "Contradiction and initially stronger effects are not unusual in highly cited research of clinical interventions and their outcomes."
+        }
+      ]
+    },
+    {
+      "paper": "ioannidis-2005",
+      "claimId": "claim-029",
+      "page": 6,
+      "claim": "Despite a large statistical literature for multiple testing corrections [37], usually it is impossible to decipher how much data dredging by the reporting authors or other research teams has preceded a reported research finding.",
+      "references": [
+        {
+          "number": 37,
+          "title": "Comparison of Methods for Estimating the Number of True Null Hypotheses in Multiplicity Testing",
+          "doi": "10.1081/bip-120024202",
+          "access": "abstract_only"
+        }
+      ],
+      "passages": [
+        {
+          "id": "E1",
+          "referenceNumber": 37,
+          "source": "Comparison of Methods for Estimating the Number of True Null Hypotheses in Multiplicity Testing",
+          "doi": "10.1081/bip-120024202",
+          "url": "https://europepmc.org/article/MED/14584715",
+          "origin": "abstract",
+          "text": "When a large number of statistical tests is performed, the chance of false positive findings could increase considerably."
+        },
+        {
+          "id": "E2",
+          "referenceNumber": 37,
+          "source": "Comparison of Methods for Estimating the Number of True Null Hypotheses in Multiplicity Testing",
+          "doi": "10.1081/bip-120024202",
+          "url": "https://europepmc.org/article/MED/14584715",
+          "origin": "abstract",
+          "text": "When some of the hypotheses are not true, the error rate from either the FWE- or the FDR-controlling procedure is usually lower than the designed level."
+        },
+        {
+          "id": "E3",
+          "referenceNumber": 37,
+          "source": "Comparison of Methods for Estimating the Number of True Null Hypotheses in Multiplicity Testing",
+          "doi": "10.1081/bip-120024202",
+          "url": "https://europepmc.org/article/MED/14584715",
+          "origin": "abstract",
+          "text": "The lowest slope method, developed by Benjamini and Hochberg (2000) on the adaptive control of the FDR in multiple testing with independent statistics, and the mean of differences method appear to perform the best."
+        },
+        {
+          "id": "E4",
+          "referenceNumber": 37,
+          "source": "Comparison of Methods for Estimating the Number of True Null Hypotheses in Multiplicity Testing",
+          "doi": "10.1081/bip-120024202",
+          "url": "https://europepmc.org/article/MED/14584715",
+          "origin": "abstract",
+          "text": "A data set from a toxicogenomic microarray experiment is used for illustration."
+        }
+      ]
+    }
+  ]
+}

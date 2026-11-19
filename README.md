@@ -111,6 +111,10 @@ To run a single app: `bunx turbo run dev --filter=@citeverify/api`
 
 See `.env.example`. A relative SQLite `DATABASE_URL` (e.g. `file:./dev.db`) always resolves inside `packages/database/`, whichever app is running.
 
+## Evaluation
+
+A reasoning benchmark of 48 claims with fixed evidence (38 real, 10 deliberately altered) lives in [`eval/benchmark/`](eval/benchmark/); reports are in [`docs/evaluation/`](docs/evaluation/). **All labels are provisional and AI-assisted until a human reviews them, so results are preliminary agreement figures, not validated accuracy.** The first run, with the small local `llama3.2` model, agreed with 33% of the provisional labels and never answered "Supported"; the hosted Groq model has not yet been benchmarked.
+
 ## Deployment
 
 The live demo runs on Render Free with AI verification through Groq's free API (`GROQ_API_KEY` set in Render). A single-server Docker setup that includes a private Ollama model is in [`deploy/`](deploy/), with the plan, costs, and limits in [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md).
