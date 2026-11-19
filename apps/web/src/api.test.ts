@@ -347,3 +347,25 @@ describe("extractPdfEvidence", () => {
     ).rejects.toThrow("invalid extraction response");
   });
 });
+
+describe("unreachable server", () => {
+  test("explains a network-level failure instead of showing 'Failed to fetch'", async () => {
+    const mockFetch = () => Promise.reject(new TypeError("Failed to fetch"));
+    expect(
+      extractPdfEvidence(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        mockFetch,
+      ),
+    ).rejects.toThrow("Could not reach the CiteVerify server");
+  });
+
+  test("still explains a proxy 502 when the API behind Vite is down", async () => {
+    const mockFetch = () => Promise.resolve(new Response("", { status: 502 }));
+    expect(
+      extractPdfCitations(
+        new File(["pdf"], "paper.pdf", { type: "application/pdf" }),
+        mockFetch,
+      ),
+    ).rejects.toThrow("The extraction service is unavailable (HTTP 502)");
+  });
+});

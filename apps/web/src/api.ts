@@ -88,7 +88,17 @@ async function postPdf<T>(
 ): Promise<T> {
   const body = new FormData();
   body.set("file", file);
-  const response = await fetchImpl(path, { method: "POST", body });
+  let response: Response;
+  try {
+    response = await fetchImpl(path, { method: "POST", body });
+  } catch {
+    // fetch rejects (browsers say "Failed to fetch") only when no HTTP
+    // response arrived at all: the page's dev server stopped, or the
+    // connection dropped. HTTP errors are handled below instead.
+    throw new Error(
+      "Could not reach the CiteVerify server, so no HTTP response was received. Check that `bun run dev` (Vite and the Hono API) is still running, then reload this page.",
+    );
+  }
   let payload: unknown;
   try {
     payload = await response.json();

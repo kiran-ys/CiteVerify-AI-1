@@ -31,7 +31,7 @@ Last inspected: 2026-11-19
 | Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                          |
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                          |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                         |
-| Automated tests      | Implemented and passing      | 131 Bun tests pass offline (evidence 36, claims 31, citations 25, API 22, web 13, parser 4); 1 opt-in live network test.          |
+| Automated tests      | Implemented and passing      | 133 Bun tests pass offline (evidence 36, claims 31, citations 25, API 22, web 15, parser 4); 1 opt-in live network test.          |
 | Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                |
 
 ## Completed milestones
@@ -115,6 +115,16 @@ Milestone 3 validation (2026-11-19): lint 10/10, typecheck 11/11, 87 tests, buil
 Milestone 2 validation (2026-11-19): lint 10/10, typecheck 11/11, 53 tests, build 4/4, and a browser smoke test with a generated four-page paper.
 
 Milestone 1 validation (2026-11-19): lint 9/9, typecheck 10/10, 13 tests, build 4/4, and a browser smoke test with a generated one-page PDF.
+
+## Local development troubleshooting
+
+Investigated 2026-11-19 after a "Failed to fetch" report:
+
+- Run exactly one API. `bun run dev` starts Vite on 5173 (proxying `/api` to 3001) and the API on 3001. If another API process already holds 3001, the new `bun --watch` API fails with `EADDRINUSE` and stays alive without listening; Vite then returns `502` for every `/api` request. Check with `lsof -nP -iTCP:3001 -sTCP:LISTEN` and stop the extra process, then restart `bun run dev`.
+- A missing root `.env` is harmless; the `dev` script's `--env-file=../../.env` simply loads nothing.
+- "Failed to fetch" means no HTTP response arrived at all, usually because the page's own dev server stopped (for example a page left open on a port that is no longer served). The web client now reports this as "Could not reach the CiteVerify server" with what to check. A stopped API behind a running Vite shows "The extraction service is unavailable (HTTP 502)".
+- Vite listens on `[::1]:5173`; use `http://localhost:5173`, not `127.0.0.1`.
+- Source retrieval takes about 60 seconds; the Vite proxy and the API (`idleTimeout: 120`) both allow it. Verified through `localhost:5173` with the genuine Ioannidis (2005) paper: 24 of 25 looked-up references resolved and 6 abstract passages returned (Europe PMC timed out 10 times, so full-text availability for those sources is unknown).
 
 ## Known limitations and deferred work
 
