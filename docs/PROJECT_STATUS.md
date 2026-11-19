@@ -215,6 +215,14 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 - Checked in the browser (production build, real live Groq result for Ioannidis 2005): light and dark at 1440 px and 375 px, toggle and persistence across reload, no horizontal overflow at 375 px, no console errors, comparison navigation, filter and search. 272 tests pass; lint, uncached typecheck, and build pass.
 - Known: the older per-claim cards inside the upload results keep their original layout (amber tint is heavy in dark mode) and say "evidence not yet verified" under citation matching even after verification. No reference image was received, so the design follows the written specification.
 
+### Flagship interaction layer (uncommitted, awaiting approval)
+
+- Navigation regrouped into Research (Workspace, Claims & evidence, Quality, Reports) and Explore (Sample paper, Illustrative demo); collapsible desktop sidebar (saved), mobile drawer unchanged. "Demo results" left the navigation.
+- **Sample paper**: the CC BY open-access Ioannidis (2005) PDF is bundled in `apps/web/public/samples/` with attribution; "Try the sample paper" runs it through the real extraction pipeline (no precomputed results).
+- Pointer effects (`pointer.ts`): a cursor halo eased in one requestAnimationFrame loop, magnetic hero buttons, and a pointer-following spotlight on metric cards, all via transforms and CSS variables (no React state); the native cursor stays, the overlay has `pointer-events: none`, and nothing runs for coarse/touch pointers or reduced motion. Hero: animated SVG of a paper whose citations flow to evidence nodes (static with reduced motion).
+- Verification pipeline is a connected timeline with expandable stage explanations; comparison view supports ← / → between claims, fades between claims, and opens a claim chosen in the new **Ctrl/⌘ K command palette**, which searches pages, claims, references, and retrieved evidence from the real paper only.
+- Browser-checked on the production build: sample flow (29 claims, 21 cited, honest "Not run/Not verified" states), palette search and Enter-to-claim, arrow-key navigation, sidebar collapse and persistence, System theme following the OS, light mobile at 375 px with no overflow and no halo on a coarse pointer, no console errors. A mobile hero layout bug found during testing was fixed. Reduced-motion behaviour is implemented through media queries but was not emulated in the browser. 268 tests pass with lint, uncached typecheck, and build.
+
 ## Next milestone
 
 Owner review of verification, ideally on the DREW paper. Then a labelled evaluation set to measure claim, citation, retrieval, and verdict accuracy; a comparison of larger local models; better passage selection; and Phase 2 durable jobs so long runs move to the worker.

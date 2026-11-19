@@ -22,6 +22,8 @@ import {
   sessionStore,
 } from "./paper-session.ts";
 import { CitationIntegrity, QualityPanel } from "./PaperQuality.tsx";
+import { CommandPalette } from "./CommandPalette.tsx";
+import { installPointerEffects } from "./pointer.ts";
 import { useTheme } from "./theme.ts";
 import {
   ClaimEvidenceWorkspace,
@@ -127,9 +129,12 @@ const nav: { id: Page; label: string; icon: string }[] = [
   { id: "reports", label: "Reports", icon: "file" },
 ];
 const demoNav: { id: Page; label: string; icon: string }[] = [
-  { id: "dashboard", label: "Demo overview", icon: "sparkle" },
-  { id: "results", label: "Demo results", icon: "scan" },
+  { id: "dashboard", label: "Illustrative demo", icon: "sparkle" },
 ];
+const palettePages = [...nav, ...demoNav].map((n) => ({
+  id: n.id,
+  label: n.label,
+}));
 const headings: Record<Page, [string, string]> = {
   dashboard: [
     "Demo overview",
@@ -157,6 +162,29 @@ const headings: Record<Page, [string, string]> = {
 export function App() {
   const [page, setPage] = useState<Page>("upload");
   const theme = useTheme();
+  const [sampleRequest, setSampleRequest] = useState(0);
+  const [focusClaim, setFocusClaim] = useState<string>();
+  // Decorative pointer effects (off for touch, coarse pointers, reduced motion).
+  useEffect(() => installPointerEffects(), []);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("citeverify.sidebar") === "collapsed";
+    } catch {
+      return false;
+    }
+  });
+  const toggleSidebar = () =>
+    setCollapsed((value) => {
+      try {
+        localStorage.setItem(
+          "citeverify.sidebar",
+          value ? "open" : "collapsed",
+        );
+      } catch {
+        // Storage blocked: the choice lasts for this page only.
+      }
+      return !value;
+    });
   const [status, setStatus] = useState<UploadStatus>({
     extracting: false,
     retrieving: false,
@@ -183,7 +211,7 @@ export function App() {
     setDetail(undefined);
   };
   return (
-    <div className="app">
+    <div className={`app ${collapsed ? "nav-collapsed" : ""}`}>
       <a href="#main" className="skip">
         Skip to content
       </a>
@@ -192,35 +220,57 @@ export function App() {
           <span>
             <Icon name="verify" />
           </span>
-          <strong>
+          <strong className="nav-text">
             CiteVerify <em>AI</em>
           </strong>
+          <button
+            type="button"
+            className="collapse-btn"
+            onClick={toggleSidebar}
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            aria-expanded={!collapsed}
+          >
+            {collapsed ? "»" : "«"}
+          </button>
         </div>
-        <small className="nav-label">WORKSPACE</small>
+        <small className="nav-label">RESEARCH</small>
         <nav aria-label="Primary navigation">
           {nav.map((n) => (
             <button
               key={n.id}
+              title={n.label}
               className={page === n.id ? "active" : ""}
               aria-current={page === n.id ? "page" : undefined}
               onClick={() => go(n.id)}
               type="button"
             >
               <Icon name={n.icon} />
-              {n.label}
+              <span className="nav-text">{n.label}</span>
             </button>
           ))}
-          <small className="nav-label">DEMO (ILLUSTRATIVE)</small>
+          <small className="nav-label">EXPLORE</small>
+          <button
+            type="button"
+            title="Sample paper (open access)"
+            onClick={() => {
+              go("upload");
+              setSampleRequest((n) => n + 1);
+            }}
+          >
+            <Icon name="file" />
+            <span className="nav-text">Sample paper (open access)</span>
+          </button>
           {demoNav.map((n) => (
             <button
               key={n.id}
+              title={n.label}
               className={page === n.id ? "active" : ""}
               aria-current={page === n.id ? "page" : undefined}
               onClick={() => go(n.id)}
               type="button"
             >
               <Icon name={n.icon} />
-              {n.label}
+              <span className="nav-text">{n.label}</span>
             </button>
           ))}
         </nav>
@@ -261,6 +311,17 @@ export function App() {
                 DEMO DATA
               </span>
             )}
+            <button
+              type="button"
+              className="search-trigger"
+              onClick={() =>
+                window.dispatchEvent(new Event("citeverify:open-palette"))
+              }
+            >
+              <Icon name="search" />
+              <span>Search</span>
+              <kbd>⌘K</kbd>
+            </button>
             <ThemeToggle
               preference={theme.preference}
               resolved={theme.resolved}
@@ -272,6 +333,8 @@ export function App() {
           {page === "upload" && (
             <>
               <Hero
+                onSample={() => setSampleRequest((n) => n + 1)}
+                sampleCitation={SAMPLE_PAPER.citation}
                 onUpload={() =>
                   document
                     .querySelector<HTMLInputElement>(
@@ -306,6 +369,7 @@ export function App() {
               setResult={setPaper}
               openReports={() => go("reports")}
               onStatus={setStatus}
+              sampleRequest={sampleRequest}
             />
             {page === "upload" && (
               <div className="workspace-side">
@@ -315,7 +379,9 @@ export function App() {
             )}
           </div>
           {page === "upload" && <ClaimEvidenceWorkspace paper={paper} />}
-          {page === "evidence" && <ClaimEvidenceWorkspace paper={paper} />}
+          {page === "evidence" && (
+            <ClaimEvidenceWorkspace paper={paper} focusClaimId={focusClaim} />
+          )}
           {page === "quality" && (
             <div className="quality-page">
               <QualityDashboard paper={paper} showBenchmarks />
@@ -329,6 +395,17 @@ export function App() {
         </main>
       </div>
       {detail && <Evidence claim={detail} close={() => setDetail(undefined)} />}
+      <CommandPalette
+        paper={paper}
+        pages={palettePages}
+        onSelect={(target) => {
+          if (target.kind === "page") go(target.page as Page);
+          else {
+            go("evidence");
+            setFocusClaim(target.claimId);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -531,6 +608,14 @@ function Activity({
   );
 }
 
+/** Open-access sample (CC BY 4.0), bundled in public/samples. */
+export const SAMPLE_PAPER = {
+  url: "/samples/ioannidis-2005-plosmed.pdf",
+  name: "ioannidis-2005-plosmed.pdf",
+  citation:
+    "Ioannidis JPA (2005) Why Most Published Research Findings Are False. PLoS Med 2(8): e124. doi:10.1371/journal.pmed.0020124. CC BY.",
+};
+
 export type UploadStatus = {
   extracting: boolean;
   retrieving: boolean;
@@ -544,12 +629,15 @@ function Upload({
   setResult,
   openReports,
   onStatus,
+  sampleRequest,
 }: {
   active: boolean;
   result: PaperResult | undefined;
   setResult: (result: PaperResult | undefined) => void;
   openReports: () => void;
   onStatus: (status: UploadStatus) => void;
+  /** Increments each time the user asks for the bundled sample paper. */
+  sampleRequest: number;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File>();
@@ -597,6 +685,25 @@ function Upload({
     file,
     onStatus,
   ]);
+  // The sample paper runs through the same real pipeline as any upload.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per request.
+  useEffect(() => {
+    if (!sampleRequest) return;
+    (async () => {
+      setError("");
+      try {
+        const response = await fetch(SAMPLE_PAPER.url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const sample = new File([await response.blob()], SAMPLE_PAPER.name, {
+          type: "application/pdf",
+        });
+        accept(sample);
+        await upload(sample);
+      } catch {
+        setError("The sample paper could not be loaded. Please try again.");
+      }
+    })();
+  }, [sampleRequest]);
   // Report model availability before upload so a public demo never implies
   // that AI verification is ready when no model is configured or reachable.
   useEffect(() => {
@@ -628,14 +735,14 @@ function Upload({
     setPhase("idle");
     if (input.current) input.current.value = "";
   };
-  const upload = async () => {
-    if (!file) return;
+  const upload = async (target: File | undefined = file) => {
+    if (!target) return;
     setError("");
     reset();
     const current = generation.current;
     setPhase("extracting");
     try {
-      const extracted = await extractPdfCitations(file);
+      const extracted = await extractPdfCitations(target);
       if (current !== generation.current) return;
       setResult(extracted);
       setPhase("success");
@@ -771,7 +878,10 @@ function Upload({
               </button>
             </>
           )}
-          <Button disabled={!file || phase === "extracting"} onClick={upload}>
+          <Button
+            disabled={!file || phase === "extracting"}
+            onClick={() => upload()}
+          >
             {phase === "extracting"
               ? "Extracting text, claims and citations…"
               : phase === "success"

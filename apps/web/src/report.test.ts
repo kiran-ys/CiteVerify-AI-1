@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { paperQuality, share } from "./quality.ts";
+import { buildIndex, searchIndex } from "./CommandPalette.tsx";
 import type {
   ExtractCitationsResponse,
   ExtractEvidenceResponse,
@@ -413,5 +414,38 @@ describe("paper quality figures come only from the paper's results", () => {
     });
     expect(share(0, 0)).toBe("none");
     expect(share(3, 21)).toBe("3 of 21 (14%)");
+  });
+});
+
+describe("command palette search uses only real content", () => {
+  const pages = [
+    { id: "upload", label: "Workspace" },
+    { id: "quality", label: "Quality" },
+  ];
+
+  test("with no paper, only pages can match", () => {
+    const index = buildIndex(undefined, pages);
+    expect(index.map((i) => i.group)).toEqual(["Go to", "Go to"]);
+    expect(searchIndex(index, "walking")).toEqual([]);
+    expect(searchIndex(index, "").length).toBe(2);
+  });
+
+  test("claims, references, and evidence point to the claim they belong to", () => {
+    const index = buildIndex(withEvidence, pages);
+    expect(searchIndex(index, "walking FMD")[0]).toMatchObject({
+      group: "Claims",
+      target: { kind: "claim", claimId: "claim-001" },
+    });
+    expect(searchIndex(index, "Clin Sci")[0]).toMatchObject({
+      group: "References",
+      target: { kind: "claim", claimId: "claim-001" },
+    });
+    expect(searchIndex(index, ">50%")[0]).toMatchObject({
+      group: "Evidence",
+      target: { kind: "claim", claimId: "claim-001" },
+    });
+    expect(searchIndex(index, "quality")[0]).toMatchObject({
+      target: { kind: "page", page: "quality" },
+    });
   });
 });

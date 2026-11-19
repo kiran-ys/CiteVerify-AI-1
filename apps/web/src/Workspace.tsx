@@ -9,7 +9,7 @@ import type {
   VerificationEvidence,
   VerificationVerdict,
 } from "@citeverify/shared";
-import { type ReactNode, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import benchmarks from "./benchmark-summaries.json";
 import type { PaperResult } from "./paper-session.ts";
 import { CAUSE_LABEL, paperQuality, share } from "./quality.ts";
@@ -92,89 +92,161 @@ export function Tilt({
 
 // ------------------------------------------------------------------ hero
 
-export function Hero({ onUpload }: { onUpload: () => void }) {
+export function Hero({
+  onUpload,
+  onSample,
+  sampleCitation,
+}: {
+  onUpload: () => void;
+  onSample: () => void;
+  sampleCitation: string;
+}) {
   return (
     <section className="hero" aria-labelledby="hero-title">
-      <div>
+      <div className="hero-copy">
         <small className="hero-eyebrow">
-          EVIDENCE-GROUNDED CITATION CHECKING
+          <span className="eyebrow-dot" aria-hidden="true" />
+          Evidence-grounded citation checking
         </small>
-        <h1 id="hero-title">Every scientific claim deserves evidence.</h1>
+        <h1 id="hero-title">
+          Every scientific claim <span>deserves evidence.</span>
+        </h1>
         <p>
-          Upload a research paper. Trace its citations. Compare claims against
-          real scholarly evidence. Understand what is supported—and what remains
-          uncertain.
+          Upload research papers, trace citations, retrieve scholarly evidence,
+          and understand what the science actually supports.
         </p>
-        <button type="button" className="hero-cta" onClick={onUpload}>
-          Upload research paper
-        </button>
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="hero-cta magnetic"
+            onClick={onUpload}
+          >
+            Upload research paper
+          </button>
+          <button
+            type="button"
+            className="hero-secondary magnetic"
+            onClick={onSample}
+          >
+            Try the sample paper
+          </button>
+        </div>
+        <p className="hero-sample-note">
+          The sample runs the real pipeline on an open-access paper:{" "}
+          {sampleCitation}
+        </p>
       </div>
-      <Tilt className="hero-art">
+      <Tilt className="hero-art spotlight">
         <svg
-          viewBox="0 0 220 180"
+          viewBox="0 0 320 240"
           role="img"
-          aria-label="Illustration of a research paper linked to sources"
+          aria-label="A research paper whose citations connect to evidence sources"
         >
-          <rect
-            x="40"
-            y="18"
-            width="104"
-            height="138"
-            rx="10"
-            className="art-page"
+          <defs>
+            <linearGradient id="pageFade" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" className="art-stop-a" />
+              <stop offset="1" className="art-stop-b" />
+            </linearGradient>
+          </defs>
+          <g className="art-float">
+            <rect
+              x="46"
+              y="28"
+              width="128"
+              height="170"
+              rx="12"
+              fill="url(#pageFade)"
+              className="art-page"
+            />
+            <rect
+              x="64"
+              y="50"
+              width="78"
+              height="8"
+              rx="4"
+              className="art-line strong"
+            />
+            <rect
+              x="64"
+              y="70"
+              width="92"
+              height="5"
+              rx="2.5"
+              className="art-line"
+            />
+            <rect
+              x="64"
+              y="82"
+              width="80"
+              height="5"
+              rx="2.5"
+              className="art-line"
+            />
+            <rect
+              x="64"
+              y="94"
+              width="88"
+              height="5"
+              rx="2.5"
+              className="art-line"
+            />
+            <rect
+              x="64"
+              y="114"
+              width="54"
+              height="6"
+              rx="3"
+              className="art-mark a"
+            />
+            <rect
+              x="64"
+              y="128"
+              width="86"
+              height="5"
+              rx="2.5"
+              className="art-line"
+            />
+            <rect
+              x="64"
+              y="146"
+              width="44"
+              height="6"
+              rx="3"
+              className="art-mark b"
+            />
+            <rect
+              x="64"
+              y="160"
+              width="76"
+              height="5"
+              rx="2.5"
+              className="art-line"
+            />
+          </g>
+          <path
+            d="M120 117 C 190 117, 200 62, 252 62"
+            className="art-link l1"
           />
-          <rect
-            x="56"
-            y="38"
-            width="64"
-            height="7"
-            rx="3.5"
-            className="art-line strong"
+          <path
+            d="M110 149 C 190 149, 200 128, 252 128"
+            className="art-link l2"
           />
-          <rect
-            x="56"
-            y="54"
-            width="72"
-            height="5"
-            rx="2.5"
-            className="art-line"
+          <path
+            d="M110 149 C 196 149, 206 192, 252 192"
+            className="art-link l3"
           />
-          <rect
-            x="56"
-            y="66"
-            width="60"
-            height="5"
-            rx="2.5"
-            className="art-line"
-          />
-          <rect
-            x="56"
-            y="78"
-            width="70"
-            height="5"
-            rx="2.5"
-            className="art-line"
-          />
-          <rect
-            x="56"
-            y="98"
-            width="40"
-            height="5"
-            rx="2.5"
-            className="art-mark"
-          />
-          <rect
-            x="56"
-            y="110"
-            width="66"
-            height="5"
-            rx="2.5"
-            className="art-line"
-          />
-          <path d="M144 100 C 170 100, 168 60, 192 60" className="art-link" />
-          <path d="M144 112 C 172 112, 170 130, 192 130" className="art-link" />
-          <circle cx="196" cy="60" r="10" className="art-node ok" />
-          <circle cx="196" cy="130" r="10" className="art-node" />
+          <g className="art-node ok">
+            <circle cx="262" cy="62" r="13" />
+            <path d="M256 62l4 4 8-9" />
+          </g>
+          <g className="art-node warn">
+            <circle cx="262" cy="128" r="13" />
+            <path d="M262 121v8M262 133v1" />
+          </g>
+          <g className="art-node muted">
+            <circle cx="262" cy="192" r="13" />
+            <path d="M257 192h10" />
+          </g>
         </svg>
       </Tilt>
     </section>
@@ -230,7 +302,7 @@ export function MetricsRow({ paper }: { paper: PaperResult | undefined }) {
   return (
     <section className="metrics-row" aria-label="Paper metrics">
       {cards.map(([label, value, note, tone]) => (
-        <Tilt key={label} className={`metric tone-edge-${tone}`}>
+        <Tilt key={label} className={`metric spotlight tone-edge-${tone}`}>
           <small>{label}</small>
           <strong className={value.length > 4 ? "metric-text" : ""}>
             {value}
@@ -309,10 +381,27 @@ export function Pipeline({
       paper ? "ready to download" : "",
     ],
   ];
+  const explain: Record<string, string> = {
+    "Read PDF":
+      "The PDF is parsed in memory on the server; text is kept per page.",
+    "Extract claims":
+      "Sentences that make scientific claims are found by transparent rules.",
+    "Map citations":
+      "Citation markers are matched to the paper's own reference list (not evidence).",
+    "Retrieve evidence":
+      "Cited works are identified in PubMed, Crossref, and OpenAlex; abstracts or open full text are fetched.",
+    "AI verification":
+      "Each cited claim is compared with its retrieved passages; verdicts must cite stored source text.",
+    "Generate report":
+      "A PDF report is built in your browser from these results.",
+  };
   return (
     <section className="pipeline panel" aria-label="Verification pipeline">
-      <h2>Verification pipeline</h2>
-      <ol>
+      <header className="pipeline-head">
+        <h2>Verification pipeline</h2>
+        <small>Real request states · no simulated progress</small>
+      </header>
+      <ol className="timeline">
         {stages.map(([name, state, detail]) => (
           <li
             key={name}
@@ -322,28 +411,29 @@ export function Pipeline({
             <span className="stage-dot" aria-hidden="true">
               {state === "done" ? "✓" : state === "failed" ? "!" : ""}
             </span>
-            <b>{name}</b>
-            <small>
-              {state === "active"
-                ? "In progress…"
-                : state === "failed"
-                  ? "Failed"
-                  : state === "done"
-                    ? detail
-                    : "Pending"}
-            </small>
+            <details>
+              <summary>
+                <b>{name}</b>
+                <small>
+                  {state === "active"
+                    ? "In progress…"
+                    : state === "failed"
+                      ? "Failed"
+                      : state === "done"
+                        ? detail
+                        : "Pending"}
+                </small>
+              </summary>
+              <p>{explain[name]}</p>
+            </details>
           </li>
         ))}
       </ol>
       {failed && (
         <p className="pipeline-error" role="alert">
-          {failed.message}
+          {failed.message} Use the buttons in the paper panel to try again.
         </p>
       )}
-      <p className="quality-note">
-        Stages are marked done only when the server has returned their results.
-        The server answers once per step, so no percentage is shown.
-      </p>
     </section>
   );
 }
@@ -655,8 +745,11 @@ type Item = {
 
 export function ClaimEvidenceWorkspace({
   paper,
+  focusClaimId,
 }: {
   paper: PaperResult | undefined;
+  /** Claim to show first (from the command palette). */
+  focusClaimId?: string;
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<
@@ -720,6 +813,16 @@ export function ClaimEvidenceWorkspace({
       .toLowerCase();
     return haystack.includes(q);
   });
+  // Jump to a claim chosen elsewhere (command palette).
+  useEffect(() => {
+    if (!focusClaimId) return;
+    const index = items.findIndex((it) => it.claim.id === focusClaimId);
+    if (index >= 0) {
+      setQuery("");
+      setFilter("all");
+      setPosition(index);
+    }
+  }, [focusClaimId, items]);
   const current = shown[Math.min(position, Math.max(0, shown.length - 1))];
   const at = current ? shown.indexOf(current) : -1;
 
@@ -730,10 +833,16 @@ export function ClaimEvidenceWorkspace({
         aria-label="Claim and evidence comparison"
       >
         <h2>Claim–evidence comparison</h2>
-        <p className="quality-note">
-          Upload a paper and run retrieval or verification to compare its claims
-          with source evidence.
-        </p>
+        <div className="empty-state">
+          <span className="empty-glyph" aria-hidden="true">
+            ❝ ❞
+          </span>
+          <h3>Your next research insight starts here.</h3>
+          <p>
+            Upload a paper, or try the open-access sample, to compare each cited
+            claim with the scholarly evidence behind it.
+          </p>
+        </div>
       </section>
     );
   }
@@ -741,9 +850,21 @@ export function ClaimEvidenceWorkspace({
     <section
       className="panel compare"
       aria-label="Claim and evidence comparison"
+      onKeyDown={(event) => {
+        const target = event.target as HTMLElement;
+        if (target.closest("input, select, textarea")) return;
+        if (event.key === "ArrowRight")
+          setPosition(Math.min(shown.length - 1, at + 1));
+        if (event.key === "ArrowLeft") setPosition(Math.max(0, at - 1));
+      }}
     >
       <header className="compare-head">
-        <h2>Claim–evidence comparison</h2>
+        <div>
+          <h2>Claim–evidence comparison</h2>
+          <small className="kbd-hint">
+            ← and → move between claims · Ctrl/⌘ K searches everything
+          </small>
+        </div>
         <div className="compare-tools">
           <label>
             <span className="sr">Search claims, citations, and evidence</span>
@@ -810,7 +931,7 @@ export function ClaimEvidenceWorkspace({
       {!current ? (
         <p className="quality-note">No claims match this search or filter.</p>
       ) : (
-        <div className="compare-grid">
+        <div className="compare-grid" key={current.claim.id}>
           <ClaimPanel item={current} />
           <EvidencePanel item={current} refs={refs} sources={sources} />
           <VerdictPanel item={current} />
@@ -895,10 +1016,10 @@ function EvidencePanel({
       {list.length === 0 ? (
         <p className="quality-note">
           {item.verdict
-            ? "No passage was retrieved for this claim."
+            ? "No scholarly evidence could be retrieved for this claim."
             : sources.size
-              ? "Run AI verification to select passages for this claim."
-              : "Sources have not been retrieved yet."}
+              ? "Your claims are ready for verification: run “Verify claims with AI” to select passages."
+              : "No scholarly evidence has been retrieved yet."}
         </p>
       ) : (
         <>
@@ -998,7 +1119,8 @@ function VerdictPanel({ item }: { item: Item }) {
       </header>
       {!v ? (
         <p className="quality-note">
-          Not verified. Run “Verify claims with AI” to judge this claim.
+          Not verified yet. Your claims are ready for verification: run “Verify
+          claims with AI”.
         </p>
       ) : (
         <>
