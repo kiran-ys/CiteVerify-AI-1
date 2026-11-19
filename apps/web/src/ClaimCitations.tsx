@@ -134,7 +134,7 @@ export function ClaimCitations({
       className="claim-citations"
       aria-label={`Citations in ${claim.id}`}
     >
-      <h3>Citations in this claim</h3>
+      <h3>Citation matching</h3>
       {inClaim.map((citation) => (
         <div key={citation.id} className="claim-citation">
           <p className="citation-marker">

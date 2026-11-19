@@ -687,3 +687,143 @@ describe("verification endpoints", async () => {
     ).toBe(400);
   });
 });
+
+// Regression tests on real papers kept outside git (tmp/ is ignored). Skipped
+// when the files are absent. They assert properties any correct result must
+// have, never specific matches copied from a previous run.
+const realPaper = (name: string) =>
+  new URL(`../../../tmp/realpaper/${name}`, import.meta.url).pathname;
+const hasPmc = await Bun.file(realPaper("PMC7065031.pdf")).exists();
+const hasIoannidis = await Bun.file(
+  realPaper("ioannidis-2005-plosmed.pdf"),
+).exists();
+
+async function citationsFor(name: string): Promise<ExtractCitationsResponse> {
+  const bytes = await Bun.file(realPaper(name)).bytes();
+  const response = await app.request(
+    uploadRequest(
+      new File([bytes], name, { type: "application/pdf" }),
+      CITATIONS_PATH,
+    ),
+  );
+  expect(response.status).toBe(200);
+  return (await response.json()) as ExtractCitationsResponse;
+}
+
+describe.if(hasPmc)(
+  "real paper PMC7065031 (superscript citations)",
+  async () => {
+    const body = hasPmc
+      ? await citationsFor("PMC7065031.pdf")
+      : (null as never);
+    const items = () =>
+      body.citations.inText.flatMap((citation) => citation.matches);
+
+    test("finds superscript citations that the text alone hides", () => {
+      expect(body.citations.referenceList).toMatchObject({
+        found: true,
+        style: "numbered",
+      });
+      expect(body.citations.inText.length).toBeGreaterThan(0);
+      expect(
+        body.citations.inText.every(
+          (citation) => citation.style === "superscript",
+        ),
+      ).toBe(true);
+      expect(
+        items().filter((match) => match.status === "matched").length,
+      ).toBeGreaterThan(0);
+    });
+
+    test("every match points to the reference entry with that number", () => {
+      const byId = new Map(
+        body.citations.references.map((reference) => [reference.id, reference]),
+      );
+      for (const match of items().filter((item) => item.status === "matched")) {
+        expect(byId.get(match.referenceIds[0] ?? "")?.number).toBe(
+          Number(match.key),
+        );
+      }
+    });
+
+    test("markers are exact slices of the page text and skip non-citation superscripts", () => {
+      for (const citation of body.citations.inText) {
+        const pageText = body.extraction.pages[citation.page - 1]?.text ?? "";
+        expect(
+          pageText.slice(citation.location.start, citation.location.end),
+        ).toBe(citation.marker);
+        const before = pageText.slice(
+          Math.max(0, citation.location.start - 6),
+          citation.location.start,
+        );
+        expect(before).not.toMatch(/kg\/m$|χ$/);
+      }
+      const abstractAt =
+        body.extraction.pages[0]?.text.search(/^Abstract/m) ?? -1;
+      expect(abstractAt).toBeGreaterThan(0);
+      expect(
+        body.citations.inText.some(
+          (c) => c.page === 1 && c.location.start < abstractAt,
+        ),
+      ).toBe(false);
+    });
+
+    test("separates claims citing external papers from the paper's own findings", () => {
+      const types = new Set(body.claims.items.map((claim) => claim.type));
+      expect(types).toEqual(new Set(["cited_claim", "reported_finding"]));
+      for (const citation of body.citations.inText.filter((c) => c.claimId)) {
+        const claim = body.claims.items.find(
+          (item) => item.id === citation.claimId,
+        );
+        expect(claim).toBeDefined();
+      }
+      expect(body.claims.items.some((claim) => /^\d/.test(claim.text))).toBe(
+        false,
+      );
+    });
+
+    test("checks internal consistency only for the paper's own findings, with quotes from the paper", () => {
+      const own = new Set(
+        body.claims.items
+          .filter((c) => c.type === "reported_finding")
+          .map((c) => c.id),
+      );
+      expect(
+        body.internalConsistency.results
+          .map((r) => r.claimId)
+          .every((id) => own.has(id)),
+      ).toBe(true);
+      for (const result of body.internalConsistency.results) {
+        for (const check of result.checks) {
+          for (const quote of check.quotes) {
+            expect(body.extraction.pages[quote.page - 1]?.text).toContain(
+              quote.text,
+            );
+          }
+        }
+      }
+    });
+  },
+);
+
+describe.if(hasIoannidis)(
+  "real paper Ioannidis 2005 (bracket citations)",
+  async () => {
+    const body = hasIoannidis
+      ? await citationsFor("ioannidis-2005-plosmed.pdf")
+      : (null as never);
+
+    test("formula superscripts are not read as citations", () => {
+      expect(
+        body.citations.inText.some(
+          (citation) => citation.style === "superscript",
+        ),
+      ).toBe(false);
+      expect(
+        body.citations.inText
+          .flatMap((c) => c.matches)
+          .filter((m) => m.status === "matched").length,
+      ).toBeGreaterThan(0);
+    });
+  },
+);

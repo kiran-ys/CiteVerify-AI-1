@@ -69,7 +69,7 @@ Goal: link each extracted claim's in-text citations to entries in the same paper
 5. [x] Add `POST /api/documents/citations`, reusing upload validation, `parsePdf`, and `extractClaims`.
 6. [x] Show matched references under each extracted claim, labelled "Citation matched — evidence not yet verified".
 7. [x] Test numbered, ranged, listed, author-year, narrative, missing, ambiguous, repeated, and no-reference-list cases, plus a real generated PDF through the API.
-8. [ ] Validate on representative real papers (including the owner's 16-page DREW paper and two-column layouts) and record measured match accuracy.
+8. [ ] Validate on representative real papers and record measured match accuracy. The DREW paper (PMC7065031) exposed superscript citations; layout-based superscript detection now matches 57 of 57 cited numbers there (2026-11-19), but accuracy across papers is still unmeasured.
 9. [ ] Resolve DOIs and metadata against external registries conservatively (Phase 5 dependency).
 10. [ ] Let reviewers correct or confirm ambiguous and unmatched citations.
 

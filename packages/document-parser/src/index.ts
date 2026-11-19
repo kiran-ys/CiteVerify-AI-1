@@ -3,7 +3,10 @@ import type {
   PdfExtractionErrorCode,
   PdfExtractionWarning,
 } from "@citeverify/shared";
-import { extractText, getDocumentProxy } from "unpdf";
+import { getDocumentProxy } from "unpdf";
+import { type LayoutItem, layoutPage } from "./layout.ts";
+
+export { isSuperscriptOf, type LayoutItem, layoutPage } from "./layout.ts";
 
 export const PDF_PARSER_NAME = "unpdf" as const;
 export const PDF_PARSER_VERSION = "2.2.1";
@@ -125,14 +128,22 @@ export async function parsePdf(
       );
     }
 
-    const result = await withTimeout(
-      extractText(pdf, { mergePages: false }),
+    const document = pdf;
+    const pages = await withTimeout(
+      Promise.all(
+        Array.from({ length: document.numPages }, async (_, index) => {
+          const content = await (
+            await document.getPage(index + 1)
+          ).getTextContent();
+          const items = content.items.filter(
+            (item): item is typeof item & LayoutItem =>
+              "str" in item && item.str != null,
+          );
+          return { page: index + 1, ...layoutPage(items) };
+        }),
+      ),
       timeoutMs,
     );
-    const pages = result.text.map((text, index) => ({
-      page: index + 1,
-      text: text.trim(),
-    }));
     const text = pages
       .map((page) => page.text)
       .filter(Boolean)
@@ -152,7 +163,7 @@ export async function parsePdf(
         message: `Page ${page.page} contains no extractable text.`,
         page: page.page,
       }));
-    return { text, pageCount: result.totalPages, pages, warnings };
+    return { text, pageCount: document.numPages, pages, warnings };
   } catch (error) {
     throw mapParserError(error);
   } finally {

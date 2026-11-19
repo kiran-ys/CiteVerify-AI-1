@@ -346,3 +346,68 @@ describe("classifySentence", () => {
     ).toEqual({ accepted: false, reason: "incomplete_sentence" });
   });
 });
+
+describe("citation markers from PDF layout", () => {
+  const text = [
+    "INTRODUCTION",
+    "Menopause is associated with a worsening of cardiovascular risk factors1–3 compared with premenopausal women.",
+    "Vascular function is impaired after menopause.56 Exercise is a common intervention in many clinics.",
+    "Subject populations with elevated blood pressure have shown improvement in function with training.",
+    "141617",
+    "RESULTS",
+    "We found that function improved by 1.8% in exercisers (p<0.001).",
+  ].join("\n");
+  const span = (needle: string, marker: string) => {
+    const start = text.indexOf(needle) + needle.length - marker.length;
+    return { page: 1, start, end: start + marker.length };
+  };
+  const citationSpans = [
+    span("factors1–3", "1–3"),
+    span("menopause.56", "56"),
+    span("training.\n141617", "141617"),
+  ];
+
+  test("without markers, cited introduction sentences are dropped as background", () => {
+    const { claims } = extractClaims([{ page: 1, text }]);
+    expect(claims.map((c) => [c.type, c.text])).toEqual([
+      [
+        "reported_finding",
+        "We found that function improved by 1.8% in exercisers (p<0.001).",
+      ],
+    ]);
+  });
+
+  test("with markers, they are kept as claims citing external papers", () => {
+    const { claims } = extractClaims([{ page: 1, text }], { citationSpans });
+    expect(claims.map((c) => [c.type, c.text])).toEqual([
+      [
+        "cited_claim",
+        "Menopause is associated with a worsening of cardiovascular risk factors1–3 compared with premenopausal women.",
+      ],
+      ["cited_claim", "Vascular function is impaired after menopause.56"],
+      [
+        "cited_claim",
+        "Subject populations with elevated blood pressure have shown improvement in function with training. 141617",
+      ],
+      [
+        "reported_finding",
+        "We found that function improved by 1.8% in exercisers (p<0.001).",
+      ],
+    ]);
+    expect(claims[0]?.extraction.signals).toContain(
+      "superscript citation marker",
+    );
+  });
+
+  test("a marker after a full stop ends the sentence and never starts the next one", () => {
+    const { claims } = extractClaims([{ page: 1, text }], { citationSpans });
+    expect(claims.some((c) => /^\d/.test(c.text))).toBe(false);
+    for (const claim of claims) {
+      expect(
+        text
+          .slice(claim.location.start, claim.location.end)
+          .replace(/\s+/g, " "),
+      ).toBe(claim.text);
+    }
+  });
+});

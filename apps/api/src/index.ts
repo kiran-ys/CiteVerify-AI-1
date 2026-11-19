@@ -9,6 +9,7 @@ import {
   retrieveEvidence,
 } from "@citeverify/evidence-retrieval";
 import {
+  checkInternalConsistency,
   DEFAULT_OLLAMA_HOST,
   DEFAULT_OLLAMA_MODEL,
   type OllamaConfig,
@@ -166,7 +167,14 @@ function addClaims(
   extracted: ExtractDocumentResponse,
 ): ClaimsOutcome {
   try {
-    const claims = extractClaims(extracted.extraction.pages);
+    // Citation markers found from layout (e.g. superscripts) tell the claim
+    // extractor which sentences cite external work and where sentences end.
+    const markers = extractCitations(extracted.extraction.pages).inText.map(
+      (citation) => ({ page: citation.page, ...citation.location }),
+    );
+    const claims = extractClaims(extracted.extraction.pages, {
+      citationSpans: markers,
+    });
     return {
       ok: true,
       result: {
@@ -216,7 +224,15 @@ function addCitations(
       withClaims.extraction.pages,
       withClaims.claims.items,
     );
-    return { ok: true, result: { ...withClaims, citations } };
+    // The paper's own findings are checked against the rest of the paper.
+    const internalConsistency = checkInternalConsistency(
+      withClaims.extraction.pages,
+      withClaims.claims.items,
+    );
+    return {
+      ok: true,
+      result: { ...withClaims, citations, internalConsistency },
+    };
   } catch {
     return {
       ok: false,

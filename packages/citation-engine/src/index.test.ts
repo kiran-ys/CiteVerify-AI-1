@@ -508,3 +508,103 @@ describe("venue lines are not mistaken for new entries", () => {
     ]);
   });
 });
+
+describe("superscript citations", () => {
+  test("splits typeset pieces into cited numbers", async () => {
+    const { superscriptNumbers } = await import("./index.ts");
+    expect(superscriptNumbers(["1", "–", "3"])).toEqual([1, 2, 3]);
+    expect(superscriptNumbers(["5", "6"])).toEqual([5, 6]);
+    expect(superscriptNumbers(["14", "16", "17"])).toEqual([14, 16, 17]);
+    expect(superscriptNumbers(["1-3"])).toEqual([1, 2, 3]);
+    expect(superscriptNumbers(["2,4"])).toEqual([2, 4]);
+    expect(superscriptNumbers(["9", "–"])).toBeNull();
+    expect(superscriptNumbers(["7", "–", "3"])).toBeNull();
+    expect(superscriptNumbers(["1234"])).toBeNull();
+  });
+
+  // Page text as a parser produces it: superscripts flattened into the line.
+  const text = [
+    "Jane Doe1, John Roe2",
+    "Abstract",
+    "Body mass index was 25 kg/m2 on average.",
+    "INTRODUCTION",
+    "Menopause worsens risk factors1–3 and fitness4 in women.",
+    "Function is impaired after menopause.56 Variance was tested with χ2 statistics.",
+  ].join("\n");
+  const at = (needle: string, length: number) => {
+    const start = text.indexOf(needle);
+    return start + needle.length - length;
+  };
+  const run = (needle: string, parts: string[]) => {
+    const length = parts.join("").length;
+    const start = at(needle, length);
+    return { start, end: start + length, parts };
+  };
+  const page = {
+    page: 1,
+    text,
+    superscripts: [
+      run("Jane Doe1", ["1"]),
+      run("John Roe2", ["2"]),
+      run("kg/m2", ["2"]),
+      run("factors1–3", ["1", "–", "3"]),
+      run("fitness4", ["4"]),
+      run("menopause.56", ["5", "6"]),
+      run("χ2", ["2"]),
+    ],
+  };
+
+  test("skips front-matter marks, unit exponents, and statistic symbols", async () => {
+    const { bodyStart, classifySuperscript } = await import("./index.ts");
+    const body = bodyStart([page]);
+    expect(
+      page.superscripts.map((r) => classifySuperscript(page, r, body)),
+    ).toEqual([
+      { skip: "front_matter" },
+      { skip: "front_matter" },
+      { skip: "exponent" },
+      { citation: [1, 2, 3] },
+      { citation: [4] },
+      { citation: [5, 6] },
+      { skip: "exponent" },
+    ]);
+  });
+
+  test("matches superscript citations to a numbered reference list", () => {
+    const references = {
+      page: 2,
+      text: [
+        "References",
+        "1. Lobo RA. Menopause and cardiovascular disease. Ann N Y Acad Sci. 2000;900:1-10.",
+        "2. Smith J. Risk factors after menopause. Maturitas. 2001;38:1-9.",
+        "3. Lee K. Lipids in older women. Atherosclerosis. 2002;160:1-8.",
+        "4. Park S. Fitness and age. J Appl Physiol. 2003;95:1-7.",
+        "5. Celermajer DS. Endothelial function after menopause. Ann Intern Med. 1994;121:936-41.",
+      ].join("\n"),
+    };
+    const result = extractCitations([page, references]);
+    expect(
+      result.inText.map((c) => [
+        c.style,
+        c.marker,
+        c.matches.map((m) => `${m.key}:${m.status}`),
+      ]),
+    ).toEqual([
+      ["superscript", "1–3", ["1:matched", "2:matched", "3:matched"]],
+      ["superscript", "4", ["4:matched"]],
+      ["superscript", "56", ["5:matched", "6:unmatched"]],
+    ]);
+    for (const citation of result.inText) {
+      expect(text.slice(citation.location.start, citation.location.end)).toBe(
+        citation.marker,
+      );
+    }
+  });
+
+  test("pages without layout information keep the previous behaviour", () => {
+    const result = extractCitations([
+      { page: 1, text: "Risk rose in women.12 More text follows here." },
+    ]);
+    expect(result.inText).toEqual([]);
+  });
+});

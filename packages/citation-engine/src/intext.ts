@@ -16,7 +16,7 @@ export type CitedItem =
 
 export type RawCitation = {
   marker: string;
-  style: "numeric" | "author-year";
+  style: "numeric" | "author-year" | "superscript";
   page: number;
   start: number;
   end: number;

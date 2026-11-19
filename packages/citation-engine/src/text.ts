@@ -1,6 +1,13 @@
 /** Small text helpers shared by reference and citation extraction. */
 
-export type PageText = { page: number; text: string };
+import type { SuperscriptRun } from "@citeverify/shared";
+
+export type PageText = {
+  page: number;
+  text: string;
+  /** Superscript runs from the parser; enables superscript citations. */
+  superscripts?: SuperscriptRun[];
+};
 export type Line = { page: number; start: number; end: number; text: string };
 
 export function collapse(text: string): string {

@@ -59,7 +59,12 @@ function isCitationsResponse(
 ): value is ExtractCitationsResponse {
   if (!isClaimsResponse(value) || !("citations" in value)) return false;
   const citations = value.citations;
+  const consistency =
+    "internalConsistency" in value ? value.internalConsistency : null;
   return (
+    isRecord(consistency) &&
+    Array.isArray(consistency.results) &&
+    typeof consistency.disclaimer === "string" &&
     isRecord(citations) &&
     citations.evidenceStatus === "not_verified" &&
     isRecord(citations.referenceList) &&

@@ -2310,3 +2310,122 @@ tbody tr:hover {
   margin-top: 6px !important;
   color: #8a8fa0;
 }
+/* Three separate result sections per claim. */
+.claim-citations h3,
+.claim-evidence h3,
+.consistency h3 {
+  margin: 0 0 6px;
+  color: #3d4a5f;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.claim-evidence {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #d7e6df;
+  border-radius: 7px;
+  background: #f9fcfa;
+  font-size: 0.64rem;
+}
+.claim-evidence-note {
+  margin: 0;
+  color: #6a5a3a;
+}
+.claim-evidence-source + .claim-evidence-source {
+  margin-top: 8px;
+}
+.claim-evidence-ref {
+  margin: 6px 0 0;
+  font-weight: 700;
+  color: #2f4a3f;
+}
+.consistency-summary {
+  margin: 10px 18px 0;
+  padding: 10px 12px;
+  border: 1px solid #e3dccb;
+  border-radius: 8px;
+  background: #fdfbf5;
+  color: #4e4530;
+  font-size: 0.64rem;
+  line-height: 1.55;
+}
+.consistency-summary p {
+  margin: 0;
+}
+.consistency-summary p + p {
+  margin-top: 5px;
+  color: #7a6e55;
+}
+.consistency {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e8e0cc;
+  border-radius: 7px;
+  background: #fffdf8;
+  font-size: 0.64rem;
+  color: #3d4a5f;
+}
+.consistency p {
+  margin: 0;
+}
+.consistency-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+.consistency-label {
+  color: #7a6230;
+  font-weight: 700;
+}
+.consistency-badge {
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: 800;
+}
+.consistency-badge.consistency-consistent {
+  background: #e3f1e9;
+  color: #1d6046;
+}
+.consistency-badge.consistency-inconsistent {
+  background: #fbe1e1;
+  color: #962f2f;
+}
+.consistency-badge.consistency-not_checkable {
+  background: #ececec;
+  color: #4d4d4d;
+}
+.consistency ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.consistency-check {
+  padding: 6px 8px;
+  border-radius: 5px;
+  background: white;
+  border: 1px solid #efe9da;
+}
+.consistency-check.consistency-inconsistent {
+  border-color: #e6b8b8;
+}
+.consistency-check p + p {
+  margin-top: 3px;
+  color: #5d6676;
+}
+.claims-list .consistency-check blockquote {
+  margin: 5px 0 0;
+  font-size: 0.64rem;
+  border-left-color: #d9c79a;
+  white-space: pre-line;
+}
+.consistency-check small {
+  color: #8a8fa0;
+}
+.consistency p.consistency-empty {
+  margin-top: 6px;
+  color: #6a6a6a;
+}

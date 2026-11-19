@@ -36,6 +36,28 @@ export function createEmptyPdf(): Uint8Array {
 }
 
 /**
+ * Typesets one line. `^{...}` marks a superscript, set the way journals do:
+ * a smaller font on a raised baseline (text rise), e.g. "risk^{1-3} and".
+ * Comma-separated superscript pieces become separate text items.
+ */
+function typesetLine(line: string): string {
+  const parts = line.split(/(\^\{[^}]*\})/).filter((part) => part.length > 0);
+  return parts
+    .map((part) => {
+      const superscript = /^\^\{([^}]*)\}$/.exec(part);
+      if (!superscript) return `(${escapePdfText(part)}) Tj`;
+      const pieces = (superscript[1] ?? "")
+        .split(",")
+        .map((piece) => `(${escapePdfText(piece)}) Tj`)
+        // A zero move between pieces makes them separate text items without a
+        // space, as publishers' PDFs do for "5" "6" in a superscript "5,6".
+        .join(" 0 0 Td ");
+      return `/F1 7 Tf 3.5 Ts ${pieces} /F1 10 Tf 0 Ts`;
+    })
+    .join(" ");
+}
+
+/**
  * Builds a multi-page PDF where each inner array is one page and each string
  * is one text line. Text must be ASCII (standard Helvetica encoding).
  */
@@ -50,10 +72,9 @@ export function createMultiPagePdf(pages: string[][]): Uint8Array {
   ];
   for (const [index, lines] of pages.entries()) {
     const body = lines
-      .map((line, lineIndex) =>
-        lineIndex === 0
-          ? `(${escapePdfText(line)}) Tj`
-          : `T* (${escapePdfText(line)}) Tj`,
+      .map(
+        (line, lineIndex) =>
+          `${lineIndex === 0 ? "" : "T* "}${typesetLine(line)}`,
       )
       .join("\n");
     const content = `BT\n/F1 10 Tf\n14 TL\n50 760 Td\n${body}\nET`;

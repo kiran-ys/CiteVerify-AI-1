@@ -1,31 +1,36 @@
 import type {
   ExtractCitationsResponse,
   ExtractClaimsResponse,
-  ClaimVerification,
   ExtractEvidenceResponse,
+  InternalConsistency,
   VerificationStatusResponse,
   VerifyClaimsResponse,
   ExtractedClaimType,
 } from "@citeverify/shared";
 import { useState } from "react";
 import { CitationSummary, ClaimCitations } from "./ClaimCitations.tsx";
-import { ClaimVerdict, VerificationBar } from "./ClaimVerdict.tsx";
+import { ClaimEvidence } from "./ClaimEvidence.tsx";
+import { VerificationBar } from "./ClaimVerdict.tsx";
+import {
+  ClaimConsistencyView,
+  ConsistencySummary,
+} from "./ConsistencyView.tsx";
 import { SourceRetrievalBar } from "./RetrievedSource.tsx";
 
-function VerdictFor({
+function ConsistencyFor({
   claimId,
-  verdicts,
+  consistency,
 }: {
   claimId: string;
-  verdicts?: Map<string, ClaimVerification>;
+  consistency?: InternalConsistency;
 }) {
-  const result = verdicts?.get(claimId);
-  return result ? <ClaimVerdict result={result} /> : null;
+  const result = consistency?.results.find((item) => item.claimId === claimId);
+  return result ? <ClaimConsistencyView result={result} /> : null;
 }
 
 const typeLabel: Record<ExtractedClaimType, string> = {
-  reported_finding: "Reported finding",
-  cited_claim: "Cited claim",
+  reported_finding: "Paper's own finding",
+  cited_claim: "Cites external papers",
 };
 
 type Filter = "all" | ExtractedClaimType;
@@ -39,6 +44,7 @@ export function ExtractedClaims({
   citations,
   retrieval,
   verification,
+  consistency,
 }: {
   claims: ExtractClaimsResponse["claims"];
   citations?: ExtractCitationsResponse["citations"];
@@ -49,6 +55,8 @@ export function ExtractedClaims({
     error: string;
     onRetrieve: () => void;
   };
+  /** Checks of the paper's own findings against the rest of the paper. */
+  consistency?: InternalConsistency;
   /** Opt-in local-model verification; real results only, never demo data. */
   verification?: {
     status?: VerificationStatusResponse;
@@ -94,6 +102,7 @@ export function ExtractedClaims({
         sources, and no verdict or confidence score is assigned.
       </p>
       {citations && <CitationSummary citations={citations} />}
+      {consistency && <ConsistencySummary consistency={consistency} />}
       {citations && retrieval && (
         <SourceRetrievalBar
           evidence={retrieval.evidence}
@@ -161,11 +170,16 @@ export function ExtractedClaims({
                 <blockquote>{claim.text}</blockquote>
                 {citations && (
                   <>
-                    <VerdictFor claimId={claim.id} verdicts={verdicts} />
-                    <ClaimCitations
+                    <ClaimCitations claim={claim} citations={citations} />
+                    <ClaimEvidence
                       claim={claim}
                       citations={citations}
                       sources={sources}
+                      verdict={verdicts?.get(claim.id)}
+                    />
+                    <ConsistencyFor
+                      claimId={claim.id}
+                      consistency={consistency}
                     />
                   </>
                 )}

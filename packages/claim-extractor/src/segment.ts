@@ -5,7 +5,15 @@
  * page text, and offsets always point back into that page text.
  */
 
-export type PageText = { page: number; text: string };
+export type PageText = {
+  page: number;
+  text: string;
+  /** In-text citation markers on this page (offsets into text), e.g. superscripts. */
+  citations?: { start: number; end: number }[];
+};
+
+/** Placeholder for citation-marker characters when looking for sentence ends. */
+const MARK = "\u2070";
 
 export type SectionKind =
   | "front"
@@ -29,6 +37,8 @@ export type Sentence = {
   sectionKind: SectionKind;
   /** False when the sentence is cut off by a page, column, or block edge. */
   complete: boolean;
+  /** True when an in-text citation marker lies inside this sentence. */
+  citationMarker: boolean;
 };
 
 type Line = { start: number; end: number; text: string };
@@ -185,16 +195,30 @@ function isSentenceBoundary(text: string, periodIndex: number): boolean {
   return true;
 }
 
-const BOUNDARY = /[.!?]["'”’)\]]*(?=\s+["'“‘([]?[A-Z0-9])/g;
-const TERMINAL = /[.!?]["'”’)\]]*$/;
+const BOUNDARY = /[.!?]["'”’)\]\u2070]*(?=\s[\s\u2070]*["'“‘([]?[A-Z0-9])/g;
+const TERMINAL = /[.!?]["'”’)\]\u2070]*(?:\s*\u2070+)?$/;
+
+/** Same text with citation markers replaced by MARK, so "menopause.56 This" ends a sentence. */
+function maskCitations(page: PageText): string {
+  let masked = page.text;
+  for (const span of page.citations ?? []) {
+    masked =
+      masked.slice(0, span.start) +
+      MARK.repeat(span.end - span.start) +
+      masked.slice(span.end);
+  }
+  return masked;
+}
 
 type Block = { start: number; end: number };
 
 function splitBlock(
   pageText: string,
   block: Block,
+  maskedText: string = pageText,
 ): { start: number; end: number; complete: boolean }[] {
-  const text = pageText.slice(block.start, block.end);
+  // Boundaries are found in the masked text; offsets are identical in both.
+  const text = maskedText.slice(block.start, block.end);
   const spans: { start: number; end: number; complete: boolean }[] = [];
   let cursor = 0;
   BOUNDARY.lastIndex = 0;
@@ -204,7 +228,10 @@ function splitBlock(
     match = BOUNDARY.exec(text)
   ) {
     if (!isSentenceBoundary(text, match.index)) continue;
-    const end = match.index + match[0].length;
+    let end = match.index + match[0].length;
+    // A citation marker wrapped onto the next line still belongs to this sentence.
+    const trailing = /^\s*\u2070+/.exec(text.slice(end));
+    if (trailing) end += trailing[0].length;
     spans.push({ start: cursor, end, complete: true });
     cursor = end;
   }
@@ -217,7 +244,9 @@ function splitBlock(
   return spans
     .map((span) => {
       const slice = text.slice(span.start, span.end);
-      const leading = slice.length - slice.trimStart().length;
+      // A sentence never starts with a citation marker; one at the start of a
+      // block belongs to the previous page or column.
+      const leading = slice.length - slice.replace(/^[\s\u2070]+/, "").length;
       const trailing = slice.length - slice.trimEnd().length;
       return {
         start: block.start + span.start + leading,
@@ -252,9 +281,10 @@ export function segmentPages(pages: PageText[]): Sentence[] {
     let blockSection = section;
     let blockKind = sectionKind;
 
+    const masked = maskCitations(page);
     const flush = () => {
       if (block) {
-        for (const span of splitBlock(page.text, block)) {
+        for (const span of splitBlock(page.text, block, masked)) {
           sentences.push({
             page: page.page,
             start: span.start,
@@ -263,6 +293,10 @@ export function segmentPages(pages: PageText[]): Sentence[] {
             section: blockSection,
             sectionKind: blockKind,
             complete: span.complete,
+            citationMarker: (page.citations ?? []).some(
+              (citation) =>
+                citation.start < span.end && citation.end > span.start,
+            ),
           });
         }
       }

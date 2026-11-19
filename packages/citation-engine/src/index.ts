@@ -15,12 +15,19 @@ import { findCitationsOnPage, type RawCitation } from "./intext.ts";
 import { matchItem } from "./match.ts";
 import { parseMetadata } from "./metadata.ts";
 import { findReferenceList } from "./references.ts";
+import { bodyStart, findSuperscriptCitations } from "./superscript.ts";
 import type { PageText } from "./text.ts";
 
 export { findCitationsOnPage, MAX_RANGE } from "./intext.ts";
 export { matchItem } from "./match.ts";
 export { parseMetadata, splitAuthors } from "./metadata.ts";
 export { findReferenceList } from "./references.ts";
+export {
+  bodyStart,
+  classifySuperscript,
+  findSuperscriptCitations,
+  superscriptNumbers,
+} from "./superscript.ts";
 export type { PageText } from "./text.ts";
 
 export const CITATION_METHOD = "rule-based" as const;
@@ -77,8 +84,12 @@ export function extractCitations(
     }));
 
   const excluded = excludedSpans(pages, list.span);
+  const body = bodyStart(pages);
   const raw = pages.flatMap((page) =>
-    findCitationsOnPage(page, excluded.get(page.page) ?? []),
+    [
+      ...findCitationsOnPage(page, excluded.get(page.page) ?? []),
+      ...findSuperscriptCitations(page, body, excluded.get(page.page) ?? []),
+    ].sort((a, b) => a.start - b.start),
   );
   const context = { references, listFound: list.found, listStyle: list.style };
 

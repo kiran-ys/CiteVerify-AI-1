@@ -28,10 +28,23 @@ export type ClaimExtractionResult = {
  */
 export function extractClaims(
   pages: PageText[],
-  options: { maxClaims?: number } = {},
+  options: {
+    maxClaims?: number;
+    /** In-text citation markers found from PDF layout (e.g. superscripts), by page. */
+    citationSpans?: { page: number; start: number; end: number }[];
+  } = {},
 ): ClaimExtractionResult {
   const maxClaims = options.maxClaims ?? DEFAULT_MAX_CLAIMS;
-  const sentences = segmentPages(pages);
+  const spans = options.citationSpans ?? [];
+  const sentences = segmentPages(
+    pages.map((page) => ({
+      ...page,
+      citations: [
+        ...(page.citations ?? []),
+        ...spans.filter((span) => span.page === page.page),
+      ],
+    })),
+  );
   const claims: ExtractedClaim[] = [];
   let truncated = false;
 
@@ -40,6 +53,7 @@ export function extractClaims(
       sentence.text,
       sentence.sectionKind,
       sentence.complete,
+      sentence.citationMarker,
     );
     if (!result.accepted) continue;
     if (claims.length >= maxClaims) {

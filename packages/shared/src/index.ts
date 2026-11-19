@@ -26,7 +26,19 @@ export type ApiErrorResponse = {
   };
 };
 
-export type ExtractedPdfPage = { page: number; text: string };
+/**
+ * Text set as superscript in the PDF (smaller glyphs on a raised baseline),
+ * detected from layout. `parts` are the separate text pieces as typeset,
+ * e.g. ["1", "\u2013", "3"] or ["5", "6"]; offsets index the page text.
+ */
+export type SuperscriptRun = { start: number; end: number; parts: string[] };
+
+export type ExtractedPdfPage = {
+  page: number;
+  text: string;
+  /** Superscript runs on this page; absent when layout was not analysed. */
+  superscripts?: SuperscriptRun[];
+};
 
 export type PdfExtractionWarning = {
   code: "EMPTY_PAGE";
@@ -118,13 +130,51 @@ export type InTextCitation = {
   id: string;
   /** Exact marker text, e.g. "[4-7]" or "(Smith et al., 2020)". */
   marker: string;
-  style: "numeric" | "author-year";
+  /** "superscript": numeric citations typeset as superscripts, detected from PDF layout. */
+  style: "numeric" | "author-year" | "superscript";
   page: number;
   /** Offsets into `extraction.pages[page - 1].text`. */
   location: { start: number; end: number };
   /** The extracted claim containing this marker, if any. */
   claimId: string | null;
   matches: CitationMatch[];
+};
+
+export type ConsistencyStatus = "consistent" | "inconsistent" | "not_checkable";
+
+/** Exact text from the uploaded paper; offsets index `extraction.pages[page - 1].text`. */
+export type PaperQuote = {
+  page: number;
+  start: number;
+  end: number;
+  text: string;
+};
+
+export type ConsistencyCheck = {
+  kind: "value_reported_elsewhere" | "ci_p_agreement" | "significance_wording";
+  status: ConsistencyStatus;
+  /** Plain-language description of what was compared and the outcome. */
+  detail: string;
+  quotes: PaperQuote[];
+};
+
+export type ClaimConsistency = {
+  claimId: string;
+  status: ConsistencyStatus;
+  checks: ConsistencyCheck[];
+};
+
+/**
+ * Checks of the paper's own findings against the rest of the same paper.
+ * Agreement does not show that the study was conducted as reported or that
+ * the data are genuine.
+ */
+export type InternalConsistency = {
+  results: ClaimConsistency[];
+  scope: "original_findings";
+  method: "rule-based";
+  version: string;
+  disclaimer: string;
 };
 
 export type ExtractCitationsResponse = ExtractClaimsResponse & {
@@ -144,6 +194,8 @@ export type ExtractCitationsResponse = ExtractClaimsResponse & {
     /** A matched citation links a claim to a reference entry; it does not show the source supports the claim. */
     evidenceStatus: "not_verified";
   };
+  /** Checks of the paper's own findings against its own methods, results, and tables. */
+  internalConsistency: InternalConsistency;
 };
 
 /** External scholarly services used for source retrieval. All are free and keyless. */

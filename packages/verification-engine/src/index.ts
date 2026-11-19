@@ -43,6 +43,15 @@ export {
   SYSTEM_PROMPT,
 } from "./prompt.ts";
 export { validateJudgement } from "./validate.ts";
+export {
+  CONSISTENCY_DISCLAIMER,
+  CONSISTENCY_VERSION,
+  checkInternalConsistency,
+  confidenceIntervals,
+  pValues,
+  significanceWording,
+  specificValues,
+} from "./consistency.ts";
 
 export const VERIFICATION_METHOD = "evidence-grounded-llm" as const;
 export const VERIFICATION_VERSION = "1.0.0";

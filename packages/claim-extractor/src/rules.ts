@@ -148,6 +148,8 @@ export function classifySentence(
   text: string,
   sectionKind: SectionKind,
   complete = true,
+  /** Set when a citation marker found from PDF layout (e.g. a superscript) lies in the sentence. */
+  citationMarker = false,
 ): Classification {
   if (
     sectionKind === "methods" ||
@@ -167,7 +169,11 @@ export function classifySentence(
     QUANTITY.test(text) && COMPARISON.test(text)
       ? ["quantified comparison"]
       : [];
-  const cited = hasCitation(text) && !CITATION_POINTER.test(text);
+  const textMarker = hasCitation(text);
+  const cited = (textMarker || citationMarker) && !CITATION_POINTER.test(text);
+  const citedSignal = textMarker
+    ? "citation marker"
+    : "superscript citation marker";
   const hedged = HEDGE.test(text) ? ["hedged language"] : [];
 
   if (
@@ -192,7 +198,7 @@ export function classifySentence(
       return {
         accepted: true,
         type: "cited_claim",
-        signals: ["citation marker", ...statistics, ...quantified, ...hedged],
+        signals: [citedSignal, ...statistics, ...quantified, ...hedged],
       };
     }
     return { accepted: false, reason: "background_without_citation" };
@@ -203,7 +209,7 @@ export function classifySentence(
     return {
       accepted: true,
       type: "cited_claim",
-      signals: ["citation marker", ...statistics, ...quantified, ...hedged],
+      signals: [citedSignal, ...statistics, ...quantified, ...hedged],
     };
   }
 
@@ -212,11 +218,7 @@ export function classifySentence(
     return {
       accepted: true,
       type: "reported_finding",
-      signals: [
-        ...findingSignals,
-        ...(cited ? ["citation marker"] : []),
-        ...hedged,
-      ],
+      signals: [...findingSignals, ...(cited ? [citedSignal] : []), ...hedged],
     };
   }
   return { accepted: false, reason: "no_claim_signal" };

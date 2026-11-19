@@ -51,6 +51,8 @@ Success `200`:
 
 The current parser returns page-level text. OCR is not available, and complex visual reading order still requires representative-document evaluation.
 
+Each `extraction.pages[]` entry also carries `superscripts`: text the PDF sets as superscript, detected from layout (glyph height at most 85% of the body text on a baseline raised by at least 15% of it, or small citation-like digits alone on the line directly below a body line). Each run is `{ "start", "end", "parts" }`, where offsets index that page's `text` and `parts` are the separately typeset pieces, e.g. `["1", "–", "3"]` or `["5", "6"]`. Page `text` itself is unchanged by this analysis.
+
 Error envelope:
 
 ```json
@@ -232,6 +234,7 @@ Field rules:
 - `references[].location` gives offsets into `extraction.pages[page - 1].text` only when the entry lies on one page and the slice reproduces `text`; otherwise it is `null`.
 - `references[].metadata` fields are read from that entry's own text. Missing or unclear fields are `[]` or `null`; no DOI, title, author, or year is ever inferred or fetched.
 - `inText[].marker` is the exact marker text. Supported forms: `[1]`, `[2, 3]`, `[4-7]` (hyphen or dash, ranges of at most 50 and ascending only), `(Smith et al., 2020)`, `(Lee and Park, 2019; Ng, 2021)`, `(Brown, 2020a, 2020b)`, and narrative `Smith et al. (2020)`.
+- `inText[].style` is `numeric`, `author-year`, or `superscript`. Superscript citations come from the page's `superscripts` runs, so `marker` is the flattened text as extracted (e.g. `"56"`), while `matches` follow the typeset pieces (`5` and `6`). Runs are skipped when they lie in the front matter (before the first Abstract/Introduction/Background heading, e.g. author affiliation marks), follow a unit or symbol that takes a power (`kg/m²`, `χ²`, `r²`, `10⁻³`), or contain anything other than digits, commas, and dashes.
 - `inText[].claimId` is the extracted claim whose text contains the marker, or `null`.
 - `matches[]` has one entry per cited item, de-duplicated within a marker:
   - `matched`: exactly one reference entry has that number, or that first-author surname (plus any second named author) and year.
@@ -244,6 +247,52 @@ Errors: all `POST /documents/claims` errors apply unchanged. Additionally:
 | Status | Code                         | Meaning                                                                        |
 | ------ | ---------------------------- | ------------------------------------------------------------------------------ |
 | 500    | `CITATION_EXTRACTION_FAILED` | Text and claim extraction succeeded but citation matching failed unexpectedly. |
+
+#### `internalConsistency` (all responses from `POST /documents/citations` onward)
+
+Checks of claims that report the paper's own findings (`type: "reported_finding"`) against the rest of the same paper. Deterministic; no model; nothing leaves the server.
+
+```json
+{
+  "internalConsistency": {
+    "results": [
+      {
+        "claimId": "claim-020",
+        "status": "consistent",
+        "checks": [
+          {
+            "kind": "ci_p_agreement",
+            "status": "consistent",
+            "detail": "The 95% CI (1.17 to 2.38) excludes 0, in line with p<0.001.",
+            "quotes": [
+              {
+                "page": 6,
+                "start": 0,
+                "end": 0,
+                "text": "95% CI: 1.17 to 2.38"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "scope": "original_findings",
+    "method": "rule-based",
+    "version": "1.0.0",
+    "disclaimer": "Internal consistency compares numbers and statistical statements within this paper only. It cannot show that the study was conducted as reported or that the data are genuine."
+  }
+}
+```
+
+(The check shown is real output for PMC7065031; offsets are omitted here and depend on the page text.)
+
+Checks:
+
+- `value_reported_elsewhere`: each specific value in the finding (decimals, percentages, `n=`; not significance thresholds such as 0.05, nor confidence levels such as "95% CI") is searched for elsewhere in the paper, outside the claim. Found: `consistent`, with up to three quotes. Not found: `not_checkable` (tables or figures may not be extractable); absence is never an inconsistency.
+- `ci_p_agreement`: a 95% CI immediately followed by its p-value must agree at the 0.05 level (the CI excludes 0, or 1 for ratio measures, exactly when p < 0.05). A p-value of exactly 0.05 is borderline and `not_checkable`. Intervals with a sign the PDF did not render legibly (for example "!" for a minus) are `not_checkable` and not interpreted.
+- `significance_wording`: "significant", "no significant", or "approached significance" must agree with the reported p-values and with any intervals that have no p-value of their own. Several results pointing different ways are `not_checkable`.
+
+`status` per claim is `inconsistent` if any check is, otherwise `consistent` if any check is, otherwise `not_checkable`. Quotes are exact text from the paper with page offsets.
 
 ### `POST /documents/evidence`
 

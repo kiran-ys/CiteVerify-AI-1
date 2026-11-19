@@ -7,33 +7,33 @@ Last inspected: 2026-11-19
 - Repository: `https://github.com/kiran-ys/CiteVerify-AI-1`
 - Active implementation branch: `feature/rag-verification`
 - Baseline commit: `d1f4ef4` (`Explain unreachable-server errors and document dev port clashes`)
-- Milestone 5 changes are uncommitted and awaiting owner review.
+- Milestone 5 is committed (`1f72c5e`). The PMC7065031 pipeline improvements below are uncommitted and awaiting owner review.
 - Application stack: Bun, Turborepo, TypeScript, React, Vite, Tailwind CSS, Hono, Prisma, SQLite
 
 ## Status summary
 
-| Area                 | Status                       | Evidence and limitation                                                                                                           |
-| -------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Monorepo scaffolding | Implemented and verified     | Apps and packages exist; install, lint, typecheck, test, and build pass.                                                          |
-| Responsive frontend  | Implemented and verified     | Dashboard, upload screen, result filtering, evidence drawer, and report preview are implemented in React.                         |
-| Demo labelling       | Implemented and verified     | Demo claims and verdicts remain visibly separate from live extraction and extracted claims.                                       |
-| API health route     | Implemented and verified     | `GET /api/health` returns `{ "status": "ok" }`.                                                                                   |
-| PDF upload           | Implemented and verified     | `POST /api/documents/extract` validates and parses one PDF in memory.                                                             |
-| Claim extraction     | Implemented (committed)      | `POST /api/documents/claims` returns unverified candidate claims with page, offsets, section, and context. Quality is unmeasured. |
-| Citation matching    | Implemented (committed)      | `POST /api/documents/citations` links in-text citations to the paper's own reference list; matches are not evidence.              |
-| Source retrieval     | Implemented (committed)      | `POST /api/documents/evidence` resolves cited references and retrieves accessible text; opt-in; never a verdict.                  |
-| Claim verification   | Implemented, awaiting review | `POST /api/documents/verification` returns evidence-grounded verdicts from a local Ollama model; accuracy unmeasured.             |
-| Worker               | Placeholder                  | It logs `[worker] started`; no job consumption exists.                                                                            |
-| Document parser      | Implemented and verified     | `unpdf` 2.2.1 returns full text, page text, page count, warnings, and parser metadata.                                            |
-| Claim extractor      | Implemented and tested       | `packages/claim-extractor` rule-based v1.0.0; deterministic and offline; no LLM or paid API.                                      |
-| Citation engine      | Implemented and tested       | `packages/citation-engine` rule-based v1.0.0; reference list, metadata, citation detection, and matching; offline, no lookups.    |
-| Verification engine  | Implemented and tested       | `packages/verification-engine` v1.0.0; Ollama over HTTP; validated JSON verdicts; rule-based Unable to verify; no confidence.     |
-| Evidence retrieval   | Implemented and tested       | `packages/evidence-retrieval` v1.0.0; Crossref, OpenAlex, Europe PMC, PubMed Central; free and keyless; term-overlap passages.    |
-| Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                          |
-| Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                          |
-| Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                         |
-| Automated tests      | Implemented and passing      | 172 Bun tests pass offline (evidence 36, claims 31, verification 28, API 28, citations 25, web 20, parser 4); 1 opt-in live test. |
-| Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                |
+| Area                 | Status                       | Evidence and limitation                                                                                                                    |
+| -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Monorepo scaffolding | Implemented and verified     | Apps and packages exist; install, lint, typecheck, test, and build pass.                                                                   |
+| Responsive frontend  | Implemented and verified     | Dashboard, upload screen, result filtering, evidence drawer, and report preview are implemented in React.                                  |
+| Demo labelling       | Implemented and verified     | Demo claims and verdicts remain visibly separate from live extraction and extracted claims.                                                |
+| API health route     | Implemented and verified     | `GET /api/health` returns `{ "status": "ok" }`.                                                                                            |
+| PDF upload           | Implemented and verified     | `POST /api/documents/extract` validates and parses one PDF in memory.                                                                      |
+| Claim extraction     | Implemented (committed)      | `POST /api/documents/claims` returns unverified candidate claims with page, offsets, section, and context. Quality is unmeasured.          |
+| Citation matching    | Implemented (committed)      | `POST /api/documents/citations` links in-text citations to the paper's own reference list; matches are not evidence.                       |
+| Source retrieval     | Implemented (committed)      | `POST /api/documents/evidence` resolves cited references and retrieves accessible text; opt-in; never a verdict.                           |
+| Claim verification   | Implemented, awaiting review | `POST /api/documents/verification` returns evidence-grounded verdicts from a local Ollama model; accuracy unmeasured.                      |
+| Worker               | Placeholder                  | It logs `[worker] started`; no job consumption exists.                                                                                     |
+| Document parser      | Implemented and verified     | `unpdf` 2.2.1 returns full text, page text, page count, warnings, and parser metadata.                                                     |
+| Claim extractor      | Implemented and tested       | `packages/claim-extractor` rule-based v1.0.0; deterministic and offline; no LLM or paid API.                                               |
+| Citation engine      | Implemented and tested       | `packages/citation-engine` rule-based v1.0.0; reference list, metadata, citation detection, and matching; offline, no lookups.             |
+| Verification engine  | Implemented and tested       | `packages/verification-engine` v1.0.0; Ollama over HTTP; validated JSON verdicts; rule-based Unable to verify; no confidence.              |
+| Evidence retrieval   | Implemented and tested       | `packages/evidence-retrieval` v1.0.0; Crossref, OpenAlex, Europe PMC, PubMed Central; free and keyless; term-overlap passages.             |
+| Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                                   |
+| Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                                   |
+| Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                                  |
+| Automated tests      | Implemented and passing      | 200 Bun tests pass (verification 39, evidence 36, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
+| Deployment           | Planned                      | No CI, container, or hosting configuration exists.                                                                                         |
 
 ## Completed milestones
 
@@ -117,6 +117,41 @@ Run on 2026-11-19 with Ollama 0.22.1 and `llama3.2` (3.2B, Q4_K_M) on an Apple M
 - Rule decisions: 17 claims had no relevant passage retrieved for any cited reference; 8 report the paper's own result and cite no source.
 - Reviewer reading of the 4 model verdicts: claim-005 is reasonable; claim-011 is reasonable but cites weaker passages as "supports"; claim-004 arguably should be Supported (the passage names P value, prior probability, and power); claim-014's explanation overlooks a passage showing inadequate reporting. These are single-paper observations, not a measured accuracy.
 
+### Pipeline improvements from PMC7065031 (uncommitted, awaiting review)
+
+The owner's real test paper, PMC7065031 (the 16-page DREW study author manuscript, "The effect of different doses of aerobic exercise training on endothelial function in postmenopausal women with elevated blood pressure"), matched no citations.
+
+Diagnosis: the journal sets citations as superscript numbers. Text extraction flattens them into digits glued to words (`factors1–3`, `menopause.56` for 5,6, `hypertension.141617` for 14,16,17), which the bracket and author-year detectors cannot see and which cannot be split reliably from text alone. As a result no citation markers were found, the Introduction's cited sentences were discarded as uncited background, and every remaining claim was typed as the paper's own finding.
+
+Changes:
+
+1. `document-parser` builds page text from pdf.js text items (byte-identical to the previous text for both real test PDFs) and reports `superscripts` per page from layout: smaller glyphs on a raised baseline, plus small citation digits wrapped alone onto the next line. The typeset pieces keep "5" and "6" apart.
+2. `citation-engine` adds `superscript` citations from those runs, skipping front-matter affiliation marks, unit and symbol exponents (`kg/m²`, `χ²`), and anything not made of digits, commas, and dashes.
+3. `claim-extractor` takes citation positions: sentences carrying them are typed as citing external papers, sentences end after a superscript that follows a full stop, and a marker never starts a sentence.
+4. `verification-engine` adds a deterministic internal-consistency analysis of the paper's own findings (values found elsewhere in the paper, CI vs p-value, significance wording vs statistics), with exact quotes and a disclaimer that it is not proof the data are genuine.
+5. The Upload screen shows each claim's origin and three separate sections: Citation matching, External evidence verification, and Internal consistency.
+
+Before and after on PMC7065031 (same PDF, same services, `llama3.2`):
+
+| Measure                           | Before                | After                                                                           |
+| --------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| Reference-list entries            | 35 (numbered)         | 35 (numbered)                                                                   |
+| In-text citation markers          | 0                     | 36 (all superscript)                                                            |
+| Cited numbers matched             | 0                     | 57 of 57                                                                        |
+| Non-citation superscripts skipped | –                     | 7 (4 affiliation marks, 2 `kg/m²`, 1 `χ²`)                                      |
+| Claims                            | 24, all "own finding" | 36: 17 citing external papers, 19 own findings                                  |
+| Sources looked up                 | 0                     | 26 (25 attempted, 1 over the per-request limit)                                 |
+| Sources resolved                  | 0                     | 24 of 25 (reference 2 unresolved)                                               |
+| Access                            | –                     | 18 abstract only, 6 metadata only, 2 unavailable, 0 full text                   |
+| Evidence passages                 | 0                     | 30                                                                              |
+| Model verdicts                    | 0                     | 11: 2 Supported, 8 Partially supported, 1 Insufficient evidence                 |
+| Unable to verify (by rule)        | 24                    | 25 (19 own findings without citations, 6 cited claims without a usable passage) |
+| Internal consistency              | –                     | 19 own findings: 12 consistent, 0 inconsistent, 7 not checkable                 |
+
+Europe PMC timed out on 12 lookups during that run, so some "metadata only" results are availability unknown. The bracket-citation paper Ioannidis (2005) is unchanged: 30 markers, 46 matched, 1 ambiguous, 29 claims.
+
+Reviewer reading of the model verdicts: several are reasonable (claims 005, 008, 023), but some explanations are muddled (claim 024) and claim 022 was judged "Insufficient evidence" although passage E6 states no FMD improvement in post-menopausal women, which bears directly on the claim. These remain unmeasured judgements by a 3B model.
+
 ## Next milestone
 
 Owner review of verification, ideally on the DREW paper. Then a labelled evaluation set to measure claim, citation, retrieval, and verdict accuracy; a comparison of larger local models; better passage selection; and Phase 2 durable jobs so long runs move to the worker.
@@ -152,6 +187,14 @@ Investigated 2026-11-19 after a "Failed to fetch" report:
 - Source retrieval takes about 60 seconds; the Vite proxy and the API (`idleTimeout: 120`) both allow it. Verified through `localhost:5173` with the genuine Ioannidis (2005) paper: 24 of 25 looked-up references resolved and 6 abstract passages returned (Europe PMC timed out 10 times, so full-text availability for those sources is unknown).
 
 ## Known limitations and deferred work
+
+Superscript citations and internal consistency:
+
+- Superscript detection relies on PDF layout. Scanned PDFs, PDFs that set citations at body size, or unusual typesetting will not be detected; text-only pages keep the previous behaviour.
+- Front-matter exclusion depends on an Abstract, Introduction, Background, Summary, or Keywords heading; without one, affiliation marks could be read as citations.
+- This PDF renders some minus signs as "!", so intervals containing them are not interpreted.
+- Internal consistency finds agreement and contradictions within the text only. It cannot detect fabricated but self-consistent numbers, check tables that were not extracted, or confirm that the study was conducted as described.
+- A value missing from the rest of the paper is reported as not checkable, never as an inconsistency.
 
 Claim verification:
 

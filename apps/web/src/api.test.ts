@@ -204,6 +204,13 @@ const citationsSuccess: ExtractCitationsResponse = {
     truncated: false,
     evidenceStatus: "not_verified",
   },
+  internalConsistency: {
+    results: [],
+    scope: "original_findings",
+    method: "rule-based",
+    version: "1.0.0",
+    disclaimer: "Internal consistency compares numbers within this paper only.",
+  },
 };
 
 describe("extractPdfCitations", () => {

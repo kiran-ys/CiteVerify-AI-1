@@ -655,6 +655,7 @@ function Upload() {
           <ExtractedClaims
             claims={result.claims}
             citations={result.citations}
+            consistency={result.internalConsistency}
             retrieval={{
               evidence: "evidence" in result ? result.evidence : undefined,
               retrieving,
