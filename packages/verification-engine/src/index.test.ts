@@ -7,6 +7,8 @@ import type {
 } from "@citeverify/shared";
 import {
   buildUserPrompt,
+  groqJudge,
+  groqStatus,
   type Judge,
   type JudgeRequest,
   ollamaJudge,
@@ -297,9 +299,7 @@ describe("Unable to verify without the model", () => {
       decidedBy: "model",
       explanation: "Related but not decisive.",
     });
-    expect(item?.reason).toContain(
-      "not sufficient to establish or refute it",
-    );
+    expect(item?.reason).toContain("not sufficient to establish or refute it");
     expect(item?.evidence[0]?.relation).toBe("context");
   });
 
@@ -752,31 +752,47 @@ describe("speed and failure accounting", () => {
 
 describe("verdicts derived from the claim's parts", async () => {
   const { verdictFromParts } = await import("./validate.ts");
-  const part = (p: string, status: string, evidence = "E1") => ({ part: p, status, evidence: status === "not_reported" ? "" : evidence });
+  const part = (p: string, status: string, evidence = "E1") => ({
+    part: p,
+    status,
+    evidence: status === "not_reported" ? "" : evidence,
+  });
 
   test("Supported only when every stated part, including the finding, is supported", () => {
-    expect(verdictFromParts([
-      { part: "population", status: "supported", evidence: "E1" },
-      { part: "outcome", status: "supported", evidence: "E1" },
-      { part: "finding", status: "supported", evidence: "E2" },
-    ])).toBe("Supported");
+    expect(
+      verdictFromParts([
+        { part: "population", status: "supported", evidence: "E1" },
+        { part: "outcome", status: "supported", evidence: "E1" },
+        { part: "finding", status: "supported", evidence: "E2" },
+      ]),
+    ).toBe("Supported");
     // Leaving out the finding never yields Supported.
-    expect(verdictFromParts([{ part: "population", status: "supported", evidence: "E1" }])).toBe("Partially supported");
+    expect(
+      verdictFromParts([
+        { part: "population", status: "supported", evidence: "E1" },
+      ]),
+    ).toBe("Partially supported");
   });
 
   test("Partially supported, Contradicted, and insufficient follow from the parts", () => {
-    expect(verdictFromParts([
-      { part: "population", status: "supported", evidence: "E1" },
-      { part: "finding", status: "not_reported", evidence: null },
-    ])).toBe("Partially supported");
-    expect(verdictFromParts([
-      { part: "finding", status: "contradicted", evidence: "E2" },
-      { part: "outcome", status: "not_reported", evidence: null },
-    ])).toBe("Contradicted");
-    expect(verdictFromParts([
-      { part: "population", status: "not_reported", evidence: null },
-      { part: "finding", status: "not_reported", evidence: null },
-    ])).toBe("Insufficient evidence");
+    expect(
+      verdictFromParts([
+        { part: "population", status: "supported", evidence: "E1" },
+        { part: "finding", status: "not_reported", evidence: null },
+      ]),
+    ).toBe("Partially supported");
+    expect(
+      verdictFromParts([
+        { part: "finding", status: "contradicted", evidence: "E2" },
+        { part: "outcome", status: "not_reported", evidence: null },
+      ]),
+    ).toBe("Contradicted");
+    expect(
+      verdictFromParts([
+        { part: "population", status: "not_reported", evidence: null },
+        { part: "finding", status: "not_reported", evidence: null },
+      ]),
+    ).toBe("Insufficient evidence");
   });
 
   test("an overconfident overall label is overridden by the model's own part assessment", async () => {
@@ -787,25 +803,43 @@ describe("verdicts derived from the claim's parts", async () => {
     });
     const [item] = (await verifyClaims(input(), options(judge))).results;
     expect(item?.verdict).toBe("Partially supported");
-    expect(item?.reason).toContain("Claim parts: population supported (E1); finding not reported.");
-    expect(item?.reason).toContain('The model\'s own overall label was "Supported"');
+    expect(item?.reason).toContain(
+      "Claim parts: population supported (E1); finding not reported.",
+    );
+    expect(item?.reason).toContain(
+      'The model\'s own overall label was "Supported"',
+    );
     expect(item?.evidence[0]?.relation).toBe("supports");
   });
 
   test("no supported part gives Unable to verify with cause insufficient_evidence", async () => {
     const { judge } = fakeJudge({
-      parts: [part("population", "not_reported"), part("finding", "not_reported")],
+      parts: [
+        part("population", "not_reported"),
+        part("finding", "not_reported"),
+      ],
       verdict: "Insufficient evidence",
       explanation: "Background only.",
     });
     const [item] = (await verifyClaims(input(), options(judge))).results;
-    expect(item).toMatchObject({ verdict: "Unable to verify", decidedBy: "model", unableCause: "insufficient_evidence" });
+    expect(item).toMatchObject({
+      verdict: "Unable to verify",
+      decidedBy: "model",
+      unableCause: "insufficient_evidence",
+    });
   });
 
   test("a supported part must cite a provided passage", async () => {
-    const { judge } = fakeJudge({ parts: [part("finding", "supported", "E9")], verdict: "Supported", explanation: "x" });
+    const { judge } = fakeJudge({
+      parts: [part("finding", "supported", "E9")],
+      verdict: "Supported",
+      explanation: "x",
+    });
     const [item] = (await verifyClaims(input(), options(judge))).results;
-    expect(item).toMatchObject({ verdict: "Unable to verify", unableCause: "invalid_output" });
+    expect(item).toMatchObject({
+      verdict: "Unable to verify",
+      unableCause: "invalid_output",
+    });
     expect(item?.reason).toContain("cited evidence E9, which was not provided");
   });
 });
@@ -834,7 +868,10 @@ describe("claim-part citations", () => {
       answer([{ part: "finding", status: "supported", evidence: "E1, E9" }]),
       ids,
     );
-    expect(out).toEqual({ ok: false, problem: "the model cited evidence E9, which was not provided" });
+    expect(out).toEqual({
+      ok: false,
+      problem: "the model cited evidence E9, which was not provided",
+    });
   });
 
   test("an uncited supported or contradicted part counts as not reported", () => {
@@ -855,5 +892,87 @@ describe("claim-part citations", () => {
       "not_reported",
       "not_reported",
     ]);
+  });
+});
+
+describe("Groq hosted judge", () => {
+  const request = { system: "s", user: "u", schema: { type: "object" } };
+  const ok = (content: string) =>
+    Response.json({ choices: [{ message: { content } }] });
+
+  test("retries after a rate limit, honouring retry-after", async () => {
+    const waits: number[] = [];
+    let n = 0;
+    const judge = groqJudge({
+      apiKey: "k",
+      model: "m",
+      sleep: async (ms) => {
+        waits.push(ms);
+      },
+      fetch: async () =>
+        ++n === 1
+          ? new Response("slow down", {
+              status: 429,
+              headers: { "retry-after": "3" },
+            })
+          : ok('{"verdict":"Supported"}'),
+    });
+    expect(await judge(request)).toEqual({
+      ok: true,
+      content: '{"verdict":"Supported"}',
+    });
+    expect(waits).toEqual([3000]);
+  });
+
+  test("gives up with a clear reason when the wait is too long", async () => {
+    const judge = groqJudge({
+      apiKey: "k",
+      model: "m",
+      sleep: async () => {},
+      fetch: async () =>
+        new Response("", { status: 429, headers: { "retry-after": "120" } }),
+    });
+    expect(await judge(request)).toEqual({
+      ok: false,
+      kind: "error",
+      reason:
+        "The hosted model's free rate limit was reached; try again in about 120 s",
+    });
+  });
+
+  test("reports a rejected key without echoing it, and a timeout as a timeout", async () => {
+    const rejected = groqJudge({
+      apiKey: "secret-key",
+      model: "m",
+      fetch: async () => new Response("bad key secret-key", { status: 401 }),
+    });
+    const answer = await rejected(request);
+    expect(answer).toMatchObject({ ok: false, kind: "error" });
+    expect(JSON.stringify(answer)).not.toContain("secret-key");
+
+    const slow = groqJudge({
+      apiKey: "k",
+      model: "m",
+      timeoutMs: 5,
+      fetch: (_url, init) =>
+        new Promise((_resolve, reject) =>
+          init?.signal?.addEventListener("abort", () =>
+            reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
+          ),
+        ),
+    });
+    expect(await slow(request)).toMatchObject({ ok: false, kind: "timeout" });
+  });
+
+  test("status needs a key and the model to be listed", async () => {
+    expect((await groqStatus({ apiKey: "", model: "m" })).reason).toContain(
+      "GROQ_API_KEY is not set",
+    );
+    const status = await groqStatus({
+      apiKey: "k",
+      model: "m",
+      fetch: async () => Response.json({ data: [{ id: "other" }] }),
+    });
+    expect(status).toMatchObject({ available: true, modelInstalled: false });
   });
 });

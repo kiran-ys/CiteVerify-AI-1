@@ -472,7 +472,7 @@ function Upload({
     setVerifyError("");
   };
   // Report model availability before upload so a public demo never implies
-  // that AI verification is ready when the free host cannot run Ollama.
+  // that AI verification is ready when no model is configured or reachable.
   useEffect(() => {
     getVerificationStatus().then(setModelStatus);
   }, []);
@@ -667,11 +667,10 @@ function Upload({
           <div className="error" role="status">
             <Icon name="alert" />
             <span>
-              <b>
-                AI verification is temporarily unavailable on this free server.
-              </b>{" "}
-              PDF extraction, claim extraction, citation matching, and source
-              retrieval are still available. No AI verdict will be guessed.
+              <b>AI verification is currently unavailable.</b>{" "}
+              {modelStatus.reason} PDF extraction, claim extraction, citation
+              matching, and source retrieval are still available. No AI verdict
+              will be guessed.
             </span>
           </div>
         )}

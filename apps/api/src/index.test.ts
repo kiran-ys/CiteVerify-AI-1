@@ -594,6 +594,7 @@ describe("verification endpoints", async () => {
     ).json()) as VerificationStatusResponse;
     expect(body).toEqual({
       available: false,
+      provider: "ollama",
       host: "http://ollama.test",
       model: "llama3.2",
       modelInstalled: false,
@@ -646,6 +647,87 @@ describe("verification endpoints", async () => {
       reviewStatus: "requires_human_review",
       modelAvailable: true,
     });
+  });
+
+  function groq(answer: (user: string) => object, key = "test-key") {
+    const calls: { url: string; auth: string | null; body: string }[] = [];
+    configureVerification({
+      host: "http://ollama.test",
+      model: "llama3.2",
+      provider: "groq",
+      groq: {
+        apiKey: key,
+        model: "llama-3.3-70b-versatile",
+        sleep: async () => {},
+        fetch: async (input: string, init?: RequestInit) => {
+          const headers = new Headers(init?.headers);
+          calls.push({
+            url: input,
+            auth: headers.get("authorization"),
+            body: String(init?.body ?? ""),
+          });
+          if (input.endsWith("/models"))
+            return Response.json({ data: [{ id: "llama-3.3-70b-versatile" }] });
+          const body = JSON.parse(String(init?.body));
+          return Response.json({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify(answer(body.messages[1].content)),
+                },
+              },
+            ],
+          });
+        },
+      },
+    });
+    return calls;
+  }
+
+  test("uses the hosted Groq model when configured, sending no PDF", async () => {
+    scholarlyServices();
+    const calls = groq(() => ({
+      verdict: "Supported",
+      evidence: [{ id: "E1", relation: "supports" }],
+      explanation: "The source states this directly.",
+    }));
+    const status = (await (
+      await app.request("http://localhost/api/verification/status")
+    ).json()) as VerificationStatusResponse;
+    expect(status).toMatchObject({
+      available: true,
+      provider: "groq",
+      model: "llama-3.3-70b-versatile",
+    });
+    expect(JSON.stringify(status)).not.toContain("test-key");
+
+    const body = await verify();
+    const cited = body.verification.results.find(
+      (r) => r.verdict === "Supported",
+    );
+    expect(cited?.model).toMatchObject({
+      provider: "groq",
+      name: "llama-3.3-70b-versatile",
+    });
+    const chats = calls.filter((c) => c.url.endsWith("/chat/completions"));
+    expect(chats).toHaveLength(1);
+    expect(chats[0]?.auth).toBe("Bearer test-key");
+    expect(chats[0]?.body).not.toContain("%PDF");
+    expect(JSON.stringify(body)).not.toContain("test-key");
+  });
+
+  test("without a Groq key every claim is Unable to verify with the reason", async () => {
+    scholarlyServices();
+    groq(() => ({}), "");
+    const body = await verify();
+    expect(body.verification.modelAvailable).toBe(false);
+    for (const result of body.verification.results) {
+      expect(result).toMatchObject({
+        verdict: "Unable to verify",
+        unableCause: "model_unavailable",
+      });
+      expect(result.reason).toContain("GROQ_API_KEY is not set");
+    }
   });
 
   test("returns Unable to verify with the reason when Ollama is not running", async () => {

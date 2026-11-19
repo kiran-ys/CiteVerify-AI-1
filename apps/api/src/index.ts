@@ -11,7 +11,11 @@ import {
 import {
   checkInternalConsistency,
   DEFAULT_OLLAMA_HOST,
+  DEFAULT_GROQ_MODEL,
   DEFAULT_OLLAMA_MODEL,
+  type GroqConfig,
+  groqJudge,
+  groqStatus,
   type OllamaConfig,
   ollamaJudge,
   ollamaStatus,
@@ -32,6 +36,7 @@ import {
   type ExtractDocumentResponse,
   type ExtractEvidenceResponse,
   type PdfExtractionErrorCode,
+  type VerificationProvider,
   type VerificationStatusResponse,
   type VerifyClaimsResponse,
 } from "@citeverify/shared";
@@ -317,27 +322,69 @@ app.post("/documents/evidence", async (c) => {
 });
 
 /**
- * Local model settings. The model runs in Ollama on the operator's machine;
- * prompts never leave it. Tests replace fetch.
+ * Model settings. Locally the model runs in Ollama and prompts stay on the
+ * machine. When GROQ_API_KEY is set (the public server, which cannot run
+ * Ollama) claims and retrieved public passages go to Groq's hosted model; the
+ * uploaded PDF is never sent. VERIFIER_PROVIDER=ollama|groq overrides. Tests
+ * replace fetch.
  */
-type VerificationConfig = OllamaConfig & { timeBudgetMs?: number };
+type VerificationConfig = OllamaConfig & {
+  timeBudgetMs?: number;
+  provider?: VerificationProvider;
+  groq?: GroqConfig;
+};
+const groqKey = process.env.GROQ_API_KEY ?? "";
 let verificationConfig: VerificationConfig = {
   host: process.env.OLLAMA_HOST || DEFAULT_OLLAMA_HOST,
   model: process.env.OLLAMA_MODEL || DEFAULT_OLLAMA_MODEL,
+  provider:
+    process.env.VERIFIER_PROVIDER === "ollama" ||
+    process.env.VERIFIER_PROVIDER === "groq"
+      ? process.env.VERIFIER_PROVIDER
+      : groqKey
+        ? "groq"
+        : "ollama",
+  groq: {
+    apiKey: groqKey,
+    model: process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL,
+  },
 };
 
 export function configureVerification(config: VerificationConfig): void {
   verificationConfig = config;
 }
 
+/** The configured model, its availability, and a judge when usable. */
+async function activeModel() {
+  const config = verificationConfig;
+  if (config.provider === "groq" && config.groq) {
+    const status = await groqStatus(config.groq);
+    return {
+      provider: "groq" as const,
+      model: config.groq.model,
+      host: "https://api.groq.com",
+      status,
+      judge: groqJudge(config.groq),
+    };
+  }
+  return {
+    provider: "ollama" as const,
+    model: config.model,
+    host: config.host,
+    status: await ollamaStatus(config),
+    judge: ollamaJudge(config),
+  };
+}
+
 app.get("/verification/status", async (c) => {
-  const status = await ollamaStatus(verificationConfig);
+  const active = await activeModel();
   const response: VerificationStatusResponse = {
-    available: status.available && status.modelInstalled,
-    host: verificationConfig.host,
-    model: verificationConfig.model,
-    modelInstalled: status.modelInstalled,
-    reason: status.reason,
+    available: active.status.available && active.status.modelInstalled,
+    provider: active.provider,
+    host: active.host,
+    model: active.model,
+    modelInstalled: active.status.modelInstalled,
+    reason: active.status.reason,
   };
   return c.json(response, 200);
 });
@@ -352,7 +399,8 @@ app.post("/documents/verification", async (c) => {
   const withEvidence = await addEvidence(c, withCitations.result);
   if (!withEvidence.ok) return withEvidence.response;
 
-  const status = await ollamaStatus(verificationConfig);
+  const active = await activeModel();
+  const status = active.status;
   const usable = status.available && status.modelInstalled;
   let verification: VerifyClaimsResponse["verification"];
   try {
@@ -364,8 +412,9 @@ app.post("/documents/verification", async (c) => {
         sources: withEvidence.result.evidence.sources,
       },
       {
-        judge: usable ? ollamaJudge(verificationConfig) : null,
-        modelName: usable ? verificationConfig.model : null,
+        judge: usable ? active.judge : null,
+        modelName: usable ? active.model : null,
+        provider: active.provider,
         unavailableReason: status.reason,
         timeBudgetMs: verificationConfig.timeBudgetMs,
       },

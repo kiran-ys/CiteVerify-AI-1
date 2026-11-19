@@ -257,9 +257,10 @@ export async function getVerificationStatus(
   }
   return {
     available: false,
+    provider: "ollama",
     host: "",
     model: "",
     modelInstalled: false,
-    reason: "The CiteVerify API could not report the local model's status.",
+    reason: "The CiteVerify API could not report the AI model's status.",
   };
 }

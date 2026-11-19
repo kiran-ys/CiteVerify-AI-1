@@ -58,7 +58,7 @@ export function ClaimEvidence({
           {!sources && (
             <p className="claim-evidence-note">
               Cited sources have not been retrieved yet. Use "Retrieve cited
-              sources" or "Verify claims with local model" above.
+              sources" or "Verify claims with AI" above.
             </p>
           )}
           {sources &&

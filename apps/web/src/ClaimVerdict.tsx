@@ -117,7 +117,7 @@ export function ClaimVerdict({ result }: { result: ClaimVerification }) {
       )}
       <p className="claim-verdict-meta">
         {result.model
-          ? `${result.model.name} via Ollama · prompt ${result.model.promptVersion} · evidence: ${scopeLabel[result.evidenceScope]}`
+          ? `${result.model.name} via ${result.model.provider === "groq" ? "Groq (hosted)" : "Ollama (local)"} · prompt ${result.model.promptVersion} · evidence: ${scopeLabel[result.evidenceScope]}`
           : "Decided by rule, without a model"}
       </p>
     </section>
@@ -162,23 +162,32 @@ export function VerificationBar({
         </p>
       ) : (
         <p>
-          Compare each claim with its retrieved passages using a local model in
-          Ollama
+          Compare each claim with its retrieved passages using{" "}
+          {status?.provider === "groq"
+            ? "a hosted model on Groq"
+            : "a local model in Ollama"}
           {status?.model ? ` (${status.model})` : ""}. This also retrieves the
           cited sources, and can take a few minutes.
         </p>
       )}
+      {status?.provider === "groq" && (
+        <p className="verification-bar-note">
+          Privacy: each claim, its surrounding sentences, and the retrieved
+          public passages are sent to Groq for this step. The PDF itself is not
+          sent.
+        </p>
+      )}
       {status && !status.available && (
         <p className="verification-bar-error" role="alert">
-          Local model unavailable: {status.reason} Until it is available, every
+          AI model unavailable: {status.reason} Until it is available, every
           claim will show "Unable to verify" with this reason; no verdict is
           guessed.
         </p>
       )}
       {verification && !verification.modelAvailable && (
         <p className="verification-bar-error" role="alert">
-          The last run had no local model, so no claim was judged. Each claim
-          shows the reason.
+          The last run had no AI model available, so no claim was judged. Each
+          claim shows the reason.
         </p>
       )}
       <p className="verification-bar-note">
@@ -195,7 +204,7 @@ export function VerificationBar({
           ? "Verifying claims…"
           : verification
             ? "Verify again"
-            : "Verify claims with local model"}
+            : "Verify claims with AI"}
       </button>
     </div>
   );

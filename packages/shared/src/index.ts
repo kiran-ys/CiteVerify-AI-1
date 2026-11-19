@@ -341,7 +341,7 @@ export type VerificationEvidence = EvidencePassage & {
 };
 
 export type VerificationModel = {
-  provider: "ollama";
+  provider: VerificationProvider;
   name: string;
   promptVersion: string;
 };
@@ -374,8 +374,12 @@ export type ClaimVerification = {
   model: VerificationModel | null;
 };
 
+export type VerificationProvider = "ollama" | "groq";
+
 export type VerificationStatusResponse = {
   available: boolean;
+  /** "groq" means claims and retrieved passages are sent to a hosted model. */
+  provider: VerificationProvider;
   host: string;
   model: string;
   modelInstalled: boolean;

@@ -32,7 +32,7 @@ Last inspected: 2026-11-19
 | Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                                   |
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                                   |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                                  |
-| Automated tests      | Implemented and passing      | 232 Bun tests pass (verification 51, evidence 47, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
+| Automated tests      | Implemented and passing      | 238 Bun tests pass (verification 55, evidence 47, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
 | Deployment           | Free Render image verified   | One Docker image serves the dashboard and API on one HTTPS origin; public deployment is pending. Ollama is not included.                    |
 
 ## Completed milestones
@@ -171,6 +171,14 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 - The processed paper is now held above the pages and the Upload page stays mounted, so switching between Dashboard, Verification Results, Reports and Upload Paper keeps the file, results, and any running request. Results (never the PDF) are also kept in `sessionStorage` for the browser tab; after a reload they are restored, and the same PDF must be chosen again to retrieve sources or verify. "Upload another paper" clears both.
 - "Download PDF report" (Upload Paper and Reports pages; "Export report" now opens Reports) writes an A4 PDF in the browser from the uploaded paper's own results: file name, first line of the PDF text (labelled as such), page count and extraction summary, AI verification status ("Not verified" when it was not run), claims with their citation matches and any verdicts, citation-matching counts and reference list, retrieved passages with source links, and internal-consistency checks. No dependency added; demo data is never included.
 - Tests cover session save/restore/clear (including blocked storage) and report content and PDF structure. Page switching itself is not covered by an automated UI test; a generated 5-page report for the Ioannidis paper was opened with pdf.js and rendered.
+
+### Hosted AI verification with Groq (uncommitted, not yet tested live)
+
+- Approved by the owner (2026-11-20): when the server sets `GROQ_API_KEY`, verification uses Groq's free hosted API (default `llama-3.3-70b-versatile`) instead of Ollama; otherwise the local Ollama default (`llama3.2`) is unchanged. `VERIFIER_PROVIDER=ollama|groq` overrides. The same prompt, validation, and evidence rules apply; only the claim, its context, and retrieved public passages are sent, never the PDF. The UI names the provider and shows a privacy note when Groq is used.
+- Rate limits: Groq 429/5xx answers are retried up to twice when the requested wait is at most 15 s; otherwise the claim is Unable to verify with the reason. A missing or rejected key makes every claim Unable to verify with that reason. The key never appears in responses or logs.
+- `render.yaml` declares `GROQ_API_KEY` (set in the Render dashboard) and `GROQ_MODEL`. `bun run eval:verification -- --provider groq` evaluates with Groq.
+- Checked 2026-11-20: unit and API tests cover Groq answers, 429 retry with retry-after, too-long waits, rejected keys (never echoed), timeouts, and a missing key. In a browser against the production build with no key: upload, page switching, reload restore, and PDF report download still work, and verification showed 21 claims as Unable to verify with the reason "GROQ_API_KEY is not set" plus the Groq privacy note.
+- Not yet done: no real Groq call has been made (the key was not available to this session), so verdict quality, latency, and free-tier limits on Groq are unmeasured.
 
 ## Next milestone
 

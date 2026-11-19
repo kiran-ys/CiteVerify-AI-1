@@ -7,6 +7,7 @@
  *   bun run eval:verification                 # all labelled claims (slow)
  *
  *   bun run eval:verification -- --ids a,b --models llama3.2,qwen2.5:7b
+ *   bun run eval:verification -- --provider groq    # needs GROQ_API_KEY
  *
  * With --claims, only those claims' cited sources are retrieved and only
  * those claims are sent to the model. Needs the PDFs in tmp/ (git-ignored),
@@ -20,7 +21,10 @@ import { retrieveEvidence } from "@citeverify/evidence-retrieval";
 import type { ClaimVerification } from "@citeverify/shared";
 import {
   DEFAULT_OLLAMA_HOST,
+  DEFAULT_GROQ_MODEL,
   DEFAULT_OLLAMA_MODEL,
+  groqJudge,
+  groqStatus,
   ollamaJudge,
   ollamaStatus,
   verifyClaims,
@@ -60,6 +64,14 @@ const models =
   modelsArg > 0
     ? (process.argv[modelsArg + 1] ?? "").split(",").filter(Boolean)
     : [process.env.OLLAMA_MODEL || DEFAULT_OLLAMA_MODEL];
+// --provider groq uses Groq's hosted model (needs GROQ_API_KEY in the environment).
+const providerArg = process.argv.indexOf("--provider");
+const provider =
+  providerArg > 0 && process.argv[providerArg + 1] === "groq"
+    ? "groq"
+    : "ollama";
+if (provider === "groq" && modelsArg < 0)
+  models.splice(0, 1, process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL);
 const root = new URL("../../../", import.meta.url).pathname;
 const dataset = (await Bun.file(
   `${root}eval/verification-dataset.json`,
@@ -117,10 +129,13 @@ for (const paper of dataset.papers) {
 
   for (const model of models) {
     const ollama = { ...ollamaHost, model };
-    const status = await ollamaStatus(ollama);
+    const groq = { apiKey: process.env.GROQ_API_KEY ?? "", model };
+    const status =
+      provider === "groq" ? await groqStatus(groq) : await ollamaStatus(ollama);
     const usable = status.available && status.modelInstalled;
     const perClaim = new Map<string, number>();
-    const baseJudge = ollamaJudge(ollama);
+    const baseJudge =
+      provider === "groq" ? groqJudge(groq) : ollamaJudge(ollama);
     const timedJudge: typeof baseJudge = async (request) => {
       const started = Date.now();
       const answer = await baseJudge(request);
@@ -138,7 +153,8 @@ for (const paper of dataset.papers) {
       },
       {
         judge: usable ? timedJudge : null,
-        modelName: usable ? ollama.model : null,
+        modelName: usable ? model : null,
+        provider,
         unavailableReason: status.reason,
       },
     );

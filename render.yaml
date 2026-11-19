@@ -8,3 +8,9 @@ services:
     envVars:
       - key: API_PORT
         value: "10000"
+      # Hosted AI verification (Groq free tier). Set the key in the Render
+      # dashboard; it is never stored in Git.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile

@@ -4,7 +4,7 @@
 
 CiteVerify AI helps a reviewer trace scientific claims to citations and source evidence. The project must favor evidence integrity, honest uncertainty, reproducibility, and human review over impressive but unsupported output.
 
-The current milestone is evidence-grounded claim verification with a local model (Ollama), built on the reviewed extraction, citation, and retrieval pipeline. Every substantive verdict must rest on retrieved passages the model cites, validated in code; without usable evidence the result is `Unable to verify` with the reason. Verdicts are model judgements that require human review; do not present them as measured accuracy, and do not add confidence scores until an evaluation exists.
+The current milestone is evidence-grounded claim verification with a local model (Ollama) for development and a hosted model (Groq) on the public site, built on the reviewed extraction, citation, and retrieval pipeline. Every substantive verdict must rest on retrieved passages the model cites, validated in code; without usable evidence the result is `Unable to verify` with the reason. Verdicts are model judgements that require human review; do not present them as measured accuracy, and do not add confidence scores until an evaluation exists.
 
 ## Architecture boundaries
 
@@ -17,7 +17,7 @@ The current milestone is evidence-grounded claim verification with a local model
 - `packages/claim-extractor` owns deterministic identification of candidate claims in extracted text. It never assigns verdicts or confidence scores.
 - `packages/citation-engine` owns citation extraction and reference resolution within the uploaded paper. A citation match links a marker to a reference entry; it is never evidence that a source supports a claim.
 - `packages/evidence-retrieval` owns lookups against free scholarly services (Crossref, OpenAlex, Europe PMC, PubMed Central) and passage selection from legally accessible text. It sends only cited-reference details, never uploaded documents, and never decides whether a source supports a claim.
-- `packages/verification-engine` owns evidence-constrained verdict logic and the local Ollama client. Prompts go only to the operator's local Ollama server, never to a hosted model. Model output is validated before use, and displayed evidence is always stored source text, never model-quoted text.
+- `packages/verification-engine` owns evidence-constrained verdict logic and the model clients: local Ollama, and Groq's hosted API (approved by the owner on 2026-11-20 for the public site, which cannot run Ollama). Prompts contain only the claim, its surrounding sentences, and retrieved public passages, never the uploaded PDF. Groq is used only when the server sets `GROQ_API_KEY`; the key stays in server environment variables, never in frontend code or Git. The UI must tell users when prompts go to Groq. Model output is validated before use, and displayed evidence is always stored source text, never model-quoted text.
 - `packages/ui` owns reusable React UI components without application data access.
 - `packages/config` owns shared TypeScript configuration.
 

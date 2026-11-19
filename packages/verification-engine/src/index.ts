@@ -44,6 +44,12 @@ export {
 } from "./prompt.ts";
 export { validateJudgement } from "./validate.ts";
 export {
+  DEFAULT_GROQ_MODEL,
+  type GroqConfig,
+  groqJudge,
+  groqStatus,
+} from "./groq.ts";
+export {
   CONSISTENCY_DISCLAIMER,
   CONSISTENCY_VERSION,
   checkInternalConsistency,
@@ -72,6 +78,8 @@ export type VerificationOptions = {
   /** Null when no model is available; every claim is then "Unable to verify". */
   judge: Judge | null;
   modelName: string | null;
+  /** Where the model runs; defaults to the local Ollama server. */
+  provider?: VerificationModel["provider"];
   /** Why the model is unavailable, shown on every affected claim. */
   unavailableReason?: string | null;
   timeBudgetMs?: number;
@@ -217,7 +225,7 @@ export async function verifyClaims(
   const model: VerificationModel | null =
     options.judge && options.modelName
       ? {
-          provider: "ollama",
+          provider: options.provider ?? "ollama",
           name: options.modelName,
           promptVersion: PROMPT_VERSION,
         }
@@ -269,7 +277,7 @@ export async function verifyClaims(
         unable(
           claim.id,
           "model_unavailable",
-          `Evidence was retrieved, but no local model was available to compare it with the claim. ${options.unavailableReason ?? ""}`.trim(),
+          `Evidence was retrieved, but no AI model was available to compare it with the claim. ${options.unavailableReason ?? ""}`.trim(),
           evidence,
         ),
       );
@@ -327,11 +335,15 @@ export async function verifyClaims(
       continue;
     }
 
-    const { verdict, cited, explanation, parts, modelVerdict } = validated.judgement;
+    const { verdict, cited, explanation, parts, modelVerdict } =
+      validated.judgement;
     // Part-by-part assessment, shown so a reviewer can see why the verdict follows.
     const partsNote = parts
       ? `Claim parts: ${parts
-          .map((item) => `${item.part} ${item.status.replace("_", " ")}${item.evidence ? ` (${item.evidence})` : ""}`)
+          .map(
+            (item) =>
+              `${item.part} ${item.status.replace("_", " ")}${item.evidence ? ` (${item.evidence})` : ""}`,
+          )
           .join("; ")}.${
           modelVerdict && modelVerdict !== verdict
             ? ` The model's own overall label was "${modelVerdict}"; the verdict follows its part-by-part assessment.`
