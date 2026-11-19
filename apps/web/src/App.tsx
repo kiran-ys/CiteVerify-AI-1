@@ -439,11 +439,11 @@ function Upload() {
     setVerifying(false);
     setVerifyError("");
   };
-  const hasResult = result !== undefined;
-  // Ask the API whether the local model is ready once there is something to verify.
+  // Report model availability before upload so a public demo never implies
+  // that AI verification is ready when the free host cannot run Ollama.
   useEffect(() => {
-    if (hasResult) getVerificationStatus().then(setModelStatus);
-  }, [hasResult]);
+    getVerificationStatus().then(setModelStatus);
+  }, []);
   const accept = (f?: File) => {
     setError("");
     reset();
@@ -606,6 +606,16 @@ function Upload() {
             Verification results elsewhere in the app remain demo-only.
           </p>
         </div>
+        {modelStatus && !modelStatus.available && (
+          <div className="error" role="status">
+            <Icon name="alert" />
+            <span>
+              <b>AI verification is temporarily unavailable on this free server.</b>{" "}
+              PDF extraction, claim extraction, citation matching, and source
+              retrieval are still available. No AI verdict will be guessed.
+            </span>
+          </div>
+        )}
         {result && (
           <section className="extraction-result" aria-live="polite">
             <header>
