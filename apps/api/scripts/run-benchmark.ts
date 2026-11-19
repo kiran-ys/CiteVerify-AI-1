@@ -26,6 +26,7 @@ import {
   type Judge,
   ollamaJudge,
   ollamaStatus,
+  PROMPT_VERSION,
   verifyClaims,
 } from "@citeverify/verification-engine";
 
@@ -75,7 +76,13 @@ const evidenceOf = new Map(
 );
 
 const groq = {
-  apiKey: process.env.GROQ_API_KEY ?? "",
+  // From the environment, or from tmp/groq-api-key (git-ignored) so the key
+  // never has to appear on a command line. It is never printed.
+  apiKey:
+    process.env.GROQ_API_KEY ||
+    ((await Bun.file(`${root}tmp/groq-api-key`).exists())
+      ? (await Bun.file(`${root}tmp/groq-api-key`).text()).trim()
+      : ""),
   model: process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL,
 };
 const ollama = {
@@ -199,8 +206,31 @@ function inputFor(c: Case, passages: Passage[]) {
   return { claims: [claim], citations: [citation], references, sources };
 }
 
-const rows: Record<string, unknown>[] = [];
+// Progress is saved after every case, so an interrupted run resumes where it
+// stopped (use --fresh to start over). Failed calls are retried on resume.
+const progressFile = `${root}eval/results/progress-${provider}-${model.replace(/[^\w.-]+/g, "_")}-${PROMPT_VERSION}.json`;
+const saved: Record<string, unknown>[] =
+  !process.argv.includes("--fresh") && (await Bun.file(progressFile).exists())
+    ? (
+        (await Bun.file(progressFile).json()) as {
+          rows: Record<string, unknown>[];
+        }
+      ).rows
+    : [];
+const rows: Record<string, unknown>[] = saved.filter(
+  (r) => r.failure !== "model_error" && r.failure !== "model_timeout",
+);
+const done = new Set(rows.map((r) => r.id));
+if (done.size)
+  console.log(
+    `Resuming: ${done.size} of ${cases.length} cases already done (${progressFile}).`,
+  );
+await Bun.$`mkdir -p ${root}eval/results`;
+let consecutiveRateLimits = 0;
+let index = 0;
 for (const c of cases) {
+  index++;
+  if (done.has(c.id)) continue;
   const passages = evidenceOf.get(c.evidenceOf) ?? [];
   const started = Date.now();
   const result = (
@@ -225,6 +255,12 @@ for (const c of cases) {
       : null;
   rows.push({
     id: c.id,
+    availability:
+      passages.length === 0
+        ? "none"
+        : passages.some((p) => p.origin === "full_text")
+          ? "full_text"
+          : "abstract_only",
     kind: c.kind,
     category: c.category,
     certainty: c.certainty,
@@ -241,9 +277,21 @@ for (const c of cases) {
     reason: result?.reason ?? null,
     explanation: result?.explanation ?? null,
   });
-  console.log(
-    `${predicted === c.expected ? "ok  " : "MISS"} ${c.id}: expected ${c.expected}, got ${predicted}${failure ? ` (${failure})` : ""} ${(ms / 1000).toFixed(1)} s`,
+  await Bun.write(
+    progressFile,
+    `${JSON.stringify({ provider, model, promptVersion: PROMPT_VERSION, rows }, null, 2)}\n`,
   );
+  const limited = /rate limit/i.test(result?.reason ?? "");
+  consecutiveRateLimits = limited ? consecutiveRateLimits + 1 : 0;
+  console.log(
+    `[${index}/${cases.length}] ${predicted === c.expected ? "ok  " : "MISS"} ${c.id}: expected ${c.expected}, got ${predicted}${failure ? ` (${failure})` : ""} ${(ms / 1000).toFixed(1)} s`,
+  );
+  if (consecutiveRateLimits >= 3) {
+    console.log(
+      `Stopped after 3 rate-limited calls in a row; progress is saved. Run the same command later to resume.`,
+    );
+    process.exit(2);
+  }
 }
 
 // ------------------------------------------------------------------ metrics
@@ -289,6 +337,19 @@ const subset = (pred: (r: Row) => boolean) => {
   const s = all.filter(pred);
   return `${s.filter((r) => r.correct).length}/${s.length} (${pct(s.filter((r) => r.correct).length, s.length)})`;
 };
+const weighted = (k: "f1") =>
+  perLabel.reduce((s, l) => s + l[k] * l.support, 0) / (all.length || 1);
+const latencies = all
+  .filter((r) => r.calledModel)
+  .map((r) => r.ms as number)
+  .sort((a, b) => a - b);
+const percentile = (q: number) =>
+  latencies.length
+    ? (latencies[
+        Math.min(latencies.length - 1, Math.floor(q * latencies.length))
+      ] ?? 0)
+    : 0;
+const answered = all.filter((r) => r.predicted !== "Unable to verify");
 const modelRows = all.filter((r) => r.calledModel);
 const positive = all.filter((r) =>
   ["Supported", "Partially supported", "Contradicted"].includes(r.predicted),
@@ -316,12 +377,19 @@ const md = [
   `| Accuracy, borderline cases | ${subset((r) => r.certainty === "borderline")} |`,
   `| Accuracy, real claims | ${subset((r) => r.kind === "real")} |`,
   `| Accuracy, altered claims | ${subset((r) => r.kind === "altered")} |`,
+  `| Agreement, human-reviewed labels | ${subset((r) => r.reviewStatus !== "provisional")} |`,
+  `| Agreement, evidence: abstract only / full text / none | ${subset((r) => r.availability === "abstract_only")} / ${subset((r) => r.availability === "full_text")} / ${subset((r) => r.availability === "none")} |`,
   `| Macro precision / recall / F1 | ${macro("precision").toFixed(2)} / ${macro("recall").toFixed(2)} / ${macro("f1").toFixed(2)} |`,
-  `| Unable-to-verify rate (predicted) | ${pct(all.filter((r) => r.predicted === "Unable to verify").length, all.length)} |`,
+  `| Weighted F1 (by expected-class size) | ${weighted("f1").toFixed(2)} |`,
+  `| Abstention rate (predicted Unable to verify) | ${pct(all.length - answered.length, all.length)} |`,
+  `| Agreement when the model did not abstain | ${subset((r) => r.predicted !== "Unable to verify")} |`,
+  `| Evidence retrieval success (cases with at least one stored passage) | ${pct(all.filter((r) => r.availability !== "none").length, all.length)} |`,
   `| Invalid model output rate | ${pct(all.filter((r) => r.failure === "invalid_output").length, modelRows.length)} of model calls |`,
   `| API failures / timeouts / rate limits | ${all.filter((r) => r.failure === "model_error").length} / ${all.filter((r) => r.failure === "model_timeout").length} / ${all.filter((r) => r.rateLimited).length} |`,
   `| Evidence citation validity (positive verdicts citing only stored source text) | ${pct(positive.filter((r) => r.traceable).length, positive.length)} of ${positive.length} |`,
-  `| Average latency per model-judged claim | ${(avgMs / 1000).toFixed(1)} s |`,
+  `| Latency per model-judged claim: mean / p50 / p90 | ${(avgMs / 1000).toFixed(1)} / ${(percentile(0.5) / 1000).toFixed(1)} / ${(percentile(0.9) / 1000).toFixed(1)} s |`,
+  "",
+  "Abstentions count as misses unless the expected label is Unable to verify, so a cautious model scores lower on agreement but makes fewer unsupported calls; read the non-abstained agreement alongside the overall figure.",
   "",
   "## Per verdict",
   "",
@@ -352,13 +420,20 @@ const md = [
   "",
 ].join("\n");
 
+// Only a complete run is published in docs/evaluation; partial runs (--limit)
+// stay in eval/results, which is not committed. Names include the prompt
+// version so runs never overwrite each other's reports.
+const complete = all.length === allCases.length;
+const name = `benchmark-${date}-${provider}-${PROMPT_VERSION}${complete ? "" : `-partial-${all.length}`}`;
+const reportPath = complete
+  ? `${root}docs/evaluation/${name}.md`
+  : `${root}eval/results/${name}.md`;
 await Bun.$`mkdir -p ${root}docs/evaluation ${root}eval/results`;
-const name = `benchmark-${date}-${provider}`;
-await Bun.write(`${root}docs/evaluation/${name}.md`, md);
+await Bun.write(reportPath, md);
 await Bun.write(
   `${root}eval/results/${name}.json`,
-  `${JSON.stringify({ commit, provider, model, rows }, null, 2)}\n`,
+  `${JSON.stringify({ commit, provider, model, promptVersion: PROMPT_VERSION, rows }, null, 2)}\n`,
 );
 console.log(
-  `\n${md.split("## Per verdict")[0]}\nSaved docs/evaluation/${name}.md`,
+  `\n${md.split("## Per verdict")[0]}\nSaved ${reportPath.replace(root, "")}`,
 );

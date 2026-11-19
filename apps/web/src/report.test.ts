@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { paperQuality, share } from "./quality.ts";
 import type {
   ExtractCitationsResponse,
   ExtractEvidenceResponse,
@@ -217,7 +218,10 @@ describe("PDF report", () => {
       "Title (first line of the PDF text): Exercise and FMD in women",
     );
     expect(report).toContain("Pages: 2");
-    expect(report).toContain("Not verified. AI verification was not run");
+    expect(report).toContain(
+      "AI verification not performed. No AI verdicts are reported",
+    );
+    expect(report).toContain("not a substitute for expert review");
     expect(report).toContain("claim-001 | page 1 | Not verified");
     expect(report).toContain('Citation "1": 1 -> [1]');
     expect(report).toContain("1 matched, 0 unmatched, 0 ambiguous");
@@ -230,6 +234,9 @@ describe("PDF report", () => {
   test("includes exact retrieved passages and source links", () => {
     const report = text(buildReport(withEvidence, at));
     expect(report).toContain(`"${passage}"`);
+    expect(report).toContain(
+      "Retrieval summary: 1 cited sources looked up; 1 identified",
+    );
     expect(report).toContain("https://doi.org/10.1042/cs20100174");
     expect(report).toContain(
       "[1] Sex-specific effects of habitual aerobic exercise | resolved | abstract only",
@@ -287,7 +294,7 @@ describe("PDF report", () => {
         `${i + 1} 0 obj`,
       );
     });
-    expect(pdf).toContain("(Not verified. AI verification was not run");
+    expect(pdf).toContain("(AI verification not performed.");
     expect(pdf).toContain("P<0.01");
   });
 
@@ -314,5 +321,97 @@ describe("PDF report", () => {
     expect(reportFileName("My Paper (final).PDF")).toBe(
       "My-Paper-final-citeverify-report.pdf",
     );
+  });
+});
+
+describe("paper quality figures come only from the paper's results", () => {
+  test("steps not run are null, not zero", () => {
+    const q = paperQuality(paper);
+    expect(q.claims).toEqual({ total: 1, cited: 1, ownFindings: 0 });
+    expect(q.citations).toMatchObject({
+      markers: 1,
+      matched: 1,
+      unmatched: 0,
+      references: 1,
+    });
+    expect(q.sources).toBeNull();
+    expect(q.verification).toBeNull();
+  });
+
+  test("retrieval coverage counts identified and accessible sources", () => {
+    expect(paperQuality(withEvidence).sources).toEqual({
+      lookedUp: 1,
+      identified: 1,
+      fullText: 0,
+      abstractOnly: 1,
+      metadataOnly: 0,
+      unavailable: 0,
+      withErrors: 0,
+      rateLimited: 0,
+      claimsWithEvidence: 1,
+    });
+  });
+
+  test("verdict counts and abstention causes match the returned results", () => {
+    const verified = {
+      ...withEvidence,
+      verification: {
+        results: [
+          {
+            claimId: "claim-001",
+            verdict: "Unable to verify",
+            decidedBy: "rule",
+            unableCause: "no_evidence",
+            reason: "x",
+            evidence: [],
+            evidenceScope: "none",
+            explanation: null,
+            model: null,
+          },
+        ],
+        model: {
+          provider: "groq",
+          name: "openai/gpt-oss-120b",
+          promptVersion: "verify-v6",
+        },
+        modelAvailable: true,
+        method: "evidence-grounded-llm",
+        version: "1",
+        verifiedAt: "2026-11-20T00:00:00Z",
+        truncated: false,
+        ownFindingsExcluded: 0,
+        reviewStatus: "requires_human_review",
+      },
+    } as VerifyClaimsResponse;
+    expect(paperQuality(verified).verification).toEqual({
+      judged: 1,
+      byVerdict: [{ verdict: "Unable to verify", count: 1 }],
+      unable: 1,
+      unableCauses: [{ cause: "no_evidence", count: 1 }],
+      provider: "groq",
+      model: "openai/gpt-oss-120b",
+      truncated: false,
+    });
+  });
+
+  test("an unmatched citation is listed, and shares never divide by zero", () => {
+    const broken = structuredClone(paper);
+    const first = broken.citations.inText[0];
+    if (first)
+      first.matches = [
+        {
+          key: "9",
+          status: "unmatched",
+          referenceIds: [],
+          reason: "no entry 9",
+        },
+      ];
+    expect(paperQuality(broken).citations).toMatchObject({
+      matched: 0,
+      unmatched: 1,
+      unmatchedMarkers: ["1"],
+    });
+    expect(share(0, 0)).toBe("none");
+    expect(share(3, 21)).toBe("3 of 21 (14%)");
   });
 });

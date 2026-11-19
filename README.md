@@ -30,6 +30,8 @@ AI verification on the live site uses Groq's hosted `openai/gpt-oss-120b`. Only 
 - **Internal-consistency checks**: compares the paper's own reported numbers, confidence intervals, and p-values with each other.
 - **Source retrieval**: identifies cited works through PubMed, Crossref, OpenAlex, and Europe PMC with strict identity checks, and collects abstract or open-access text. Only reference details are sent, never the uploaded paper.
 - **Evidence-grounded verification**: a hosted (Groq) or local (Ollama) model compares each claim's population, intervention, outcome, and findings with retrieved passages. Every verdict cites stored source text checked in code; otherwise the result is *Unable to verify* with the reason.
+- **Light and dark themes** (with a System option) and a research workspace with a verification pipeline, quality dashboard, and a three-panel claim / evidence / verdict comparison.
+- **Transparent results views**: a Verification quality panel computed only from the uploaded paper, a Citation integrity panel, a step tracker, and each claim shown beside the exact passages its verdict cites.
 - **Honest limits**: verdicts are model judgements that need human review; accuracy has not yet been measured on a reviewed dataset.
 
 ## Tech Stack

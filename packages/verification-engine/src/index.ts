@@ -354,7 +354,7 @@ export async function verifyClaims(
       ? `Claim parts: ${parts
           .map(
             (item) =>
-              `${item.part} ${item.status.replace("_", " ")}${item.evidence ? ` (${item.evidence})` : ""}`,
+              `${item.part} ${item.status.replaceAll("_", " ")}${item.evidence ? ` (${item.evidence})` : ""}`,
           )
           .join("; ")}.${
           modelVerdict && modelVerdict !== verdict

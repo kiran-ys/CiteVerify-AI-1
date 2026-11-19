@@ -11,8 +11,10 @@ Base path: `/api`
 Response `200`:
 
 ```json
-{ "status": "ok" }
+{ "status": "ok", "commit": "4d1a0ee" }
 ```
+
+`commit` is the deployed Git commit (from Render's `RENDER_GIT_COMMIT`), or `null` when unknown. It contains no secrets.
 
 ### `POST /documents/extract`
 
@@ -397,38 +399,40 @@ Errors: all `POST /documents/citations` errors apply unchanged. Additionally:
 
 ### `GET /verification/status`
 
-Purpose: report whether the local model can be used, before a verification request.
+Purpose: report which model provider is configured and whether it can be used, before a verification request. Never includes credentials.
 
 Success `200`:
 
 ```json
 {
   "available": true,
-  "host": "http://127.0.0.1:11434",
-  "model": "llama3.2",
+  "provider": "groq",
+  "host": "https://api.groq.com",
+  "model": "openai/gpt-oss-120b",
   "modelInstalled": true,
   "reason": null
 }
 ```
 
-When Ollama is not running: `available: false`, `modelInstalled: false`, `reason: "No Ollama server answered at http://127.0.0.1:11434. Start it with: ollama serve"`. When the model is missing, `reason` gives the `ollama pull` command.
+`provider` is `groq` when the server has `GROQ_API_KEY` (or `VERIFIER_PROVIDER=groq`), otherwise `ollama`. For Groq, `reason` reports a missing key ("GROQ_API_KEY is not set"), a rejected key, or a model the account cannot use. When Ollama is not running: `available: false`, `modelInstalled: false`, `reason: "No Ollama server answered at http://127.0.0.1:11434. Start it with: ollama serve"`. When the model is missing, `reason` gives the `ollama pull` command.
 
 ### `POST /documents/verification`
 
-Purpose: accept one PDF, run the full pipeline of `POST /documents/evidence`, then compare each extracted claim with the retrieved passages from the sources it cites using a local model in Ollama. **Verdicts are model judgements over retrieved text and require human review.** No confidence score is returned.
+Purpose: accept one PDF, run the full pipeline of `POST /documents/evidence`, then compare each externally cited claim with the retrieved passages from the sources it cites, using Groq's hosted model or a local Ollama model. The paper's own findings are not sent (`ownFindingsExcluded`); the uploaded PDF is never sent to a model. **Verdicts are model judgements over retrieved text and require human review.** No confidence score is returned.
 
 Request: identical to `POST /documents/extract`. The server re-parses the PDF and re-runs retrieval (cached results are reused); it never accepts evidence from the client.
 
-Configuration: `OLLAMA_HOST` (default `http://127.0.0.1:11434`) and `OLLAMA_MODEL` (default `llama3.2`). Prompts are sent only to that Ollama server.
+Configuration: `GROQ_API_KEY` (server-side only) and `GROQ_MODEL` (default `openai/gpt-oss-120b`) for Groq; otherwise `OLLAMA_HOST` (default `http://127.0.0.1:11434`) and `OLLAMA_MODEL` (default `llama3.2`). `VERIFIER_PROVIDER=ollama|groq` overrides the choice. Prompts contain only the claim, its context, and retrieved public passages.
 
 Verdicts (`verdict`):
 
-- `Supported`, `Partially supported`, `Contradicted`, `Insufficient evidence`: chosen by the model (`decidedBy: "model"`) and accepted only after validation.
-- `Unable to verify`: decided in code (`decidedBy: "rule"`) when the claim cites no source, no citation matched, no relevant passage was retrieved for any cited reference, the model is unavailable or times out, the time budget ran out, or the model's answer failed validation. `reason` always says which, per reference where relevant.
+- The model (prompt `verify-v5`) assesses each stated part of the claim (population, intervention, outcome, finding) as `supported`, `contradicted`, or `not_reported`, each supported or contradicted part citing a provided passage id. **The verdict is derived in code**: `Supported` when every stated part is supported; `Partially supported` when some are; `Contradicted` when parts are contradicted and none supported; otherwise `Unable to verify` with `unableCause: "insufficient_evidence"`.
+- `Unable to verify` is also returned (`decidedBy: "rule"`) when the claim cites no source, no citation matched, no relevant passage was retrieved (`no_evidence`), the model is unavailable (`model_unavailable`), errors or is rate-limited (`model_error`), times out (`model_timeout`), the time budget ran out (`time_budget`), or its answer failed validation twice (`invalid_output`). `reason` always says which.
+- `Unsupported` exists in the type for compatibility but is **not produced**: a live test showed the hosted model calls on-topic but incomplete sources "a different question". When the model judges the source to address a different question, the claim is `Unable to verify` with a note to check the full source. `Unable to verify` never means the claim is false.
 
-Validation of model answers: the verdict must be one of the four model verdicts; every cited id must be one of the passages provided; `Supported` and `Partially supported` must cite at least one `supports` passage; `Contradicted` must cite at least one `contradicts` passage; `Supported` may not cite a `contradicts` passage; one passage may not have two roles. A failed check yields `Unable to verify` and the passages are returned with `relation: "not_cited"`.
+Validation of model answers (a malformed answer is retried once): every cited id must be one of the passages provided (several ids may be listed); a part marked supported or contradicted without a passage counts as not reported. For the older evidence-list format: the verdict must be one of the model verdicts; every cited id must be one of the passages provided; `Supported` and `Partially supported` must cite at least one `supports` passage; `Contradicted` must cite at least one `contradicts` passage; `Supported` may not cite a `contradicts` passage; one passage may not have two roles. A failed check yields `Unable to verify` and the passages are returned with `relation: "not_cited"`.
 
-Limits: up to 6 passages per claim (highest term overlap first); claims are sent to the model one at a time; each call times out after 120 s; new calls stop after a 150 s budget (`truncated: true`). Expect up to about four minutes in total, including retrieval.
+Limits: up to 4 passages per cited source and 10 per claim; claims are sent one at a time; each call times out after 30 s (Groq) or 45 s (Ollama); Groq rate limits are retried at most twice when the requested wait is 15 s or less; new calls stop after a 120 s budget (`truncated: true`). Retrieval has a 90 s budget, spaces Crossref requests (1 per second anonymously), and may skip references after the first 40. A 6-page paper with about 20 cited claims took 160-170 s live.
 
 Success `200`: the full `POST /documents/evidence` body plus a `verification` object. Example from the genuine paper Ioannidis (2005) _PLoS Med_ 2(8): e124 with `llama3.2`:
 
@@ -477,7 +481,7 @@ Success `200`: the full `POST /documents/evidence` body plus a `verification` ob
         "model": {
           "provider": "ollama",
           "name": "llama3.2",
-          "promptVersion": "verify-v1"
+          "promptVersion": "verify-v5"
         }
       },
       {
@@ -494,7 +498,7 @@ Success `200`: the full `POST /documents/evidence` body plus a `verification` ob
     "model": {
       "provider": "ollama",
       "name": "llama3.2",
-      "promptVersion": "verify-v1"
+      "promptVersion": "verify-v5"
     },
     "modelAvailable": true,
     "method": "evidence-grounded-llm",

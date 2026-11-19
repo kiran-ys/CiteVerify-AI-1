@@ -5,6 +5,7 @@ import type {
   RetrievedSource,
 } from "@citeverify/shared";
 import { ClaimVerdict } from "./ClaimVerdict.tsx";
+import { ClaimComparison } from "./PaperQuality.tsx";
 import { RetrievedSourceView } from "./RetrievedSource.tsx";
 
 type Citations = ExtractCitationsResponse["citations"];
@@ -54,6 +55,7 @@ export function ClaimEvidence({
         </p>
       ) : (
         <>
+          {verdict && <ClaimComparison claim={claim} verdict={verdict} />}
           {verdict && <ClaimVerdict result={verdict} />}
           {!sources && (
             <p className="claim-evidence-note">

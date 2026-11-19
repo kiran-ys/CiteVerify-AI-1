@@ -1091,3 +1091,63 @@ describe("topic mismatch and one retry", () => {
     expect(item?.reason).toContain("again on one retry");
   });
 });
+
+describe("adversarial model answers never become confident verdicts", () => {
+  const run = async (content: string) => {
+    let calls = 0;
+    const judge: Judge = async () => {
+      calls++;
+      return { ok: true, content };
+    };
+    const [item] = (await verifyClaims(input(), options(judge))).results;
+    return { item, calls };
+  };
+
+  test.each([
+    ["an empty reply", ""],
+    [
+      "an unexpected verdict label",
+      JSON.stringify({
+        parts: [{ part: "finding", status: "supported", evidence: "E1" }],
+        topic_match: "same_question",
+        verdict: "Probably true",
+        explanation: "x",
+      }),
+    ],
+    [
+      "a reply with no parts or evidence",
+      JSON.stringify({ verdict: "Supported", explanation: "Trust me." }),
+    ],
+    [
+      "a cited passage that does not exist",
+      JSON.stringify({
+        parts: [{ part: "finding", status: "supported", evidence: "E99" }],
+        topic_match: "same_question",
+        verdict: "Supported",
+        explanation: "x",
+      }),
+    ],
+  ])(
+    "%s is retried once, then reported as invalid output",
+    async (_name, content) => {
+      const { item, calls } = await run(content);
+      expect(calls).toBe(2);
+      expect(item).toMatchObject({
+        verdict: "Unable to verify",
+        unableCause: "invalid_output",
+      });
+    },
+  );
+
+  test("an empty Groq response body is an error, not a verdict", async () => {
+    const judge = groqJudge({
+      apiKey: "k",
+      model: "m",
+      fetch: async () => Response.json({ choices: [] }),
+    });
+    expect(await judge({ system: "s", user: "u", schema: {} })).toMatchObject({
+      ok: false,
+      kind: "error",
+    });
+  });
+});

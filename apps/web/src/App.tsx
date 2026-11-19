@@ -21,9 +21,25 @@ import {
   savePaper,
   sessionStore,
 } from "./paper-session.ts";
+import { CitationIntegrity, QualityPanel } from "./PaperQuality.tsx";
+import { useTheme } from "./theme.ts";
+import {
+  ClaimEvidenceWorkspace,
+  Hero,
+  MetricsRow,
+  Pipeline,
+  QualityDashboard,
+  ThemeToggle,
+} from "./Workspace.tsx";
 import { downloadReport } from "./report.ts";
 
-type Page = "dashboard" | "upload" | "results" | "reports";
+type Page =
+  | "dashboard"
+  | "upload"
+  | "evidence"
+  | "quality"
+  | "results"
+  | "reports";
 type Status =
   | "Supported"
   | "Partially supported"
@@ -105,24 +121,33 @@ const statusClass: Record<Status, string> = {
   "Unable to verify": "unable",
 };
 const nav: { id: Page; label: string; icon: string }[] = [
-  { id: "dashboard", label: "Dashboard", icon: "grid" },
-  { id: "upload", label: "Upload Paper", icon: "upload" },
-  { id: "results", label: "Verification Results", icon: "check" },
+  { id: "upload", label: "Workspace", icon: "upload" },
+  { id: "evidence", label: "Claims & evidence", icon: "check" },
+  { id: "quality", label: "Quality", icon: "grid" },
   { id: "reports", label: "Reports", icon: "file" },
+];
+const demoNav: { id: Page; label: string; icon: string }[] = [
+  { id: "dashboard", label: "Demo overview", icon: "sparkle" },
+  { id: "results", label: "Demo results", icon: "scan" },
 ];
 const headings: Record<Page, [string, string]> = {
   dashboard: [
-    "Good morning, Dr. Morgan",
-    "Here’s an overview of your citation verification workspace.",
+    "Demo overview",
+    "Illustrative demo data only, not real results.",
   ],
   upload: [
-    "Upload a research paper",
-    "Add a PDF to extract and review its actual text.",
+    "Research workspace",
+    "Upload a paper and follow every claim to its evidence.",
   ],
-  results: [
-    "Verification results",
-    "Review extracted claims, citations, and matched evidence.",
+  evidence: [
+    "Claims & evidence",
+    "Each cited claim beside the retrieved passages and the AI verdict.",
   ],
+  quality: [
+    "Verification quality",
+    "Real figures for your paper, and measured benchmark runs.",
+  ],
+  results: ["Demo results", "Illustrative demo data only, not real results."],
   reports: [
     "Reports",
     "Prepare transparent verification summaries for review and export.",
@@ -130,7 +155,14 @@ const headings: Record<Page, [string, string]> = {
 };
 
 export function App() {
-  const [page, setPage] = useState<Page>("dashboard");
+  const [page, setPage] = useState<Page>("upload");
+  const theme = useTheme();
+  const [status, setStatus] = useState<UploadStatus>({
+    extracting: false,
+    retrieving: false,
+    verifying: false,
+    failed: null,
+  });
   const [menu, setMenu] = useState(false);
   const [detail, setDetail] = useState<Claim>();
   // The processed paper lives here, above the pages, so switching pages keeps
@@ -170,12 +202,25 @@ export function App() {
             <button
               key={n.id}
               className={page === n.id ? "active" : ""}
+              aria-current={page === n.id ? "page" : undefined}
               onClick={() => go(n.id)}
               type="button"
             >
               <Icon name={n.icon} />
               {n.label}
-              {n.id === "results" && <i>24</i>}
+            </button>
+          ))}
+          <small className="nav-label">DEMO (ILLUSTRATIVE)</small>
+          {demoNav.map((n) => (
+            <button
+              key={n.id}
+              className={page === n.id ? "active" : ""}
+              aria-current={page === n.id ? "page" : undefined}
+              onClick={() => go(n.id)}
+              type="button"
+            >
+              <Icon name={n.icon} />
+              {n.label}
             </button>
           ))}
         </nav>
@@ -183,18 +228,13 @@ export function App() {
         <div className="demo-note">
           <Icon name="sparkle" />
           <div>
-            <b>Demo workspace</b>
-            <p>All content is illustrative, not real scientific evidence.</p>
+            <b>Demo vs real data</b>
+            <p>
+              Only the two demo pages are illustrative. Workspace, Claims &
+              evidence, Quality, and Reports show your uploaded paper.
+            </p>
           </div>
         </div>
-        <button className="profile" type="button">
-          <span>AM</span>
-          <div>
-            <b>Alex Morgan</b>
-            <small>Research team</small>
-          </div>
-          <Icon name="more" />
-        </button>
       </aside>
       {menu && (
         <button
@@ -215,22 +255,35 @@ export function App() {
             <Icon name="menu" />
           </button>
           <div>
-            <span className="demo-pill">
-              <i />
-              DEMO DATA
-            </span>
-            <button
-              className="icon-btn"
-              type="button"
-              aria-label="Notifications"
-            >
-              <Icon name="bell" />
-            </button>
-            <span className="avatar">AM</span>
+            {(page === "dashboard" || page === "results") && (
+              <span className="demo-pill">
+                <i />
+                DEMO DATA
+              </span>
+            )}
+            <ThemeToggle
+              preference={theme.preference}
+              resolved={theme.resolved}
+              onChange={theme.setPreference}
+            />
           </div>
         </header>
         <main id="main">
-          <div className="page-head">
+          {page === "upload" && (
+            <>
+              <Hero
+                onUpload={() =>
+                  document
+                    .querySelector<HTMLInputElement>(
+                      ".dropzone input[type=file]",
+                    )
+                    ?.click()
+                }
+              />
+              <MetricsRow paper={paper} />
+            </>
+          )}
+          <div className="page-head" hidden={page === "upload"}>
             <div>
               <h1>{headings[page][0]}</h1>
               <p>{headings[page][1]}</p>
@@ -242,14 +295,33 @@ export function App() {
               </Button>
             )}
           </div>
-          {page === "dashboard" && <Dashboard go={go} detail={setDetail} />}
+          {page === "dashboard" && (
+            <Dashboard go={go} detail={setDetail} paper={paper} />
+          )}
           {/* Upload stays mounted so the chosen file and running requests survive page switches. */}
-          <Upload
-            active={page === "upload"}
-            result={paper}
-            setResult={setPaper}
-            openReports={() => go("reports")}
-          />
+          <div className={page === "upload" ? "workspace-grid" : ""}>
+            <Upload
+              active={page === "upload"}
+              result={paper}
+              setResult={setPaper}
+              openReports={() => go("reports")}
+              onStatus={setStatus}
+            />
+            {page === "upload" && (
+              <div className="workspace-side">
+                <Pipeline paper={paper} {...status} />
+                <QualityDashboard paper={paper} />
+              </div>
+            )}
+          </div>
+          {page === "upload" && <ClaimEvidenceWorkspace paper={paper} />}
+          {page === "evidence" && <ClaimEvidenceWorkspace paper={paper} />}
+          {page === "quality" && (
+            <div className="quality-page">
+              <QualityDashboard paper={paper} showBenchmarks />
+              {paper && <CitationIntegrity paper={paper} />}
+            </div>
+          )}
           {page === "results" && (
             <Results detail={setDetail} onExport={() => go("reports")} />
           )}
@@ -264,9 +336,11 @@ export function App() {
 function Dashboard({
   go,
   detail,
+  paper,
 }: {
   go: (p: Page) => void;
   detail: (c: Claim) => void;
+  paper: PaperResult | undefined;
 }) {
   const stats = [
     ["file", "Uploaded papers", "12", "+2 this month", "blue"],
@@ -276,6 +350,25 @@ function Dashboard({
   ] as const;
   return (
     <>
+      {paper ? (
+        <QualityPanel paper={paper} />
+      ) : (
+        <section className="panel quality-empty">
+          <h2>No paper analysed in this browser tab yet</h2>
+          <p>
+            Upload a research PDF to see real claims, citations, retrieved
+            evidence, and AI verdicts here. Everything below is demo data.
+          </p>
+          <Button onClick={() => go("upload")}>Upload a paper</Button>
+        </section>
+      )}
+      <h2 className="demo-heading">
+        <span className="demo-pill">
+          <i />
+          DEMO DATA
+        </span>{" "}
+        Illustrative workspace, not real results
+      </h2>
       <section className="stats" aria-label="Workspace summary">
         {stats.map((s) => (
           <article key={s[1]}>
@@ -438,16 +531,25 @@ function Activity({
   );
 }
 
+export type UploadStatus = {
+  extracting: boolean;
+  retrieving: boolean;
+  verifying: boolean;
+  failed: { stage: "extract" | "retrieve" | "verify"; message: string } | null;
+};
+
 function Upload({
   active,
   result,
   setResult,
   openReports,
+  onStatus,
 }: {
   active: boolean;
   result: PaperResult | undefined;
   setResult: (result: PaperResult | undefined) => void;
   openReports: () => void;
+  onStatus: (status: UploadStatus) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File>();
@@ -471,6 +573,30 @@ function Upload({
     setVerifying(false);
     setVerifyError("");
   };
+  // Share real request states with the pipeline panel.
+  useEffect(() => {
+    onStatus({
+      extracting: phase === "extracting",
+      retrieving,
+      verifying,
+      failed: verifyError
+        ? { stage: "verify", message: verifyError }
+        : retrieveError
+          ? { stage: "retrieve", message: retrieveError }
+          : error && phase === "idle" && file
+            ? { stage: "extract", message: error }
+            : null,
+    });
+  }, [
+    phase,
+    retrieving,
+    verifying,
+    verifyError,
+    retrieveError,
+    error,
+    file,
+    onStatus,
+  ]);
   // Report model availability before upload so a public demo never implies
   // that AI verification is ready when no model is configured or reachable.
   useEffect(() => {
@@ -660,7 +786,7 @@ function Upload({
             parsed in memory. It is not saved. Candidate claims and their
             citations are found by transparent rules; a matched citation only
             links a claim to the paper's own reference list and is not evidence.
-            Verification results elsewhere in the app remain demo-only.
+            Pages marked demo use illustrative data only.
           </p>
         </div>
         {modelStatus && !modelStatus.available && (
@@ -719,6 +845,7 @@ function Upload({
             </div>
           </section>
         )}
+        {result && <CitationIntegrity paper={result} />}
         {result && (
           <ExtractedClaims
             claims={result.claims}
@@ -1071,7 +1198,7 @@ function Reports({
               {paper.citations.inText.length} citations ·{" "}
               {"verification" in paper
                 ? "AI verification run"
-                : "AI verification: Not verified"}
+                : "AI verification not performed"}
             </p>
             <p>
               The PDF report contains this paper's actual extraction, claims,
@@ -1079,6 +1206,7 @@ function Reports({
               and AI verification status. Nothing from the demo data is
               included.
             </p>
+            <QualityPanel paper={paper} />
             <Button onClick={() => downloadReport(paper)}>
               <Icon name="download" />
               Download PDF report

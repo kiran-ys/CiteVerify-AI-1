@@ -1,0 +1,86 @@
+[
+  {
+    "run": "benchmark-2026-11-19-ollama-verify-v6",
+    "provider": "ollama",
+    "model": "llama3.2",
+    "promptVersion": "verify-v6",
+    "cases": 48,
+    "reviewedLabels": 0,
+    "agreement": 14,
+    "abstentions": 5,
+    "macroF1": 0.28196510297482835,
+    "perClass": [
+      {
+        "label": "Supported",
+        "support": 16,
+        "precision": 0.6666666666666666,
+        "recall": 0.125,
+        "f1": 0.21052631578947367
+      },
+      {
+        "label": "Partially supported",
+        "support": 16,
+        "precision": 0.3181818181818182,
+        "recall": 0.4375,
+        "f1": 0.3684210526315789
+      },
+      {
+        "label": "Contradicted",
+        "support": 5,
+        "precision": 0.1111111111111111,
+        "recall": 0.4,
+        "f1": 0.1739130434782609
+      },
+      {
+        "label": "Unable to verify",
+        "support": 11,
+        "precision": 0.6,
+        "recall": 0.2727272727272727,
+        "f1": 0.37499999999999994
+      }
+    ],
+    "confusion": [[2, 13, 1, 0], [1, 7, 7, 1], [0, 2, 2, 1], [0, 0, 8, 3]]
+  },
+  {
+    "run": "benchmark-2026-11-19-ollama-verify-v7",
+    "provider": "ollama",
+    "model": "llama3.2",
+    "promptVersion": "verify-v7",
+    "cases": 48,
+    "reviewedLabels": 0,
+    "agreement": 14,
+    "abstentions": 5,
+    "macroF1": 0.28196510297482835,
+    "perClass": [
+      {
+        "label": "Supported",
+        "support": 16,
+        "precision": 0.6666666666666666,
+        "recall": 0.125,
+        "f1": 0.21052631578947367
+      },
+      {
+        "label": "Partially supported",
+        "support": 16,
+        "precision": 0.3181818181818182,
+        "recall": 0.4375,
+        "f1": 0.3684210526315789
+      },
+      {
+        "label": "Contradicted",
+        "support": 5,
+        "precision": 0.1111111111111111,
+        "recall": 0.4,
+        "f1": 0.1739130434782609
+      },
+      {
+        "label": "Unable to verify",
+        "support": 11,
+        "precision": 0.6,
+        "recall": 0.2727272727272727,
+        "f1": 0.37499999999999994
+      }
+    ],
+    "confusion": [[2, 13, 1, 0], [1, 7, 7, 1], [0, 2, 2, 1], [0, 0, 8, 3]]
+  }
+]

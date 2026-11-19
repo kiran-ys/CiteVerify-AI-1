@@ -84,7 +84,7 @@ export function buildReport(
     out.push(
       line(
         "body",
-        "Not verified. AI verification was not run for this paper, so no verdicts are reported.",
+        "AI verification not performed. No AI verdicts are reported for this paper.",
       ),
     );
   } else {
@@ -173,6 +173,15 @@ export function buildReport(
         `Retrieved ${evidence.retrievedAt.slice(0, 16).replace("T", " ")} UTC from ${evidence.services.join(", ")}. Passages are exact source text selected by term overlap; they are not verdicts.`,
       ),
     );
+    const looked = evidence.sources;
+    const count = (pred: (x: (typeof looked)[number]) => boolean) =>
+      looked.filter(pred).length;
+    out.push(
+      line(
+        "body",
+        `Retrieval summary: ${evidence.sources.length} cited sources looked up; ${count((x) => x.resolution.status === "resolved")} identified; text available for ${count((x) => x.access === "full_text")} (full text) and ${count((x) => x.access === "abstract_only")} (abstract only); ${count((x) => x.access === "metadata_only")} metadata only; ${count((x) => x.access === "unavailable")} unavailable; ${count((x) => x.errors.length > 0)} with service errors (for example rate limits).`,
+      ),
+    );
     for (const s of evidence.sources) {
       const link = s.urls.doi ?? s.urls.landingPage ?? s.urls.fullText;
       out.push(
@@ -201,6 +210,15 @@ export function buildReport(
     for (const c of r.checks)
       out.push(line("muted", `${c.status.replace("_", " ")} - ${c.detail}`));
   }
+
+  out.push(line("heading", "Limitations and disclaimer"));
+  for (const text of [
+    "Automated verification is not a substitute for expert review. Every verdict must be checked against the quoted passages and the full sources.",
+    "AI verdicts are a language model's reading of retrieved text. Their accuracy has not been measured against independently reviewed labels, and no confidence score is reported because none has been calibrated.",
+    "Most evidence comes from abstracts; a claim may be supported or contradicted in a full text that was not accessible. Unable to verify means the available evidence could not settle the claim, not that the claim is false.",
+    "Claims and citations are found by rules and may be incomplete; a matched citation links a claim to the reference list and is not itself evidence.",
+  ])
+    out.push(line("muted", text));
   return out;
 }
 
