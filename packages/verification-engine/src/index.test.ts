@@ -976,3 +976,34 @@ describe("Groq hosted judge", () => {
     expect(status).toMatchObject({ available: true, modelInstalled: false });
   });
 });
+
+describe("Groq request settings", () => {
+  const capture = async (model: string) => {
+    let sent: Record<string, unknown> = {};
+    const judge = groqJudge({
+      apiKey: "k",
+      model,
+      fetch: async (_url, init) => {
+        sent = JSON.parse(String(init?.body));
+        return Response.json({ choices: [{ message: { content: "{}" } }] });
+      },
+    });
+    await judge({ system: "s", user: "u", schema: {} });
+    return sent;
+  };
+
+  test("GPT-OSS gets low, hidden reasoning and room for it", async () => {
+    expect(await capture("openai/gpt-oss-120b")).toMatchObject({
+      reasoning_effort: "low",
+      include_reasoning: false,
+      max_completion_tokens: 2000,
+      response_format: { type: "json_object" },
+    });
+  });
+
+  test("other models keep a short plain answer", async () => {
+    const sent = await capture("some-other-model");
+    expect(sent).toMatchObject({ max_tokens: 400 });
+    expect(sent).not.toHaveProperty("reasoning_effort");
+  });
+});

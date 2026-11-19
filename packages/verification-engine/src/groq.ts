@@ -18,7 +18,15 @@ export type GroqConfig = {
 };
 
 export const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-export const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+/** Groq's generally available models are OpenAI's open-weight GPT-OSS family
+ * (Llama models are Enterprise-only since 2026). */
+export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
+
+/** GPT-OSS models reason before answering; the reasoning counts toward the
+ * output limit, so it is kept short and left out of the response. */
+export function isReasoningModel(model: string): boolean {
+  return model.startsWith("openai/gpt-oss");
+}
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_RETRY_WAIT_MS = 15_000;
 const MAX_RETRIES = 2;
@@ -116,7 +124,13 @@ export function groqJudge(config: GroqConfig): Judge {
       model: config.model,
       temperature: 0,
       seed: 7,
-      max_tokens: 400,
+      ...(isReasoningModel(config.model)
+        ? {
+            reasoning_effort: "low",
+            include_reasoning: false,
+            max_completion_tokens: 2000,
+          }
+        : { max_tokens: 400 }),
       // JSON mode guarantees valid JSON; the shape is stated in the prompt
       // and checked by validateJudgement like any other model's answer.
       response_format: { type: "json_object" },

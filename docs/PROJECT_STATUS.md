@@ -174,10 +174,11 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 
 ### Hosted AI verification with Groq (uncommitted, not yet tested live)
 
-- Approved by the owner (2026-11-20): when the server sets `GROQ_API_KEY`, verification uses Groq's free hosted API (default `llama-3.3-70b-versatile`) instead of Ollama; otherwise the local Ollama default (`llama3.2`) is unchanged. `VERIFIER_PROVIDER=ollama|groq` overrides. The same prompt, validation, and evidence rules apply; only the claim, its context, and retrieved public passages are sent, never the PDF. The UI names the provider and shows a privacy note when Groq is used.
+- Approved by the owner (2026-11-20): when the server sets `GROQ_API_KEY`, verification uses Groq's free hosted API (default `openai/gpt-oss-120b`) instead of Ollama; otherwise the local Ollama default (`llama3.2`) is unchanged. `VERIFIER_PROVIDER=ollama|groq` overrides. The same prompt, validation, and evidence rules apply; only the claim, its context, and retrieved public passages are sent, never the PDF. The UI names the provider and shows a privacy note when Groq is used.
 - Rate limits: Groq 429/5xx answers are retried up to twice when the requested wait is at most 15 s; otherwise the claim is Unable to verify with the reason. A missing or rejected key makes every claim Unable to verify with that reason. The key never appears in responses or logs.
 - `render.yaml` declares `GROQ_API_KEY` (set in the Render dashboard) and `GROQ_MODEL`. `bun run eval:verification -- --provider groq` evaluates with Groq.
 - Checked 2026-11-20: unit and API tests cover Groq answers, 429 retry with retry-after, too-long waits, rejected keys (never echoed), timeouts, and a missing key. In a browser against the production build with no key: upload, page switching, reload restore, and PDF report download still work, and verification showed 21 claims as Unable to verify with the reason "GROQ_API_KEY is not set" plus the Groq privacy note.
+- Live check (2026-11-20): with the key set on Render the server switched to Groq and the key was accepted, but `llama-3.3-70b-versatile` is Enterprise-only on Groq now, so the default became `openai/gpt-oss-120b` (a reasoning model; requests use low reasoning effort and hide the reasoning).
 - Not yet done: no real Groq call has been made (the key was not available to this session), so verdict quality, latency, and free-tier limits on Groq are unmeasured.
 
 ## Next milestone
