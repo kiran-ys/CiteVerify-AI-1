@@ -375,7 +375,10 @@ export async function verifyClaims(
           : null;
     // "Insufficient evidence" is reported as Unable to verify, with the reason.
     const insufficient = verdict === "Insufficient evidence";
-    const unsupported = verdict === "Unsupported";
+    const mismatchNote =
+      insufficient && validated.judgement.topicMismatch
+        ? "The model also judged that the retrieved text appears to address a different question than the claim; check the full source before concluding anything about the citation."
+        : null;
     results.push({
       claimId: claim.id,
       verdict: insufficient ? "Unable to verify" : verdict,
@@ -385,9 +388,8 @@ export async function verifyClaims(
         [
           insufficient
             ? "The model found no part of the claim directly supported by the retrieved passages, so they are not sufficient to establish or refute it."
-            : unsupported
-              ? "The retrieved text of the cited source addresses a different question, so it does not back this claim (a possible mis-citation). Check the full source before concluding."
-              : null,
+            : null,
+          mismatchNote,
           partsNote,
           scopeNote,
         ]

@@ -209,7 +209,7 @@ describe("verdicts grounded in retrieved passages", () => {
       expect(item?.model).toEqual({
         provider: "ollama",
         name: "llama3.2",
-        promptVersion: "verify-v4",
+        promptVersion: "verify-v5",
       });
       expect(
         item?.evidence.map((e) => [e.evidenceId, e.relation, e.text]),
@@ -1008,12 +1008,12 @@ describe("Groq request settings", () => {
   });
 });
 
-describe("Unsupported and one retry", () => {
+describe("topic mismatch and one retry", () => {
   const notReported = [
     { part: "finding", status: "not_reported", evidence: "" },
   ];
 
-  test("a source about a different question makes the claim Unsupported", async () => {
+  test("a source judged to be about a different question stays Unable to verify, with a note", async () => {
     const { judge } = fakeJudge({
       parts: notReported,
       topic_match: "different_question",
@@ -1021,11 +1021,14 @@ describe("Unsupported and one retry", () => {
       explanation: "The cited study is about something else.",
     });
     const [item] = (await verifyClaims(input(), options(judge))).results;
-    expect(item).toMatchObject({ verdict: "Unsupported", unableCause: null });
-    expect(item?.reason).toContain("possible mis-citation");
+    expect(item).toMatchObject({
+      verdict: "Unable to verify",
+      unableCause: "insufficient_evidence",
+    });
+    expect(item?.reason).toContain("appears to address a different question");
   });
 
-  test("without a clear topic mismatch, missing evidence stays Unable to verify", async () => {
+  test("without a topic mismatch there is no note", async () => {
     for (const topic of ["unclear", "same_question", undefined]) {
       const { judge } = fakeJudge({
         parts: notReported,
@@ -1038,10 +1041,11 @@ describe("Unsupported and one retry", () => {
         verdict: "Unable to verify",
         unableCause: "insufficient_evidence",
       });
+      expect(item?.reason).not.toContain("different question");
     }
   });
 
-  test("a supported part is never turned into Unsupported", async () => {
+  test("a supported part is never downgraded by a topic mismatch", async () => {
     const { judge } = fakeJudge({
       parts: [{ part: "finding", status: "supported", evidence: "E1" }],
       topic_match: "different_question",

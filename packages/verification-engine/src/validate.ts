@@ -24,6 +24,8 @@ export type ValidatedJudgement = {
   parts?: PartAssessment[];
   /** The model's own overall label, kept for transparency when it differs. */
   modelVerdict?: ModelVerdict;
+  /** The model thinks the cited source studies a different question (note only). */
+  topicMismatch?: boolean;
 };
 
 /**
@@ -66,19 +68,13 @@ export function evidenceIds(text: string): string[] {
 }
 
 /**
- * "Unsupported" only when no part is supported or contradicted AND the model
- * judged the cited work to study a different question; otherwise the
- * part-derived verdict stands. A missing or unknown topic_match never
- * produces "Unsupported".
+ * Whether the model judged the cited source to study a different question.
+ * This never changes the verdict: a live test showed the hosted model says
+ * "different question" for sources that are on topic but incomplete, so it
+ * only adds a note to an Unable to verify result.
  */
-export function withTopic(
-  verdict: ModelVerdict,
-  topicMatch: unknown,
-): ModelVerdict {
-  return verdict === "Insufficient evidence" &&
-    topicMatch === "different_question"
-    ? "Unsupported"
-    : verdict;
+export function topicMismatch(topicMatch: unknown): boolean {
+  return topicMatch === "different_question";
 }
 
 function validateParts(
@@ -187,7 +183,8 @@ export function validateJudgement(
     return {
       ok: true,
       judgement: {
-        verdict: withTopic(verdictFromParts(checked.parts), parsed.topic_match),
+        verdict: verdictFromParts(checked.parts),
+        topicMismatch: topicMismatch(parsed.topic_match),
         cited,
         explanation,
         parts: checked.parts,
