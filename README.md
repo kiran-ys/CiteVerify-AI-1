@@ -18,9 +18,9 @@ The frontend and API are deployed on **Render (Free tier)**. Checked against the
 | Claim extraction | ✅ Working |
 | Citation matching and internal-consistency checks | ✅ Working |
 | Source retrieval (Crossref, OpenAlex, Europe PMC, PubMed) | ✅ Working |
-| AI claim verification (local Ollama model) | ⚠️ Temporarily unavailable |
+| AI claim verification (Groq, `openai/gpt-oss-120b`) | ✅ Working (live-tested 2026-11-20; accuracy not yet measured) |
 
-AI verification runs on a self-hosted [Ollama](https://ollama.com) model (`llama3.2`), which Render Free cannot host. On the live site every claim is reported as **Unable to verify** with that reason; no verdicts are invented. AI verification works when the project runs locally with Ollama (see [Local Development](#local-development)).
+AI verification on the live site uses Groq's hosted `openai/gpt-oss-120b`. Only each claim, its surrounding sentences, and retrieved public passages are sent to Groq; the uploaded PDF is not. Every verdict must cite stored source text, otherwise the claim is **Unable to verify** with the reason. Verdicts are model judgements that need human review: accuracy has not yet been measured on reviewed labels. A 6-page paper with about 20 cited claims takes roughly 2 minutes. Locally, the app uses a private [Ollama](https://ollama.com) model (`llama3.2`) unless `GROQ_API_KEY` is set.
 
 ## Project Features
 
@@ -29,7 +29,7 @@ AI verification runs on a self-hosted [Ollama](https://ollama.com) model (`llama
 - **Citation matching**: links in-text citations (numbered, bracketed, superscript, author-year) to the paper's reference list.
 - **Internal-consistency checks**: compares the paper's own reported numbers, confidence intervals, and p-values with each other.
 - **Source retrieval**: identifies cited works through PubMed, Crossref, OpenAlex, and Europe PMC with strict identity checks, and collects abstract or open-access text. Only reference details are sent, never the uploaded paper.
-- **Evidence-grounded verification** (local only): a local model compares each claim's population, intervention, outcome, and findings with retrieved passages. Every verdict cites stored source text checked in code; otherwise the result is *Unable to verify* with the reason.
+- **Evidence-grounded verification**: a hosted (Groq) or local (Ollama) model compares each claim's population, intervention, outcome, and findings with retrieved passages. Every verdict cites stored source text checked in code; otherwise the result is *Unable to verify* with the reason.
 - **Honest limits**: verdicts are model judgements that need human review; accuracy has not yet been measured on a reviewed dataset.
 
 ## Tech Stack
@@ -113,4 +113,4 @@ See `.env.example`. A relative SQLite `DATABASE_URL` (e.g. `file:./dev.db`) alwa
 
 ## Deployment
 
-The live demo runs on Render Free without AI verification. A single-server Docker setup that includes a private Ollama model is in [`deploy/`](deploy/), with the plan, costs, and limits in [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md).
+The live demo runs on Render Free with AI verification through Groq's free API (`GROQ_API_KEY` set in Render). A single-server Docker setup that includes a private Ollama model is in [`deploy/`](deploy/), with the plan, costs, and limits in [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md).
