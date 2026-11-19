@@ -6,12 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  ExtractCitationsResponse,
-  ExtractEvidenceResponse,
-  VerificationStatusResponse,
-  VerifyClaimsResponse,
-} from "@citeverify/shared";
+import type { VerificationStatusResponse } from "@citeverify/shared";
 import {
   extractPdfCitations,
   extractPdfEvidence,
@@ -19,6 +14,14 @@ import {
   getVerificationStatus,
 } from "./api.ts";
 import { ExtractedClaims } from "./ExtractedClaims.tsx";
+import {
+  clearPaper,
+  loadPaper,
+  type PaperResult,
+  savePaper,
+  sessionStore,
+} from "./paper-session.ts";
+import { downloadReport } from "./report.ts";
 
 type Page = "dashboard" | "upload" | "results" | "reports";
 type Status =
@@ -130,6 +133,18 @@ export function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [menu, setMenu] = useState(false);
   const [detail, setDetail] = useState<Claim>();
+  // The processed paper lives here, above the pages, so switching pages keeps
+  // it; it is also kept in sessionStorage (results only, never the PDF).
+  const [paper, setPaper] = useState<PaperResult | undefined>(() => {
+    const store = sessionStore();
+    return store ? loadPaper(store) : undefined;
+  });
+  useEffect(() => {
+    const store = sessionStore();
+    if (!store) return;
+    if (paper) savePaper(store, paper);
+    else clearPaper(store);
+  }, [paper]);
   const go = (p: Page) => {
     setPage(p);
     setMenu(false);
@@ -228,9 +243,17 @@ export function App() {
             )}
           </div>
           {page === "dashboard" && <Dashboard go={go} detail={setDetail} />}
-          {page === "upload" && <Upload />}
-          {page === "results" && <Results detail={setDetail} />}
-          {page === "reports" && <Reports go={go} />}
+          {/* Upload stays mounted so the chosen file and running requests survive page switches. */}
+          <Upload
+            active={page === "upload"}
+            result={paper}
+            setResult={setPaper}
+            openReports={() => go("reports")}
+          />
+          {page === "results" && (
+            <Results detail={setDetail} onExport={() => go("reports")} />
+          )}
+          {page === "reports" && <Reports go={go} paper={paper} />}
         </main>
       </div>
       {detail && <Evidence claim={detail} close={() => setDetail(undefined)} />}
@@ -415,14 +438,23 @@ function Activity({
   );
 }
 
-function Upload() {
+function Upload({
+  active,
+  result,
+  setResult,
+  openReports,
+}: {
+  active: boolean;
+  result: PaperResult | undefined;
+  setResult: (result: PaperResult | undefined) => void;
+  openReports: () => void;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File>();
   const [error, setError] = useState("");
-  const [phase, setPhase] = useState<"idle" | "extracting" | "success">("idle");
-  const [result, setResult] = useState<
-    ExtractCitationsResponse | ExtractEvidenceResponse | VerifyClaimsResponse
-  >();
+  const [phase, setPhase] = useState<"idle" | "extracting" | "success">(
+    result ? "success" : "idle",
+  );
   const [drag, setDrag] = useState(false);
   const [retrieving, setRetrieving] = useState(false);
   const [retrieveError, setRetrieveError] = useState("");
@@ -529,7 +561,10 @@ function Upload() {
     }
   };
   return (
-    <div className="upload-grid">
+    <div
+      className="upload-grid"
+      style={active ? undefined : { display: "none" }}
+    >
       <section className="panel upload-panel">
         <section
           className={`dropzone ${drag ? "drag" : ""}`}
@@ -587,7 +622,29 @@ function Upload() {
             )}
           </div>
         )}
+        {result && !file && (
+          <div className="info" role="status">
+            <Icon name="info" />
+            <p>
+              <b>Restored from this browser tab.</b> Results for{" "}
+              {result.document.name} were kept; the PDF itself was not saved.
+              Choose the same PDF again to retrieve sources or run verification.
+            </p>
+          </div>
+        )}
         <div className="upload-actions">
+          {result && (
+            <>
+              <button className="secondary" type="button" onClick={openReports}>
+                <Icon name="download" />
+                Download PDF report
+              </button>
+              <button className="secondary" type="button" onClick={remove}>
+                <Icon name="upload" />
+                Upload another paper
+              </button>
+            </>
+          )}
           <Button disabled={!file || phase === "extracting"} onClick={upload}>
             {phase === "extracting"
               ? "Extracting text, claims and citations…"
@@ -610,7 +667,9 @@ function Upload() {
           <div className="error" role="status">
             <Icon name="alert" />
             <span>
-              <b>AI verification is temporarily unavailable on this free server.</b>{" "}
+              <b>
+                AI verification is temporarily unavailable on this free server.
+              </b>{" "}
               PDF extraction, claim extraction, citation matching, and source
               retrieval are still available. No AI verdict will be guessed.
             </span>
@@ -736,7 +795,13 @@ function Step({
   );
 }
 
-function Results({ detail }: { detail: (c: Claim) => void }) {
+function Results({
+  detail,
+  onExport,
+}: {
+  detail: (c: Claim) => void;
+  onExport: () => void;
+}) {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Status | "All statuses">("All statuses");
   const shown = useMemo(
@@ -763,7 +828,7 @@ function Results({ detail }: { detail: (c: Claim) => void }) {
           <small>Review status</small>
           <b>8 need review</b>
         </div>
-        <button className="secondary" type="button">
+        <button className="secondary" type="button" onClick={onExport}>
           <Icon name="download" />
           Export report
         </button>
@@ -985,9 +1050,48 @@ function EvidenceBlock({
   );
 }
 
-function Reports({ go }: { go: (p: Page) => void }) {
+function Reports({
+  go,
+  paper,
+}: {
+  go: (p: Page) => void;
+  paper: PaperResult | undefined;
+}) {
   return (
     <div className="reports-grid">
+      <section className="panel report-builder">
+        <span className="report-icon">
+          <Icon name="file" />
+        </span>
+        <h2>Your uploaded paper</h2>
+        {paper ? (
+          <>
+            <p>
+              <b>{paper.document.name}</b> · {paper.document.pageCount} pages ·{" "}
+              {paper.claims.items.length} claims ·{" "}
+              {paper.citations.inText.length} citations ·{" "}
+              {"verification" in paper
+                ? "AI verification run"
+                : "AI verification: Not verified"}
+            </p>
+            <p>
+              The PDF report contains this paper's actual extraction, claims,
+              citation matches, retrieved sources, internal-consistency checks,
+              and AI verification status. Nothing from the demo data is
+              included.
+            </p>
+            <Button onClick={() => downloadReport(paper)}>
+              <Icon name="download" />
+              Download PDF report
+            </Button>
+          </>
+        ) : (
+          <>
+            <p>No paper has been processed in this browser tab yet.</p>
+            <Button onClick={() => go("upload")}>Upload a paper</Button>
+          </>
+        )}
+      </section>
       <section className="panel report-builder">
         <span className="report-icon">
           <Icon name="report" />

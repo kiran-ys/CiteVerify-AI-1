@@ -32,7 +32,7 @@ Last inspected: 2026-11-19
 | Shared contracts     | Implemented                  | Upload, extraction, claim, citation, and error contracts are shared by the API, engines, and web client.                                   |
 | Shared UI package    | Placeholder                  | Package exports nothing.                                                                                                                   |
 | Database             | Configured, no domain models | Prisma client and SQLite URL resolution exist; schema contains no models.                                                                  |
-| Automated tests      | Implemented and passing      | 223 Bun tests pass (verification 51, evidence 47, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
+| Automated tests      | Implemented and passing      | 232 Bun tests pass (verification 51, evidence 47, claims 34, API 34 incl. 6 real-PDF, citations 29, web 20, parser 8); 1 opt-in live test. |
 | Deployment           | Free Render image verified   | One Docker image serves the dashboard and API on one HTTPS origin; public deployment is pending. Ollama is not included.                    |
 
 ## Completed milestones
@@ -165,6 +165,12 @@ Reviewer reading of the model verdicts: several are reasonable (claims 005, 008,
 - `deploy/` holds a proposed single-server Docker Compose setup: Caddy (HTTPS, static web app, `/api` proxy), the bundled Bun API, and a private Ollama container. Plan, costs, and blockers: `docs/DEPLOYMENT_PLAN.md`. The owner approved the GPU-server plan; nothing is deployed. Both images were built and the stack (with a required demo password) passed a local smoke test and an end-to-end verification in Docker.
 - The production API bundle was run standalone (`bun dist/index.js`) and verified PMC7065031 end to end in 3 min 56 s, close to the 240 s request limit.
 - A free Render path now builds the React app into the Bun API image and serves both from one origin. The exact image returned 200 for `/`, healthy JSON for `/api/health`, and an honest unavailable response for local Ollama. This preserves PDF extraction, claims, citations, and evidence retrieval, but cannot run Llama 3.2 within Render's free instance limits.
+
+### Paper persistence and PDF report (uncommitted, awaiting review)
+
+- The processed paper is now held above the pages and the Upload page stays mounted, so switching between Dashboard, Verification Results, Reports and Upload Paper keeps the file, results, and any running request. Results (never the PDF) are also kept in `sessionStorage` for the browser tab; after a reload they are restored, and the same PDF must be chosen again to retrieve sources or verify. "Upload another paper" clears both.
+- "Download PDF report" (Upload Paper and Reports pages; "Export report" now opens Reports) writes an A4 PDF in the browser from the uploaded paper's own results: file name, first line of the PDF text (labelled as such), page count and extraction summary, AI verification status ("Not verified" when it was not run), claims with their citation matches and any verdicts, citation-matching counts and reference list, retrieved passages with source links, and internal-consistency checks. No dependency added; demo data is never included.
+- Tests cover session save/restore/clear (including blocked storage) and report content and PDF structure. Page switching itself is not covered by an automated UI test; a generated 5-page report for the Ioannidis paper was opened with pdf.js and rendered.
 
 ## Next milestone
 
