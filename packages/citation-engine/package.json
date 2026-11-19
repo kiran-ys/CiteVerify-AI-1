@@ -1,0 +1,20 @@
+{
+  "name": "@citeverify/citation-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@citeverify/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@citeverify/config": "workspace:*",
+    "@types/bun": "^1.4.4"
+  }
+}

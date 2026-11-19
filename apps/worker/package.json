@@ -1,0 +1,24 @@
+{
+  "name": "@citeverify/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/index.ts",
+    "build": "bun build src/index.ts --target bun --outdir dist",
+    "start": "bun --env-file=../../.env dist/index.js",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@citeverify/citation-engine": "workspace:*",
+    "@citeverify/database": "workspace:*",
+    "@citeverify/document-parser": "workspace:*",
+    "@citeverify/shared": "workspace:*",
+    "@citeverify/verification-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@citeverify/config": "workspace:*",
+    "@types/bun": "^1.4.4"
+  }
+}

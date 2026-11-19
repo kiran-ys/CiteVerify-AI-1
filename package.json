@@ -1,0 +1,25 @@
+{
+  "name": "citeverify",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "biome format --write .",
+    "db:generate": "turbo run db:generate --filter=@citeverify/database",
+    "db:push": "bun run --cwd packages/database db:push",
+    "db:studio": "bun run --cwd packages/database db:studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@citeverify/config": "workspace:*",
+    "turbo": "^2.11.13",
+    "typescript": "^7.0.2"
+  }
+}

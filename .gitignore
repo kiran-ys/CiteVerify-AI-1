@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env
+.env
+.env.*
+!.env.example
+
+# database
+*.db
+*.db-journal
+packages/database/src/generated/
+
+# logs / OS / editor
+*.log
+.DS_Store
+.vscode/
+.idea/

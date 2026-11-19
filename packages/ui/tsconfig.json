@@ -1,0 +1,4 @@
+{
+  "extends": "@citeverify/config/tsconfig/react.json",
+  "include": ["src"]
+}

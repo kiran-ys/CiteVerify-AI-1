@@ -1,0 +1,28 @@
+{
+  "name": "@citeverify/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@citeverify/shared": "workspace:*",
+    "@citeverify/ui": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@citeverify/config": "workspace:*",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8"
+  }
+}
