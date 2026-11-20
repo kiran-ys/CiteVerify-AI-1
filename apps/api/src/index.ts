@@ -41,6 +41,7 @@ import {
   type VerifyClaimsResponse,
 } from "@citeverify/shared";
 import { type Context, Hono } from "hono";
+import { evaluateCase, parseEvaluationRequest } from "./evaluation.ts";
 import { serveStatic } from "hono/bun";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -395,6 +396,61 @@ app.get("/verification/status", async (c) => {
     reason: active.status.reason,
   };
   return c.json(response, 200);
+});
+
+/**
+ * Dataset evaluation: one supplied test case per request, verified with the
+ * configured model. "supplied" mode judges only the dataset's snippet;
+ * "live" mode retrieves evidence like a normal upload.
+ */
+app.post("/evaluation/case", async (c) => {
+  const length = Number(c.req.header("content-length") ?? 0);
+  if (length > 64 * 1024)
+    return c.json(
+      errorResponse(
+        "INVALID_EVALUATION_REQUEST",
+        "The test case is too large.",
+      ),
+      413,
+    );
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json(
+      errorResponse(
+        "INVALID_EVALUATION_REQUEST",
+        "Send the test case as JSON.",
+      ),
+      400,
+    );
+  }
+  const parsed = parseEvaluationRequest(body);
+  if (!parsed.ok)
+    return c.json(
+      errorResponse("INVALID_EVALUATION_REQUEST", parsed.message),
+      400,
+    );
+  const active = await activeModel();
+  const usable = active.status.available && active.status.modelInstalled;
+  try {
+    const result = await evaluateCase(parsed.value, {
+      judge: usable ? active.judge : null,
+      modelName: usable ? active.model : null,
+      provider: active.provider,
+      unavailableReason: active.status.reason,
+      retrieval: retrievalOptions,
+    });
+    return c.json(result, 200);
+  } catch {
+    return c.json(
+      errorResponse(
+        "EVALUATION_FAILED",
+        "The test case could not be evaluated.",
+      ),
+      500,
+    );
+  }
 });
 
 app.post("/documents/verification", async (c) => {

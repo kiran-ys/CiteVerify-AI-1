@@ -6,6 +6,8 @@ import type {
   ExtractDocumentResponse,
   VerificationStatusResponse,
   VerifyClaimsResponse,
+  EvaluationCaseRequest,
+  EvaluationCaseResponse,
 } from "@citeverify/shared";
 
 type FetchLike = (
@@ -264,4 +266,55 @@ export async function getVerificationStatus(
     modelInstalled: false,
     reason: "The CiteVerify API could not report the AI model's status.",
   };
+}
+
+/** Thrown for an evaluation request; `transient` marks failures worth retrying. */
+export class EvaluationRequestError extends Error {
+  constructor(
+    message: string,
+    readonly transient: boolean,
+  ) {
+    super(message);
+  }
+}
+
+/** Runs one dataset test case on the server (keys stay server-side). */
+export async function evaluateDatasetCase(
+  request: EvaluationCaseRequest,
+  signal?: AbortSignal,
+  fetchImpl: FetchLike = fetch,
+): Promise<EvaluationCaseResponse> {
+  let response: Response;
+  try {
+    response = await fetchImpl("/api/evaluation/case", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+      signal,
+    });
+  } catch (cause) {
+    if (cause instanceof DOMException && cause.name === "AbortError")
+      throw cause;
+    throw new EvaluationRequestError(
+      "The CiteVerify API could not be reached.",
+      true,
+    );
+  }
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      typeof body === "object" && body !== null && "error" in body
+        ? String((body as { error: { message?: unknown } }).error.message ?? "")
+        : "";
+    throw new EvaluationRequestError(
+      message || `The API answered HTTP ${response.status}.`,
+      response.status === 429 || response.status >= 500,
+    );
+  }
+  if (typeof body !== "object" || body === null || !("outcome" in body))
+    throw new EvaluationRequestError(
+      "The API returned an unexpected response.",
+      false,
+    );
+  return body as EvaluationCaseResponse;
 }

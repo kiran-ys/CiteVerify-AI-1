@@ -16,7 +16,9 @@ export type ApiErrorCode =
   | "CLAIM_EXTRACTION_FAILED"
   | "CITATION_EXTRACTION_FAILED"
   | "EVIDENCE_RETRIEVAL_FAILED"
-  | "VERIFICATION_FAILED";
+  | "VERIFICATION_FAILED"
+  | "INVALID_EVALUATION_REQUEST"
+  | "EVALUATION_FAILED";
 
 export type ApiErrorResponse = {
   error: {
@@ -417,4 +419,56 @@ export type ExtractDocumentResponse = {
     warnings: PdfExtractionWarning[];
     parser: { name: "unpdf"; version: string };
   };
+};
+
+// ------------------------------------------------------------ dataset evaluation
+
+/** One externally supplied test case sent for evaluation (dataset rows). */
+export type EvaluationCaseRequest = {
+  mode: "supplied" | "live";
+  caseId: string;
+  claim: string;
+  inlineCitation: string;
+  referenceEntry: string;
+  doi: string;
+  /** Required for "supplied" mode; ignored in "live" mode. */
+  evidenceSnippet?: string;
+};
+
+/**
+ * Outcome of one evaluation case. `verdict` is CiteVerify's own verdict
+ * vocabulary (or an input/citation pre-check outcome); mapping to a dataset's
+ * labels happens in the client and is shown to the user.
+ */
+export type EvaluationCaseResponse = {
+  caseId: string;
+  mode: "supplied" | "live";
+  outcome:
+    | "verified"
+    | "invalid_input"
+    | "no_citation"
+    | "reference_not_found"
+    | "no_evidence"
+    | "model_failure";
+  verdict: VerificationVerdict | null;
+  unableCause: ClaimVerification["unableCause"];
+  reason: string | null;
+  explanation: string | null;
+  /** Where the evidence came from; supplied snippets are never called retrieved. */
+  provenance: {
+    kind: "dataset_supplied" | "retrieved" | "none";
+    detail: string;
+    resolver: string | null;
+    access: SourceAccess | null;
+    workTitle: string | null;
+    workDoi: string | null;
+  };
+  evidence: {
+    id: string;
+    relation: EvidenceRelation;
+    text: string;
+    url: string;
+  }[];
+  model: VerificationModel | null;
+  latencyMs: number;
 };

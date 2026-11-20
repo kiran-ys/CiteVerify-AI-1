@@ -23,6 +23,7 @@ import {
 } from "./paper-session.ts";
 import { CitationIntegrity, QualityPanel } from "./PaperQuality.tsx";
 import { CommandPalette } from "./CommandPalette.tsx";
+import { DatasetEvaluation } from "./DatasetEvaluation.tsx";
 import { installPointerEffects } from "./pointer.ts";
 import {
   CitationGraph,
@@ -63,6 +64,7 @@ type Page =
   | "graph"
   | "sources"
   | "review"
+  | "dataset"
   | "results"
   | "reports";
 type Status =
@@ -152,6 +154,7 @@ const nav: { id: Page; label: string; icon: string }[] = [
   { id: "graph", label: "Citation graph", icon: "scan" },
   { id: "sources", label: "Sources", icon: "search" },
   { id: "review", label: "Review queue", icon: "alert" },
+  { id: "dataset", label: "Dataset evaluation", icon: "report" },
   { id: "reports", label: "Reports", icon: "file" },
 ];
 const demoNav: { id: Page; label: string; icon: string }[] = [
@@ -181,6 +184,10 @@ const headings: Record<Page, [string, string]> = {
   sources: [
     "Scholarly sources",
     "Every cited work as retrieved, with access level, links, and passages.",
+  ],
+  dataset: [
+    "Dataset evaluation",
+    "Run a labelled test dataset through the real verifier and compare.",
   ],
   review: ["Review queue", "Claims that need a human look, most urgent first."],
   quality: [
@@ -480,6 +487,8 @@ export function App() {
           {page === "evidence" && (
             <ClaimEvidenceWorkspace paper={paper} focusClaimId={focusClaim} />
           )}
+          {/* Stays mounted so a running evaluation continues across pages. */}
+          <DatasetEvaluation active={page === "dataset"} />
           {page === "graph" && <CitationGraph paper={paper} />}
           {page === "sources" && <SourceExplorer paper={paper} />}
           {page === "review" && (

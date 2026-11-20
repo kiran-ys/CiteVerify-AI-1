@@ -534,3 +534,18 @@ Errors: all `POST /documents/evidence` errors apply unchanged. Additionally:
 - `POST /reports` and `GET /reports/:reportId` - create and retrieve traceable reports.
 
 These later endpoints are design targets, not implemented behavior.
+
+### `POST /evaluation/case`
+
+Purpose: evaluate one externally supplied test case (for the Dataset Evaluation page) with the same verifier as `POST /documents/verification`. No PDF is involved and nothing is stored.
+
+Request (JSON, at most 64 KB): `{ "mode": "supplied" | "live", "caseId", "claim", "inlineCitation", "referenceEntry", "doi", "evidenceSnippet"? }`. Strings are size-limited (claim 2,000; snippet 6,000 characters).
+
+- `supplied`: the claim is judged only against `evidenceSnippet`, split into sentences. Provenance is `dataset_supplied`; the snippet is never reported as retrieved. Placeholder snippets (`N/A`, `NONE`, `NO_SOURCE_FOUND`) count as no evidence.
+- `live`: the snippet is ignored; the reference entry is parsed (and the DOI used when well-formed), the cited work is looked up with the normal retrieval pipeline, and the claim is judged against retrieved passages (provenance `retrieved`).
+
+Before any retrieval or model call, an empty or near-empty claim returns `outcome: "invalid_input"`, and a missing citation or reference returns `outcome: "no_citation"`.
+
+Response `200`: `{ caseId, mode, outcome, verdict, unableCause, reason, explanation, provenance: { kind, detail, resolver, access, workTitle, workDoi }, evidence: [{ id, relation, text, url }], model, latencyMs }`, where `outcome` is `verified`, `invalid_input`, `no_citation`, `reference_not_found` (live: no scholarly record matched), `no_evidence`, or `model_failure` (model unavailable, error, timeout, invalid answer, or time budget). Errors: `400`/`413` `INVALID_EVALUATION_REQUEST`, `500` `EVALUATION_FAILED`.
+
+Mapping to a dataset's labels happens in the client and is shown to the user; see `apps/web/src/dataset.ts` (`MAPPING_RULES`).

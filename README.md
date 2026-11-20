@@ -32,6 +32,7 @@ AI verification on the live site uses Groq's hosted `openai/gpt-oss-120b`. Only 
 - **Evidence-grounded verification**: a hosted (Groq) or local (Ollama) model compares each claim's population, intervention, outcome, and findings with retrieved passages. Every verdict cites stored source text checked in code; otherwise the result is *Unable to verify* with the reason.
 - **Light and dark themes** (with a System option) and a research workspace with a verification pipeline, quality dashboard, and a three-panel claim / evidence / verdict comparison.
 - **Research workflow**: a human review queue (notes and status kept apart from AI verdicts), saved-analysis history in the browser, a citation graph from claim to verdict, a scholarly source explorer, and JSON/Markdown/PDF exports.
+- **Dataset evaluation**: load a labelled JSON/CSV test set, run every case through the real verifier against the dataset's own evidence or against independently retrieved evidence, and get agreement, per-label precision/recall/F1, a confusion matrix, coverage, latency and failure rates (expected verdicts are the dataset's labels, not validated ground truth), with CSV/JSON/PDF export.
 - **Transparent results views**: a Verification quality panel computed only from the uploaded paper, a Citation integrity panel, a step tracker, and each claim shown beside the exact passages its verdict cites.
 - **Honest limits**: verdicts are model judgements that need human review; accuracy has not yet been measured on a reviewed dataset.
 
