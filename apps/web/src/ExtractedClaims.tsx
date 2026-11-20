@@ -87,19 +87,13 @@ export function ExtractedClaims({
     claims.items.filter((claim) => claim.type === type).length;
 
   return (
-    <section className="extracted-claims" aria-labelledby="extracted-claims">
-      <header>
-        <div>
-          <small>FROM YOUR UPLOADED PAPER</small>
-          <h2 id="extracted-claims">Extracted claims — not yet verified</h2>
-        </div>
-        <span className="unverified-pill">Not verified</span>
-      </header>
+    <section className="extracted-claims" aria-label="Extracted claims">
       <p className="claims-note">
         These sentences were selected by transparent text rules ({claims.method}{" "}
-        v{claims.version}) and are shown in the paper's exact wording. They are
-        candidates for review: nothing here has been checked against its
-        sources, and no verdict or confidence score is assigned.
+        v{claims.version}) and are shown in the paper's exact wording.{" "}
+        {verification?.result
+          ? "Each claim shows its own verification status below; AI verdicts need human review, and no confidence score is assigned."
+          : "They are candidates for review: nothing here has been checked against its sources yet, and no verdict or confidence score is assigned."}
       </p>
       {citations && <CitationSummary citations={citations} />}
       {consistency && <ConsistencySummary consistency={consistency} />}
