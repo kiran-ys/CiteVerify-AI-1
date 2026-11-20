@@ -24,6 +24,26 @@ import {
 import { CitationIntegrity, QualityPanel } from "./PaperQuality.tsx";
 import { CommandPalette } from "./CommandPalette.tsx";
 import { installPointerEffects } from "./pointer.ts";
+import {
+  CitationGraph,
+  ExportButtons,
+  HistoryPanel,
+  ReviewQueue,
+  SourceExplorer,
+  titleFor,
+} from "./Research.tsx";
+import {
+  type HistoryEntry,
+  listHistory,
+  loadFromHistory,
+  loadReviews,
+  paperKey,
+  type ReviewState,
+  removeFromHistory,
+  reviewQueue,
+  saveReviews,
+  saveToHistory,
+} from "./research.ts";
 import { useTheme } from "./theme.ts";
 import {
   ClaimEvidenceWorkspace,
@@ -40,6 +60,9 @@ type Page =
   | "upload"
   | "evidence"
   | "quality"
+  | "graph"
+  | "sources"
+  | "review"
   | "results"
   | "reports";
 type Status =
@@ -126,6 +149,9 @@ const nav: { id: Page; label: string; icon: string }[] = [
   { id: "upload", label: "Workspace", icon: "upload" },
   { id: "evidence", label: "Claims & evidence", icon: "check" },
   { id: "quality", label: "Quality", icon: "grid" },
+  { id: "graph", label: "Citation graph", icon: "scan" },
+  { id: "sources", label: "Sources", icon: "search" },
+  { id: "review", label: "Review queue", icon: "alert" },
   { id: "reports", label: "Reports", icon: "file" },
 ];
 const demoNav: { id: Page; label: string; icon: string }[] = [
@@ -148,6 +174,15 @@ const headings: Record<Page, [string, string]> = {
     "Claims & evidence",
     "Each cited claim beside the retrieved passages and the AI verdict.",
   ],
+  graph: [
+    "Citation graph",
+    "How each claim connects to its references, records, evidence, and verdict.",
+  ],
+  sources: [
+    "Scholarly sources",
+    "Every cited work as retrieved, with access level, links, and passages.",
+  ],
+  review: ["Review queue", "Claims that need a human look, most urgent first."],
   quality: [
     "Verification quality",
     "Real figures for your paper, and measured benchmark runs.",
@@ -157,6 +192,15 @@ const headings: Record<Page, [string, string]> = {
     "Reports",
     "Prepare transparent verification summaries for review and export.",
   ],
+};
+
+/** localStorage when the browser allows it. */
+const local = () => {
+  try {
+    return typeof localStorage === "undefined" ? undefined : localStorage;
+  } catch {
+    return undefined;
+  }
 };
 
 export function App() {
@@ -210,6 +254,41 @@ export function App() {
     setMenu(false);
     setDetail(undefined);
   };
+  const [history, setHistory] = useState<HistoryEntry[]>(() =>
+    listHistory(local()),
+  );
+  const [historyFull, setHistoryFull] = useState(false);
+  const key = paper ? paperKey(paper) : undefined;
+  const [reviews, setReviews] = useState<ReviewState>({});
+  useEffect(() => {
+    setReviews(key ? loadReviews(local(), key) : {});
+  }, [key]);
+  const updateReviews = (state: ReviewState) => {
+    setReviews(state);
+    if (key) saveReviews(local(), key, state);
+  };
+  // Every completed step is saved to this browser's history (results only).
+  useEffect(() => {
+    if (!paper) return;
+    setHistoryFull(!saveToHistory(local(), paper, new Date(), titleFor(paper)));
+    setHistory(listHistory(local()));
+  }, [paper]);
+  const openSaved = (savedKey: string) => {
+    const saved = loadFromHistory(local(), savedKey);
+    if (saved) {
+      setPaper(saved);
+      go("upload");
+    }
+  };
+  const deleteSaved = (savedKey: string) => {
+    removeFromHistory(local(), savedKey);
+    setHistory(listHistory(local()));
+  };
+  const pendingReview = paper
+    ? reviewQueue(paper).filter(
+        (q) => (reviews[q.claimId]?.status ?? "unreviewed") === "unreviewed",
+      ).length
+    : 0;
   return (
     <div className={`app ${collapsed ? "nav-collapsed" : ""}`}>
       <a href="#main" className="skip">
@@ -246,6 +325,12 @@ export function App() {
             >
               <Icon name={n.icon} />
               <span className="nav-text">{n.label}</span>
+              {n.id === "review" && pendingReview > 0 && (
+                <i>
+                  {pendingReview}
+                  <span className="sr"> unreviewed</span>
+                </i>
+              )}
             </button>
           ))}
           <small className="nav-label">EXPLORE</small>
@@ -375,12 +460,34 @@ export function App() {
               <div className="workspace-side">
                 <Pipeline paper={paper} {...status} />
                 <QualityDashboard paper={paper} />
+                <HistoryPanel
+                  compact
+                  entries={history}
+                  currentKey={key}
+                  onOpen={openSaved}
+                  onDelete={deleteSaved}
+                />
+                {historyFull && (
+                  <p className="quality-note" role="status">
+                    Browser storage is full: this analysis could not be saved to
+                    history. Delete older analyses to make room.
+                  </p>
+                )}
               </div>
             )}
           </div>
           {page === "upload" && <ClaimEvidenceWorkspace paper={paper} />}
           {page === "evidence" && (
             <ClaimEvidenceWorkspace paper={paper} focusClaimId={focusClaim} />
+          )}
+          {page === "graph" && <CitationGraph paper={paper} />}
+          {page === "sources" && <SourceExplorer paper={paper} />}
+          {page === "review" && (
+            <ReviewQueue
+              paper={paper}
+              reviews={reviews}
+              onChange={updateReviews}
+            />
           )}
           {page === "quality" && (
             <div className="quality-page">
@@ -391,7 +498,27 @@ export function App() {
           {page === "results" && (
             <Results detail={setDetail} onExport={() => go("reports")} />
           )}
-          {page === "reports" && <Reports go={go} paper={paper} />}
+          {page === "reports" && (
+            <>
+              <Reports go={go} paper={paper} />
+              {paper && (
+                <section className="panel research-panel">
+                  <h2>Other formats</h2>
+                  <p className="quality-note">
+                    The same results as structured JSON or Markdown, including
+                    your review notes (kept separate from AI verdicts).
+                  </p>
+                  <ExportButtons paper={paper} reviews={reviews} />
+                </section>
+              )}
+              <HistoryPanel
+                entries={history}
+                currentKey={key}
+                onOpen={openSaved}
+                onDelete={deleteSaved}
+              />
+            </>
+          )}
         </main>
       </div>
       {detail && <Evidence claim={detail} close={() => setDetail(undefined)} />}
